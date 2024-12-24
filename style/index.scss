@@ -1,0 +1,24 @@
+uni-page-body{
+	height: 100% !important;
+}
+
+.formBox{
+	width: 70%;
+	.formItem{
+		margin: 20rpx;
+		display: flex;
+		align-items: center;
+		.u-icon{
+			display: block;
+			margin-right: 20rpx;
+		}
+		.uni-input-placeholder{
+			color: #eee;
+		}
+		.itemRight{
+			flex: 1;
+			padding-bottom: 10rpx;
+			border-bottom: solid 2rpx #d1d1d1;
+		}
+	}
+}
