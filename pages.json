@@ -2,27 +2,95 @@
 	"easycom": {
 		"^u-(.*)": "@/uni_modules/uview-ui/components/u-$1/u-$1.vue"
 	},
-	"pages": [ 
-		{
+	"pages": [{
 			"path": "pages/login/login",
 			"style": {
-				 "navigationStyle": "custom"
+				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/index/index",
 			"style": {
-				"navigationBarTitleText": "uni-app"
+				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/drive/drive",
 			"style": {
-				 "landscape": true,
-				 "navigationStyle": "custom"
+				"landscape": true,
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/register/register",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/forgetPassword/forgetPassword",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/car/car",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/my/my",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/shared/shared",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/selectCar/selectCar",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/configuration/configuration",
+			"style" : 
+			{
+				"navigationStyle": "custom"
 			}
 		}
 	],
+	"tabBar": {
+		"custom": true
+		// "list": [{
+		// 		"pagePath": "pages/index/index",
+		// 		"iconPath": "static/index.png",
+		// 		"selectedIconPath": "static/index-active.png",
+		// 		"text": "广场"
+		// 	}, {
+		// 		"pagePath": "pages/car/car",
+		// 		"iconPath": "static/car.png",
+		// 		"selectedIconPath": "static/car-active.png",
+		// 		"text": "车辆"
+		// 	},
+		// 	{
+		// 		"pagePath": "pages/shared/shared",
+		// 		"iconPath": "static/shared.png",
+		// 		"selectedIconPath": "static/shared-active.png",
+		// 		"text": "共享"
+		// 	}, {
+		// 		"pagePath": "pages/my/my",
+		// 		"iconPath": "static/my.png",
+		// 		"selectedIconPath": "static/my-active.png",
+		// 		"text": "我的"
+		// 	}
+		// ]
+	},
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "uni-app",

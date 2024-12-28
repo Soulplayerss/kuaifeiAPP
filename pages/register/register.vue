@@ -1,29 +1,56 @@
 <template>
-	<view class="login">
+	<view class="register">
 		<image src="../../assets/images/logo.png" mode="" class="logo"></image>
 		<span class="kuaifei">快飞云控</span>
-		<span class="loginText">登录</span>
+		<span class="loginText">注册</span>
 		<view class="formBox">
 			<view class="formItem">
 				<u-icon name="phone" size="28" color="#FFF"></u-icon>
 				<view class="itemRight">
-					<u--input border="bottom" type="text" v-model="userInfo.phone" placeholder="请输入手机号" />
+					<u--input type="text" border="bottom" v-model="userInfo.phone" placeholder="请输入手机号" />
+				</view>
+			</view>
+			<view class="formItem">
+				<u-icon name="email" size="28" color="#FFF"></u-icon>
+				<view class="itemRight">
+					<u--input type="text" border="bottom" v-model="userInfo.phone" placeholder="请输入验证码">
+						<template slot="suffix">
+							<u-button @tap="getCode" :text="tips" type="success" size="mini" color="#FFF"
+								style="color: #eea618;" :disabled="disabled"></u-button>
+						</template>
+					</u--input>
+				</view>
+			</view>
+			<view class="formItem">
+				<u-icon name="account" size="28" color="#FFF"></u-icon>
+				<view class="itemRight">
+					<u--input type="text" border="bottom" v-model="userInfo.phone" placeholder="请输入昵称" />
+				</view>
+			</view>
+			<view class="formItem">
+				<u-icon name="share" size="28" color="#FFF"></u-icon>
+				<view class="itemRight">
+					<u--input type="text" border="bottom" v-model="userInfo.code" placeholder="请输入邀请码(选填,填写赠送体验电池)" />
 				</view>
 			</view>
 			<view class="formItem">
 				<u-icon name="lock" size="28" color="#FFF"></u-icon>
 				<view class="itemRight">
-					<u--input border="bottom" type="password" v-model="userInfo.password" placeholder="请输入密码" />
+					<u--input type="password" border="bottom" v-model="userInfo.password" placeholder="请输入密码" />
+				</view>
+			</view>
+			<view class="formItem">
+				<u-icon name="lock" size="28" color="#FFF"></u-icon>
+				<view class="itemRight">
+					<u--input type="password" border="bottom" v-model="userInfo.confirmPassword" placeholder="请确认密码" />
 				</view>
 			</view>
 		</view>
-		<view class="forgetPassword" @click="toRetrieve">
-			忘记密码
+		<view class="forgetPassword" @click="toLogin">
+			有账号？去登陆
 		</view>
-		<u-button type="primary" shape="circle" text="登录" class="btn"
-			color="linear-gradient(to bottom, rgb(134, 211, 254), rgb(27, 156, 219))" @click="toIndex"></u-button>
 		<u-button type="primary" shape="circle" text="注册" class="btn" style="color: #30313D;"
-			color="linear-gradient(to bottom, rgb(255,241,204), rgb(255, 227, 157))" @click="toRegister"></u-button>
+			color="linear-gradient(to bottom, rgb(255,241,204), rgb(255, 227, 157))" @click="register"></u-button>
 		<view class="protocol">
 			<u-checkbox-group v-model="protocolValue" placement="column" @change="checkboxChange">
 				<u-checkbox label="" name="yes"></u-checkbox>
@@ -35,48 +62,32 @@
 		</view>
 
 		<Protocol @clsoeEvent="clsoeEvent" :overlay="showOverlay" />
-		<TabBar v-show="showTabBar" :pageRoute='pageRoute' />
 	</view>
 </template>
 
 <script>
 	import Protocol from '@/components/common/Protocol.vue';
-	import TabBar from '@/components/common/TabBar.vue'
 	export default {
 		data() {
 			return {
 				userInfo: {
 					phone: '',
+					code: '',
 					password: '',
+					confirmPassword: '',
 				},
+				tips: '发送验证码',
 				protocolValue: [],
 				showOverlay: false,
-				showTabBar: false,
-				pageRoute: ''
+				disabled: false
 			};
 		},
 		components: {
-			Protocol,
-			TabBar
+			Protocol
 		},
 		methods: {
-			toIndex() {
-				this.pageRoute = '/pages/index/index'
-				setTimeout(() => {
-					uni.navigateTo({
-						url: '/pages/index/index',
-					})
-				}, 500)
-			},
-			toRegister() {
-				uni.navigateTo({
-					url: '/pages/register/register',
-				})
-			},
-			toRetrieve() {
-				uni.navigateTo({
-					url: '/pages/forgetPassword/forgetPassword',
-				})
+			register() {
+
 			},
 			checkboxChange(e) {
 				console.log(e)
@@ -91,6 +102,26 @@
 			clsoeEvent(type) {
 				this.protocolValue = [type]
 
+			},
+			getCode() {
+				let count = 10
+				let timers = setInterval(() => {
+					if (count <= 0) {
+						clearInterval(timers)
+						this.tips = '重新发送'
+						this.disabled = false
+					} else {
+						count -= 1
+						this.tips = count + '秒后重新发送'
+						this.disabled = true
+					}
+				}, 1000)
+
+			},
+			toLogin(){
+				uni.navigateTo({
+					url: '/pages/login/login',
+				})
 			}
 		},
 		onReady() {
@@ -100,12 +131,12 @@
 </script>
 
 <style lang="less">
-	.login {
+	.register {
 		width: 100%;
 		height: 1010vh;
 		background: url('../../assets/images/login-bg.jpg') no-repeat;
 		background-size: 100% auto;
-		background-color: #eea618;
+		background-color: rgb(238, 166, 24);
 		color: #FFF;
 		box-sizing: border-box;
 		padding-top: 80px;
@@ -129,7 +160,6 @@
 			font-size: 56rpx;
 			margin-bottom: 40rpx;
 		}
-
 
 		.forgetPassword {
 			width: 70%;

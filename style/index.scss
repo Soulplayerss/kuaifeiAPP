@@ -3,9 +3,9 @@ uni-page-body{
 }
 
 .formBox{
-	width: 70%;
+	width: 80%;
 	.formItem{
-		margin: 20rpx;
+		padding: 8px 0;
 		display: flex;
 		align-items: center;
 		.u-icon{
@@ -13,12 +13,19 @@ uni-page-body{
 			margin-right: 20rpx;
 		}
 		.uni-input-placeholder{
-			color: #eee;
+			color: #eee !important;
+			font-size: 14px;
 		}
 		.itemRight{
 			flex: 1;
 			padding-bottom: 10rpx;
-			border-bottom: solid 2rpx #d1d1d1;
 		}
 	}
+}
+
+uni-app, uni-page-head{
+	background-color: #eea618;
+}
+.flex{
+	display: flex;
 }
