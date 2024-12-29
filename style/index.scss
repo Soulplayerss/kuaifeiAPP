@@ -4,22 +4,23 @@ uni-page-body{
 
 .formBox{
 	width: 80%;
-	.formItem{
-		padding: 8px 0;
-		display: flex;
-		align-items: center;
-		.u-icon{
-			display: block;
-			margin-right: 20rpx;
-		}
-		.uni-input-placeholder{
-			color: #eee !important;
-			font-size: 14px;
-		}
-		.itemRight{
-			flex: 1;
-			padding-bottom: 10rpx;
-		}
+}
+
+.formItem{
+	padding: 8px 0;
+	display: flex;
+	align-items: center;
+	.u-icon{
+		display: block;
+		margin-right: 20rpx;
+	}
+	.uni-input-placeholder{
+		color: #cbcbcb !important;
+		font-size: 14px;
+	}
+	.itemRight{
+		flex: 1;
+		padding-bottom: 10rpx;
 	}
 }
 
@@ -29,3 +30,12 @@ uni-app, uni-page-head{
 .flex{
 	display: flex;
 }
+.items-end{
+	align-items: end;
+}
+
+
+.color-c2a9bb{
+	color: #c2a9bb;
+}
+

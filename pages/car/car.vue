@@ -3,12 +3,15 @@
 		<u-toast ref="uToast"></u-toast>
 		<view class="content">
 			<view class="title">
-				<span class="car">我的车辆</span>
-				<span @click="showAddCar = true">添加车辆</span>
+				<view class="car">我的车辆</view>
+				<view class="">
+					<span show="showAddSite" style="padding-right: 16px;" @click="navigateTo('/pages/addSite/addSite')">添加场地</span>
+					<span @click="showAddCar = true">添加车辆</span>
+				</view>
 			</view>
 			<scroll-view v-if="dataList.length" scroll-y @refresherrefresh="onRefresh" @scrolltolower="onLoadMore"
 				:refresher-triggered="isRefreshing" :style="{ height: '100%' }" refresher-enabled
-				:refresher-threshold="50" refresher-background="#f1f1f1">
+				:refresher-threshold="50" refresher-background="#eea618">
 				<!-- 列表内容 -->
 				<view v-for="(item,index) in dataList" :key="index" class="dataItem">
 					<view class="carInfo">
@@ -24,10 +27,10 @@
 								编号：{{item.code}}
 							</view>
 							<view class="btns">
-								<view class="btn operate">
+								<view class="btn" :style="{backgroundColor: item.isDrive===1 ? '#eea618': '#0055ff'}">
 									<span>{{item.isDrive===1 ? '围观' : '驾驶'}}</span>
 								</view>
-								<view class="btn watch" @click="toConfiguration">
+								<view class="btn watch" @click="navigateTo('/pages/configuration/configuration')">
 									配置
 								</view>
 							</view>
@@ -90,27 +93,21 @@
 				total: 18,
 				hittingBottom: false,
 				showAddCar: false,
+				showAddSite: true,
 				dataList: [],
 				serialNumber: ''
 			}
 		},
-		components: {
-		},
+		components: {},
 		methods: {
-			goBank() {
+			navigateTo(url) {
 				uni.navigateTo({
-					url: '/pages/index/index',
-				})
-			},
-			toConfiguration(){
-				uni.navigateTo({
-					url: '/pages/configuration/configuration',
+					url
 				})
 			},
 			// 下拉刷新
 			onRefresh() {
 				if (this.isRefreshing) return;
-
 				this.isRefreshing = true;
 				this.page = 1;
 				setTimeout(() => {
@@ -249,6 +246,7 @@
 				justify-content: space-between;
 				color: #fff;
 				margin-bottom: 16px;
+				padding: 8px 0;
 
 				.car {
 					font-size: 16px;
@@ -302,7 +300,7 @@
 								border-radius: 13px;
 								background-color: #0055ff;
 							}
-							
+
 							.watch {
 								height: 24px;
 								line-height: 24px;

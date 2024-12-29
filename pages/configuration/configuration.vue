@@ -24,17 +24,20 @@
 				<span class="right">7.8V</span>
 			</view>
 			<u-collapse accordion>
+				<u-collapse-item title="选择场地">
+					<text class="u-collapse-content">选择场地</text>
+				</u-collapse-item>
 				<u-collapse-item title="系统设置">
-					<text class="u-collapse-content">涵盖uniapp各个方面，给开发者方向指导和设计理念，让您茅塞顿开，一马平川</text>
+					<text class="u-collapse-content">系统设置</text>
 				</u-collapse-item>
 				<u-collapse-item title="通道设置">
-					<text class="u-collapse-content">涵盖uniapp各个方面，给开发者方向指导和设计理念，让您茅塞顿开，一马平川</text>
+					<text class="u-collapse-content">通道设置川</text>
 				</u-collapse-item>
 				<u-collapse-item title="图传设置">
-					<text class="u-collapse-content">涵盖uniapp各个方面，给开发者方向指导和设计理念，让您茅塞顿开，一马平川</text>
+					<text class="u-collapse-content">图传设置</text>
 				</u-collapse-item>
 				<u-collapse-item title="操控设置">
-					<text class="u-collapse-content">涵盖uniapp各个方面，给开发者方向指导和设计理念，让您茅塞顿开，一马平川</text>
+					<text class="u-collapse-content">操控设置</text>
 				</u-collapse-item>
 			</u-collapse>
 			<view class="item">
@@ -67,7 +70,11 @@
 			AppBar
 		},
 		methods: {
-
+			goBank() {
+				uni.navigateTo({
+					url: '/pages/car/car',
+				})
+			},
 		}
 	}
 </script>
@@ -79,12 +86,14 @@
 		background-color: #eea618;
 		box-sizing: border-box;
 		padding-bottom: 72px;
+
 		.content {
 			background-color: #FFF;
 			border-radius: 8px;
 			padding: 16px;
 			box-sizing: border-box;
 			margin: 16px;
+
 			.carImg {
 				width: 100%;
 			}

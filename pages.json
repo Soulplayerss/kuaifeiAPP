@@ -63,6 +63,13 @@
 			{
 				"navigationStyle": "custom"
 			}
+		},
+		{
+			"path" : "pages/addSite/addSite",
+			"style" : 
+			{
+				"navigationStyle": "custom"
+			}
 		}
 	],
 	"tabBar": {

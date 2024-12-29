@@ -6,9 +6,9 @@
 				<span class="car">场地车辆</span>
 				<span>刷新</span>
 			</view>
-			<scroll-view v-if="dataList.length" scroll-y @refresherrefresh="onRefresh" @scrolltolower="onLoadMore"
+			<scroll-view v-if="dataList.length" scroll-y @refresherrefresh="onRefresh" refresher-background="#eea618" @scrolltolower="onLoadMore"
 				:refresher-triggered="isRefreshing" :style="{ height: '100%' }" refresher-enabled
-				:refresher-threshold="50" refresher-background="#f1f1f1">
+				:refresher-threshold="50">
 				<!-- 列表内容 -->
 				<view v-for="(item,index) in dataList" :key="index" class="dataItem">
 					<view class="carInfo">
@@ -214,7 +214,7 @@
 				display: flex;
 				justify-content: space-between;
 				color: #fff;
-
+				margin-bottom: 16px;
 				.car {
 					font-size: 16px;
 					font-weight: bold;
@@ -222,7 +222,7 @@
 			}
 
 			.dataItem {
-				margin-top: 16px;
+				margin-bottom: 16px;
 				width: 100%;
 				border-radius: 8px;
 				background-color: #FFF;

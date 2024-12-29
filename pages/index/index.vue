@@ -131,16 +131,16 @@
 
 			.remind {
 				width: 100%;
-				height: 40px;
+				min-height: 40px;
 				border-radius: 8px;
 				background-color: rgb(255, 245, 230);
 				display: flex;
 				justify-content: start;
 				align-items: center;
 				font-size: 14px;
-				line-height: 18px;
+				line-height: 14px;
 				box-sizing: border-box;
-				padding: 0 16px;
+				padding: 16px;
 				margin-bottom: 16px;
 
 				image {
@@ -273,7 +273,7 @@
 					overflow: hidden;
 
 					image {
-						width: 180px;
+						width: 50%;
 						height: 130px;
 					}
 
