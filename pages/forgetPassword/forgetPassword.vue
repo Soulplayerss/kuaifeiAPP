@@ -13,7 +13,7 @@
 			<view class="formItem">
 				<u-icon name="email" size="28" color="#FFF"></u-icon>
 				<view class="itemRight">
-					<u--input type="text" border="bottom" v-model="userInfo.phone" placeholder="请输入验证码">
+					<u--input type="text" border="bottom" v-model="userInfo.code" placeholder="请输入验证码">
 						<template slot="suffix">
 							<u-button @tap="getCode" :text="tips" type="success" size="mini" color="#FFF"
 								style="color: #eea618;" :disabled="disabled"></u-button>
@@ -37,7 +37,7 @@
 		<view class="forgetPassword" @click="toLogin">
 			去登陆
 		</view>
-		<u-button type="primary" shape="circle" text="注册" class="btn" style="color: #30313D;"
+		<u-button type="primary" shape="circle" text="确认重置" class="btn" style="color: #30313D;"
 			color="linear-gradient(to bottom, rgb(255,241,204), rgb(255, 227, 157))" @click="register"></u-button>
 	</view>
 </template>
@@ -129,6 +129,7 @@
 			text-align: right;
 			color: #30313D;
 			font-size: 14px;
+			margin-top: 8px;
 			margin-bottom: 50rpx;
 		}
 

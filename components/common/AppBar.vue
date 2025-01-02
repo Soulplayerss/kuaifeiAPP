@@ -47,7 +47,7 @@
 		align-items: center;
 		padding: 0 16px;
 		background-color: #eea618;
-		font-size: 16px;
+		font-size: 18px;
 		font-weight: bold;
 	}
 </style>

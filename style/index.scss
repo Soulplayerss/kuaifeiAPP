@@ -7,7 +7,7 @@ uni-page-body{
 }
 
 .formItem{
-	padding: 8px 0;
+	padding: 4px 0;
 	display: flex;
 	align-items: center;
 	.u-icon{
@@ -15,12 +15,12 @@ uni-page-body{
 		margin-right: 20rpx;
 	}
 	.uni-input-placeholder{
-		color: #cbcbcb !important;
+		color: #dedede !important;
 		font-size: 14px;
 	}
 	.itemRight{
 		flex: 1;
-		padding-bottom: 10rpx;
+		// padding-bottom: 10rpx;
 	}
 }
 
@@ -34,8 +34,127 @@ uni-app, uni-page-head{
 	align-items: end;
 }
 
-
-.color-c2a9bb{
-	color: #c2a9bb;
+.items-start{
+	align-items: start !important;
 }
 
+.justify-between{
+	justify-content: space-between;
+}
+.gap-20{
+	gap: 20px;
+}
+.color-c2a9bb{
+	color: #b09aaa;
+}
+
+.loading-more {
+	text-align: center;
+	padding: 10px;
+	color: #666;
+}
+
+.u-transition {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	.overlayBox {
+		width: 70%;
+		height: auto;
+		background-color: #FFF;
+		padding: 16px;
+		border-radius: 8px;
+
+		.title {
+			font-size: 18px;
+			font-weight: bold;
+			text-align: center;
+			color: #30313D;
+			margin-bottom: 40rpx;
+		}
+
+		.serialNumber {
+			font-size: 16px;
+			color: #30313D;
+			line-height: 30px;
+
+			.protocolText {
+				color: #b9dd04;
+			}
+		}
+
+		.itemRight {
+			padding: 8px 0;
+			border-bottom: solid 1px #dadbde;
+			box-sizing: border-box;
+		}
+
+		.limit {
+			padding: 8px 0;
+			text-align: right;
+			color: #eea618;
+		}
+
+		.btns {
+			margin-top: 40rpx;
+			text-align: center;
+
+			.commit {
+				display: inline-block;
+				padding: 8px 50px;
+				background-color: #eea618;
+				color: #FFF;
+				border-radius: 19px;
+			}
+		}
+	}
+}
+
+.settingItem {
+	height: 54px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	font-size: 15px;
+	border-bottom: solid 1px #d6d7d9;
+	padding: 0px;
+	box-sizing: border-box;
+
+	.left {
+		display: flex;
+		align-items: end;
+
+		image {
+			width: 24px;
+			height: 24px;
+			margin-right: 8px;
+		}
+	}
+}
+
+.mr-8{
+	margin-right: 8px;
+}
+
+.commonDataItem {
+	display: flex;
+	gap: 20px;
+	margin-bottom: 20px;
+	font-size: 14px;
+	line-height: 14px;
+	color: #8c8c8c;
+
+	.leftBox {
+		width: 3px;
+		height: auto;
+		background-color: #eea618;
+	}
+
+	.rightInfo {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+}

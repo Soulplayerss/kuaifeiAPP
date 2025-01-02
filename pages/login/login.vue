@@ -102,7 +102,7 @@
 <style lang="less">
 	.login {
 		width: 100%;
-		height: 1010vh;
+		height: 100vh;
 		background: url('../../assets/images/login-bg.jpg') no-repeat;
 		background-size: 100% auto;
 		background-color: #eea618;
@@ -136,6 +136,7 @@
 			text-align: right;
 			color: #30313D;
 			font-size: 14px;
+			margin-top: 8px;
 			margin-bottom: 50rpx;
 		}
 

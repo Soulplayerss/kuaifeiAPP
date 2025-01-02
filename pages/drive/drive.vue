@@ -35,12 +35,15 @@
 				oldDirection: '', //  老方向
 				counter: 0,
 				socket: null,
+				dutyValue: 1500,
+				intervarTime: null,
+				closeSocket: true
 			};
 		},
 		onLoad() {
 			// 设置横屏
 			// plus.screen.lockOrientation('landscape-primary');
-			// this.initWebSocket();
+			this.initWebSocket();
 			// uni.request({
 			// 	url: 'https://api.jftechws.com/gwp/v3/rtc/device/bind',
 			// 	method: 'POST',
@@ -71,7 +74,7 @@
 		},
 		onUnload() {
 			//链接Socket
-			// this.closeWebSocket();
+			this.closeWebSocket();
 			// 页面卸载时恢复竖屏
 			// plus.screen.lockOrientation('portrait-primary')
 		},
@@ -95,14 +98,17 @@
 		},
 		methods: {
 			back() {
-				uni.switchTab({
-					url: '/pages/index/index', // 返回上一级页面，默认为1
+				uni.navigateTo({
+					url: '/pages/car/car'
 				});
 			},
 			// 开始触摸
 			onTouchStart(e) {
 				this.startX = e.touches[0].pageX - this.positionX;
 				this.startY = e.touches[0].pageY - this.positionY;
+				if (this.closeSocket) {
+					this.initWebSocket()
+				}
 			},
 			// 拖动过程
 			onTouchMove(e) {
@@ -125,10 +131,10 @@
 			},
 			// 结束触摸
 			onTouchEnd() {
-				this.sendMessage('拖拽结束')
-				console.log("拖拽结束");
+				clearInterval(this.intervarTime)
 				this.positionX = 50;
 				this.positionY = 50;
+				this.oldDirection = ''
 			},
 			checkPosition(positionX, positionY) {
 				if (positionY <= 15) {
@@ -159,15 +165,47 @@
 				this.updataDirection()
 			},
 			updataDirection() {
+				let ChannelDuty = {
+					"bizCode": 602, //固定值
+					"channelNum": 1, // 通道号1-8
+					"duty": this.dutyValue, //通道信号的高电平时间（单位微秒）
+					"timestamp": "", // 时间戳（先不传）
+					"macAddress": "192.168.1.238" //设备mac地址
+				}
 				if (this.newDirection !== this.oldDirection) {
+					clearInterval(this.intervarTime)
+					ChannelDuty.duty = this.dutyValue
+					if (this.newDirection == '上') {
+						this.intervarTime = setInterval(() => {
+							if (ChannelDuty.duty >= 2500) {
+								ChannelDuty.duty = 2500
+							} else {
+								ChannelDuty.duty += 100
+							}
+							this.sendMessage(JSON.stringify(ChannelDuty))
+						}, 500)
+					} else if (this.newDirection == '停止') {
+						this.intervarTime = setInterval(() => {
+							ChannelDuty.duty = this.dutyValue
+							this.sendMessage(JSON.stringify(ChannelDuty))
+						}, 500)
+					} else if (this.newDirection == '下') {
+						this.intervarTime = setInterval(() => {
+							if (ChannelDuty.duty <= 500) {
+								ChannelDuty.duty = 500
+							} else {
+								ChannelDuty.duty -= 100
+							}
+							this.sendMessage(JSON.stringify(ChannelDuty))
+						}, 500)
+					}
 					this.oldDirection = this.newDirection
-					this.sendMessage(this.oldDirection)
 				}
 			},
 
 			initWebSocket() {
 				this.socket = uni.connectSocket({
-					url: 'ws://5858a12f.r32.cpolar.top/ws/3211333',
+					url: 'ws://5f1df655.r32.cpolar.top/ws/3211333',
 					success: () => {
 						console.log('WebSocket连接成功');
 					},
@@ -178,6 +216,7 @@
 
 				// 监听 WebSocket 打开事件
 				this.socket.onOpen(() => {
+					this.closeSocket = false
 					console.log('WebSocket已打开');
 				});
 
@@ -188,6 +227,7 @@
 
 				// 监听 WebSocket 关闭事件
 				this.socket.onClose(() => {
+					this.closeSocket = true
 					console.log('WebSocket已关闭');
 				});
 

@@ -166,6 +166,7 @@
 			text-align: right;
 			color: #30313D;
 			font-size: 14px;
+			margin-top: 8px;
 			margin-bottom: 50rpx;
 		}
 

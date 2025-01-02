@@ -6,9 +6,9 @@
 				<span class="car">场地车辆</span>
 				<span>刷新</span>
 			</view>
-			<scroll-view v-if="dataList.length" scroll-y @refresherrefresh="onRefresh" refresher-background="#eea618" @scrolltolower="onLoadMore"
-				:refresher-triggered="isRefreshing" :style="{ height: '100%' }" refresher-enabled
-				:refresher-threshold="50">
+			<scroll-view v-if="dataList.length" scroll-y @refresherrefresh="onRefresh" refresher-background="#eea618"
+				@scrolltolower="onLoadMore" :refresher-triggered="isRefreshing" :style="{ height: '100%' }"
+				refresher-enabled :refresher-threshold="50">
 				<!-- 列表内容 -->
 				<view v-for="(item,index) in dataList" :key="index" class="dataItem">
 					<view class="carInfo">
@@ -75,17 +75,32 @@
 				isRefreshing: false,
 				total: 18,
 				hittingBottom: false,
-				dataList: []
+				dataList: [],
+				superiorPage: 'index',
 			}
 		},
 		components: {
 			AppBar
 		},
+		onLoad(options) {
+			const {
+				page
+			} = options; // 获取具体的参数值
+			console.log(page); // JohnDoe
+			this.superiorPage = page
+		},
 		methods: {
 			goBank() {
-				uni.navigateTo({
-					url: '/pages/index/index',
-				})
+				if (this.superiorPage === 'index') {
+					uni.navigateTo({
+						url: '/pages/index/index',
+					})
+				}
+				if (this.superiorPage === 'mySite') {
+					uni.navigateTo({
+						url: '/pages/mySite/mySite',
+					})
+				}
 			},
 			// 下拉刷新
 			onRefresh() {
@@ -180,6 +195,8 @@
 
 				if (this.dataList.length >= this.total) {
 					this.hittingBottom = true
+				} else {
+					this.hittingBottom = false
 				}
 
 				this.isRefreshing = false;
@@ -215,6 +232,7 @@
 				justify-content: space-between;
 				color: #fff;
 				margin-bottom: 16px;
+
 				.car {
 					font-size: 16px;
 					font-weight: bold;
@@ -308,10 +326,5 @@
 			background-color: #eea618;
 		}
 
-		.loading-more {
-			text-align: center;
-			padding: 10px;
-			color: #666;
-		}
 	}
 </style>

@@ -30,7 +30,7 @@
 									@click="showInputPassword = true">
 									<span>{{item.isDrive===1 ? '围观' : '驾驶'}}</span>
 								</view>
-								<view class="btn watch" @click="navigateTo('/pages/configuration/configuration')">
+								<view class="btn watch">
 									规则
 								</view>
 							</view>
@@ -70,9 +70,10 @@
 						<u--input border="none" type="number" v-model="password" placeholder="请输入共享密码" />
 					</view>
 				</view>
-				
+
 				<view class="btns">
-					<span @click="showInputPassword = false" style="margin-right: 16px;background-color: #c2a9bb;" class="#FFF">取消</span>
+					<span @click="showInputPassword = false" style="margin-right: 16px;background-color: #c2a9bb;"
+						class="#FFF">取消</span>
 					<span class="commit" @click="commit">确认</span>
 				</view>
 			</view>
@@ -188,9 +189,13 @@
 				]
 				this.dataList = this.page === 1 ? data : this.dataList.concat(
 					data)
+
 				if (this.dataList.length >= this.total) {
 					this.hittingBottom = true
+				} else {
+					this.hittingBottom = false
 				}
+
 				this.isRefreshing = false;
 				this.loading = false;
 				if (this.page >= 5) {
@@ -379,7 +384,7 @@
 				.btns {
 					margin-top: 40rpx;
 					text-align: center;
-					
+
 					span {
 						display: inline-block;
 						padding: 8px 40px;

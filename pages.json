@@ -11,7 +11,8 @@
 		{
 			"path": "pages/index/index",
 			"style": {
-				"navigationStyle": "custom"
+				"navigationStyle": "custom",
+				"keepAlive": true  // 设置该页面缓存
 			}
 		},
 		{
@@ -36,19 +37,22 @@
 		{
 			"path": "pages/car/car",
 			"style": {
-				"navigationStyle": "custom"
+				"navigationStyle": "custom",
+				"keepAlive": true 
 			}
 		},
 		{
 			"path": "pages/my/my",
 			"style": {
-				"navigationStyle": "custom"
+				"navigationStyle": "custom",
+				"keepAlive": true 
 			}
 		},
 		{
 			"path": "pages/shared/shared",
 			"style": {
-				"navigationStyle": "custom"
+				"navigationStyle": "custom",
+				"keepAlive": true
 			}
 		},
 		{
@@ -66,6 +70,111 @@
 		},
 		{
 			"path" : "pages/addSite/addSite",
+			"style" : 
+			{
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/mySite/mySite",
+			"style" : 
+			{
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/feedback/feedback",
+			"style" : 
+			{
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/myFeedback/myFeedback",
+			"style" : 
+			{
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/accountSetting/accountSetting",
+			"style" : 
+			{
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/wallet/wallet",
+			"style" : 
+			{
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/rechargeRecord/rechargeRecord",
+			"style" : 
+			{
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/withdrawalHistory/withdrawalHistory",
+			"style" : 
+			{
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/fundingDetails/fundingDetails",
+			"style" : 
+			{
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/withdrawal/withdrawal",
+			"style" : 
+			{
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/myOrder/myOrder",
+			"style" : 
+			{
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/drivingRecord/drivingRecord",
+			"style" : 
+			{
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/myShare/myShare",
+			"style" : 
+			{
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/about/about",
+			"style" : 
+			{
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/rechargeCenter/rechargeCenter",
+			"style" : 
+			{
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/myIncome/myIncome",
 			"style" : 
 			{
 				"navigationStyle": "custom"

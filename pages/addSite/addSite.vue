@@ -47,6 +47,7 @@
 			return {
 				siteName: '',
 				fileList1: [],
+				superiorPage:'car',
 				tagList: [{
 						name: '越野',
 						value: 0,
@@ -83,11 +84,25 @@
 		components: {
 			AppBar
 		},
+		onLoad(options) {
+			const {
+				page
+			} = options; // 获取具体的参数值
+			console.log(page); // JohnDoe
+			this.superiorPage = page
+		},
 		methods: {
 			goBank() {
-				uni.navigateTo({
-					url: '/pages/car/car',
-				})
+				if (this.superiorPage === 'car') {
+					uni.navigateTo({
+						url: '/pages/car/car',
+					})
+				}
+				if (this.superiorPage === 'mySite') {
+					uni.navigateTo({
+						url: '/pages/mySite/mySite',
+					})
+				}
 			},
 			checkboxClick(name) {
 				this.tagList[name].checked = !this.tagList[name].checked

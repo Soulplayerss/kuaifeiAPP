@@ -5,7 +5,8 @@
 			<view class="title">
 				<view class="car">我的车辆</view>
 				<view class="">
-					<span show="showAddSite" style="padding-right: 16px;" @click="navigateTo('/pages/addSite/addSite')">添加场地</span>
+					<span show="showAddSite" style="padding-right: 16px;"
+						@click="navigateTo('/pages/addSite/addSite?page=car')">添加场地</span>
 					<span @click="showAddCar = true">添加车辆</span>
 				</view>
 			</view>
@@ -27,7 +28,7 @@
 								编号：{{item.code}}
 							</view>
 							<view class="btns">
-								<view class="btn" :style="{backgroundColor: item.isDrive===1 ? '#eea618': '#0055ff'}">
+								<view class="btn" :style="{backgroundColor: item.isDrive===1 ? '#eea618': '#0055ff'}" @click="navigateTo('/pages/drive/drive')">
 									<span>{{item.isDrive===1 ? '围观' : '驾驶'}}</span>
 								</view>
 								<view class="btn watch" @click="navigateTo('/pages/configuration/configuration')">
@@ -190,9 +191,13 @@
 				]
 				this.dataList = this.page === 1 ? data : this.dataList.concat(
 					data)
+					
 				if (this.dataList.length >= this.total) {
 					this.hittingBottom = true
+				} else {
+					this.hittingBottom = false
 				}
+				
 				this.isRefreshing = false;
 				this.loading = false;
 				if (this.page >= 5) {
@@ -342,56 +347,6 @@
 			align-items: center;
 			justify-content: center;
 
-			.overlayBox {
-				width: 70%;
-				height: auto;
-				background-color: #FFF;
-				padding: 16px;
-				border-radius: 8px;
-
-				.title {
-					font-size: 18px;
-					font-weight: bold;
-					text-align: center;
-					color: #30313D;
-					margin-bottom: 40rpx;
-				}
-
-				.serialNumber {
-					font-size: 16px;
-					color: #30313D;
-					line-height: 30px;
-
-					.protocolText {
-						color: #b9dd04;
-					}
-				}
-
-				.itemRight {
-					padding: 8px 0;
-					border-bottom: solid 1px #dadbde;
-					box-sizing: border-box;
-				}
-
-				.limit {
-					padding: 8px 0;
-					text-align: right;
-					color: #eea618;
-				}
-
-				.btns {
-					margin-top: 40rpx;
-					text-align: center;
-
-					.commit {
-						display: inline-block;
-						padding: 8px 50px;
-						background-color: #eea618;
-						color: #FFF;
-						border-radius: 19px;
-					}
-				}
-			}
 		}
 	}
 </style>

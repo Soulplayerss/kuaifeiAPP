@@ -110,7 +110,7 @@
 			},
 			selectCar(item){
 				uni.navigateTo({
-					url: '/pages/selectCar/selectCar',
+					url: '/pages/selectCar/selectCar?page=index',
 				})
 			}
 		}
