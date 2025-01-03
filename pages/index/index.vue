@@ -1,6 +1,6 @@
 <template>
 	<view class="indexPage">
-		<view class="header">
+		<view class="header" :style="pageStyle">
 			<view class="remind">
 				<image src="../../assets/images/remind.png" mode=""></image>
 				如有未结束订单，请到我的订单中进入或结束!
@@ -79,6 +79,8 @@
 			return {
 				current: 0,
 				tabActive: 'car',
+				statusBarHeight: '',
+				pageStyle: {},
 				bannerList: [
 					'../../static/banner.jpg',
 					'../../static/banner1.jpg'
@@ -104,11 +106,25 @@
 				]
 			}
 		},
+		onReady() {
+			let that = this
+			uni.getStorage({
+				key: 'statusBarHeight',
+				success(res) {
+					that.pageStyle = {
+						paddingTop: `${res.data + 16}px`
+					};
+				}
+			})
+		},
+		onLoad() {
+
+		},
 		methods: {
 			changeTab(type) {
 				this.tabActive = type
 			},
-			selectCar(item){
+			selectCar(item) {
 				uni.navigateTo({
 					url: '/pages/selectCar/selectCar?page=index',
 				})
@@ -126,6 +142,7 @@
 		background-color: rgb(238, 166, 24);
 		box-sizing: border-box;
 		padding-bottom: 86px;
+
 		.header {
 			padding: 16px;
 

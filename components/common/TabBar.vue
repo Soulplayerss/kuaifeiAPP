@@ -1,5 +1,5 @@
 <template>
-	<view class="tabbar">
+	<view class="tabbar" v-show="show">
 		<view class="contentBox">
 			<view v-for="(item, index) in tabList" :key="index" :class="['tab-item', index === active ? 'active' : '']"
 				@click="navigateToEvent(index, item.pagePath)">
@@ -12,21 +12,17 @@
 
 <script>
 	export default {
-		props: {
-			pageRoute: {
-				type: String,
-				default: '/pages/index/index'
-			},
-		},
 		data() {
 			return {
 				active: 0,
+				show: false,
 				tabList: [{
 						pagePath: "/pages/index/index",
 						iconPath: "../../static/index.png",
 						selectedIconPath: "../../static/index-active.png",
 						text: "广场"
-					}, {
+					},
+					{
 						pagePath: "/pages/car/car",
 						iconPath: "../../static/car.png",
 						selectedIconPath: "../../static/car-active.png",
@@ -37,7 +33,8 @@
 						iconPath: "../../static/shared.png",
 						selectedIconPath: "../../static/shared-active.png",
 						text: "共享"
-					}, {
+					},
+					{
 						pagePath: "/pages/my/my",
 						iconPath: "../../static/my.png",
 						selectedIconPath: "../../static/my-active.png",
@@ -46,43 +43,32 @@
 				]
 			};
 		},
-		onShow() {
-
+		watch: {
+			'$route': function(newVal, oldVal) {
+				console.log('路由变化:', newVal.fullPath);
+				this.processingRoutes(newVal.fullPath);
+				// 在这里处理路由变化逻辑
+			}
 		},
 		methods: {
 			navigateToEvent(index, pagePath) {
-				this.active = index
-				setTimeout(() => {
+				this.active = index;
+				this.$nextTick(() => {
 					uni.navigateTo({
-						url: pagePath,
+						url: pagePath
 					});
-				}, 100);
+				});
 			},
 			processingRoutes(value) {
-				switch (value) {
-					case "/pages/index/index":
-						this.navigateToEvent(0, value)
-						break;
-					case "/pages/car/car":
-						this.navigateToEvent(1, value)
-						break;
-					case "/pages/shared/shared":
-						this.navigateToEvent(2, value)
-						break;
-					case "/pages/my/my":
-						this.navigateToEvent(3, value)
-						break;
-					default:
+				const routes = ["/pages/index/index", "/pages/car/car", "/pages/shared/shared", "/pages/my/my"];
+				const index = routes.indexOf(value);
+				if (index !== -1) {
+					// this.navigateToEvent(index, value);
+					this.show = true;
+					console.log(this.show)
+				} else {
+					this.show = false;
 				}
-			}
-		},
-		mounted() {
-		},
-		watch: {
-			pageRoute: {
-				handler(newVal, oldVal) {
-					this.processingRoutes(newVal)
-				},
 			}
 		}
 	};
@@ -130,7 +116,6 @@
 			.active {
 				color: #eea618;
 			}
-
 		}
 	}
 </style>

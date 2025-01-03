@@ -35,7 +35,6 @@
 		</view>
 
 		<Protocol @clsoeEvent="clsoeEvent" :overlay="showOverlay" />
-		<TabBar v-show="showTabBar" :pageRoute='pageRoute' />
 	</view>
 </template>
 
@@ -51,7 +50,6 @@
 				},
 				protocolValue: [],
 				showOverlay: false,
-				showTabBar: false,
 				pageRoute: ''
 			};
 		},
@@ -61,12 +59,9 @@
 		},
 		methods: {
 			toIndex() {
-				this.pageRoute = '/pages/index/index'
-				setTimeout(() => {
-					uni.navigateTo({
-						url: '/pages/index/index',
-					})
-				}, 500)
+				uni.navigateTo({
+					url: '/pages/index/index',
+				})
 			},
 			toRegister() {
 				uni.navigateTo({
