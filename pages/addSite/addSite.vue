@@ -169,7 +169,7 @@
 			padding: 16px;
 			box-sizing: border-box;
 			margin: 16px;
-			min-height: calc(100vh - 132px);
+			min-height: calc(100vh - 194px);
 			.title {
 				font-size: 18px
 			}

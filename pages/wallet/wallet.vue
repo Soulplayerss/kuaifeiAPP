@@ -103,7 +103,7 @@
 			padding: 16px;
 			background: url('../../assets/images/tab-bg.png') no-repeat;
 			background-size: 100% auto;
-			height: calc(100vh - 44px);
+			height: calc(100vh - 90px);
 			display: flex;
 			flex-direction: column;
 			

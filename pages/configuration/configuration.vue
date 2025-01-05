@@ -93,7 +93,8 @@
 			padding: 16px;
 			box-sizing: border-box;
 			margin: 16px;
-
+			height: calc(100vh - 194px);
+			overflow-y: auto;
 			.carImg {
 				width: 100%;
 			}

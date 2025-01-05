@@ -1,5 +1,5 @@
 <template>
-	<view class="tabbar" v-show="show">
+	<view class="tabbar">
 		<view class="contentBox">
 			<view v-for="(item, index) in tabList" :key="index" :class="['tab-item', index === active ? 'active' : '']"
 				@click="navigateToEvent(index, item.pagePath)">
@@ -12,10 +12,16 @@
 
 <script>
 	export default {
+		props: {
+			activeValue: {
+				type: Number,
+				default: 0
+			}
+		},
 		data() {
 			return {
-				active: 0,
-				show: false,
+				active: this.activeValue,
+				routerpage: '',
 				tabList: [{
 						pagePath: "/pages/index/index",
 						iconPath: "../../static/index.png",
@@ -43,79 +49,17 @@
 				]
 			};
 		},
-		watch: {
-			'$route': function(newVal, oldVal) {
-				console.log('路由变化:', newVal.fullPath);
-				this.processingRoutes(newVal.fullPath);
-				// 在这里处理路由变化逻辑
-			}
-		},
 		methods: {
 			navigateToEvent(index, pagePath) {
-				this.active = index;
 				this.$nextTick(() => {
 					uni.navigateTo({
 						url: pagePath
 					});
 				});
 			},
-			processingRoutes(value) {
-				const routes = ["/pages/index/index", "/pages/car/car", "/pages/shared/shared", "/pages/my/my"];
-				const index = routes.indexOf(value);
-				if (index !== -1) {
-					// this.navigateToEvent(index, value);
-					this.show = true;
-					console.log(this.show)
-				} else {
-					this.show = false;
-				}
-			}
 		}
 	};
 </script>
 
 <style scoped lang="less">
-	.tabbar {
-		position: fixed;
-		z-index: 999;
-		bottom: 0;
-		left: 0;
-		width: 100%;
-		height: 86px;
-		background-color: #eea618;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-
-		.contentBox {
-			width: 90%;
-			height: 66px;
-			background-color: #FFF;
-			border-radius: 33px;
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			box-sizing: border-box;
-			padding: 0 20px;
-
-			.tab-item {
-				display: flex;
-				flex-direction: column;
-				justify-content: center;
-				align-items: center;
-				color: #30313D;
-				font-size: 14px;
-
-				.icon {
-					width: 24px;
-					height: 24px;
-					margin-bottom: 4px;
-				}
-			}
-
-			.active {
-				color: #eea618;
-			}
-		}
-	}
 </style>

@@ -1,5 +1,5 @@
 <template>
-	<view class="appbar">
+	<view class="appbar" :style="pageStyle">
 		<view style="width: 24px;">
 			<u-icon name="arrow-left" :color="textColor" size="24" v-show="showBack" @click="goback"></u-icon>
 		</view>
@@ -26,13 +26,28 @@
 		},
 		data() {
 			return {
-
+				pageStyle: {}
 			}
+		},
+		onReady() {
+			
 		},
 		methods: {
 			goback() {
 				this.$emit("goBank")
 			}
+		},
+		mounted() {
+			let that = this
+			uni.getStorage({
+				key: 'statusBarHeight',
+				success(res) {
+					console.log(res.data)
+					that.pageStyle = {
+						paddingTop: `${res.data + 16}px`
+					};
+				}
+			})
 		}
 	}
 </script>
@@ -41,7 +56,6 @@
 	.appbar {
 		width: 100%;
 		height: 44px;
-		box-sizing: border-box;
 		display: flex;
 		justify-content: space-between;
 		align-items: center;

@@ -84,6 +84,7 @@
 		},
 		methods: {
 			back() {
+				plus.screen.lockOrientation('portrait-primary')
 				uni.navigateTo({
 					url: '/pages/car/car'
 				});

@@ -1,7 +1,7 @@
 <template>
 	<view class="shardPage">
 		<u-toast ref="uToast"></u-toast>
-		<view class="content">
+		<view class="content" :style="pageStyle">
 			<view class="title">
 				<view class="car">共享车辆</view>
 				<view class="">
@@ -78,10 +78,12 @@
 				</view>
 			</view>
 		</u-overlay>
+		<TabBar :activeValue="2" />
 	</view>
 </template>
 
 <script>
+	import TabBar from '@/components/common/TabBar.vue'
 	export default {
 		data() {
 			return {
@@ -94,10 +96,24 @@
 				showAddSite: true,
 				showInputPassword: false,
 				dataList: [],
-				password: ''
+				password: '',
+				pageStyle:{}
 			}
 		},
-		components: {},
+		components: {
+			TabBar
+		},
+		onReady() {
+			let that = this
+			uni.getStorage({
+				key: 'statusBarHeight',
+				success(res) {
+					that.pageStyle = {
+						paddingTop: `${res.data + 16}px`
+					};
+				}
+			})
+		},
 		methods: {
 			navigateTo(url) {
 				uni.navigateTo({
@@ -239,7 +255,7 @@
 
 		.content {
 			width: 100%;
-			height: calc(100vh - 86px);
+			height: calc(100vh - 96px);
 			box-sizing: border-box;
 			padding: 16px;
 			padding-bottom: 50px;

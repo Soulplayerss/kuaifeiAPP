@@ -174,7 +174,7 @@
 		.content {
 			width: 100%;
 			padding: 16px;
-			height: calc(100vh - 76px);
+			height: calc(100vh - 122px);
 			background-color: #FFF;
 			border-radius: 8px;
 			box-sizing: border-box;

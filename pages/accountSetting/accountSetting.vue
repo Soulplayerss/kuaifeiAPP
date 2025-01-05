@@ -145,7 +145,7 @@
 
 		.content {
 			width: 100%;
-			height: calc(100vh - 148px);
+			height: calc(100vh - 194px);
 			background-color: #FFF;
 			border-radius: 8px;
 			box-sizing: border-box;

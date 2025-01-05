@@ -1,5 +1,5 @@
 <template>
-	<view class="rechargeCenter">
+	<view class="rechargeCenter" :style="pageStyle">
 		<view class="appbar">
 			<view style="width: 24px;">
 				<u-icon name="arrow-left" color="#FFF" size="24" @click="goBank"></u-icon>
@@ -66,6 +66,7 @@
 				showPopup: false,
 				payType: '微信',
 				active: 0,
+				pageStyle:{},
 				dataList: [{
 						number: 5,
 						giveaway: 0,
@@ -103,6 +104,17 @@
 				]
 			}
 		},
+		onReady() {
+			let that = this
+			uni.getStorage({
+				key: 'statusBarHeight',
+				success(res) {
+					that.pageStyle = {
+						paddingTop: `${res.data + 16}px`
+					};
+				}
+			})
+		},
 		methods: {
 			goBank() {
 				uni.navigateTo({
@@ -124,7 +136,7 @@
 		background-size: 100% 100%;
 		padding: 16px;
 		box-sizing: border-box;
-
+		padding-bottom: 72px;
 		.appbar {
 			height: 44px;
 			width: 100%;
@@ -176,12 +188,15 @@
 			}
 
 			.btns {
+				position: fixed;
+				bottom: 0;
+				left: 0;
 				width: 100%;
 				box-sizing: border-box;
 				padding: 16px;
 				display: flex;
-				margin-top: 32px;
-
+				background: url('../../assets/images/rechange-bg.jpg') no-repeat;
+				background-position: center bottom;
 				.btn {
 					flex: 1;
 				}

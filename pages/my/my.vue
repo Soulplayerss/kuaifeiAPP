@@ -1,7 +1,7 @@
 <template>
 	<view class="my">
 		<u-toast ref="uToast"></u-toast>
-		<view class="user">
+		<view class="user" :style="pageStyle">
 			<view class="info">
 				<image src="../../assets/images/avatar.jpg" mode="" class="avatar"></image>
 				<view class="">
@@ -11,7 +11,8 @@
 					<span class="code">邀请码：258644</span>
 				</view>
 			</view>
-			<u-icon name="setting" color="#FFF" size="24" @click="navigateTo('/pages/accountSetting/accountSetting')"></u-icon>
+			<u-icon name="setting" color="#FFF" size="24"
+				@click="navigateTo('/pages/accountSetting/accountSetting')"></u-icon>
 		</view>
 		<view class="assets">
 			<view class="wallet" @click="navigateTo('/pages/wallet/wallet')">
@@ -97,7 +98,7 @@
 				<u-icon name="arrow-right" size="22" color="#b09aaa"></u-icon>
 			</view>
 		</view>
-		
+
 		<u-overlay :show="showChangePassword">
 			<view class="overlayBox">
 				<view class="title">修改密码</view>
@@ -118,19 +119,35 @@
 				</view>
 			</view>
 		</u-overlay>
+		<TabBar :activeValue="3" />
 	</view>
 </template>
 
 <script>
+	import TabBar from '@/components/common/TabBar.vue'
 	export default {
 		data() {
 			return {
 				showChangePassword: false,
 				oldPassword: '',
-				newPassword: ''
+				newPassword: '',
+				pageStyle:{}
 			}
 		},
-
+		onReady() {
+			let that = this
+			uni.getStorage({
+				key: 'statusBarHeight',
+				success(res) {
+					that.pageStyle = {
+						paddingTop: `${res.data}px`
+					};
+				}
+			})
+		},
+		components: {
+			TabBar
+		},
 		methods: {
 			navigateTo(url) {
 				uni.navigateTo({
@@ -165,12 +182,13 @@
 		padding: 16px;
 		box-sizing: border-box;
 		padding-bottom: 104px;
+
 		.user {
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
 			color: #FFF;
-			padding: 24px 8px;
+			padding: 16px 8px;
 
 			.info {
 				display: flex;
@@ -240,14 +258,14 @@
 			border-radius: 8px;
 			padding-bottom: 32px;
 
-			
+
 		}
-		
+
 		.u-transition {
 			display: flex;
 			align-items: center;
 			justify-content: center;
-		
+
 		}
 	}
 </style>

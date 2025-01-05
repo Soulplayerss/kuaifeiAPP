@@ -222,7 +222,7 @@
 
 		.content {
 			width: 100%;
-			height: calc(100vh - 116px);
+			height: calc(100vh - 162px);
 			box-sizing: border-box;
 			padding: 16px;
 			padding-bottom: 40px;

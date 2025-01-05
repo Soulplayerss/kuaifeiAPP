@@ -6,7 +6,7 @@
 				如有未结束订单，请到我的订单中进入或结束!
 			</view>
 			<view class="banner">
-				<u-swiper :list="bannerList" @change="e => current = e.current" circular :autoplay="true" height="220">
+				<u-swiper :list="bannerList" @change="e => current = e.current" circular :autoplay="true" height="200">
 					<view slot="indicator" class="indicator">
 						<view class="indicator__dot" v-for="(item, index) in bannerList" :key="index"
 							:class="[index === current && 'indicator__dot--active']">
@@ -61,7 +61,7 @@
 							</view>
 						</view>
 						<view class="driving">
-							<span>正在驾驶中：{{item.driving}}</span>
+							<span>驾驶中：{{item.driving}}</span>
 							<view class="selectionCar" @click="selectCar(item)">
 								选车
 							</view>
@@ -70,10 +70,12 @@
 				</view>
 			</view>
 		</view>
+		<TabBar :activeValue="0" />
 	</view>
 </template>
 
 <script>
+	import TabBar from '@/components/common/TabBar.vue'
 	export default {
 		data() {
 			return {
@@ -106,6 +108,9 @@
 				]
 			}
 		},
+		components: {
+			TabBar
+		},
 		onReady() {
 			let that = this
 			uni.getStorage({
@@ -128,7 +133,7 @@
 				uni.navigateTo({
 					url: '/pages/selectCar/selectCar?page=index',
 				})
-			}
+			},
 		}
 	}
 </script>
@@ -137,14 +142,17 @@
 	.indexPage {
 		width: 100%;
 		min-height: 100vh;
-		background: url('../../assets/images/index-bg.png') no-repeat;
-		background-size: 100% auto;
 		background-color: rgb(238, 166, 24);
 		box-sizing: border-box;
 		padding-bottom: 86px;
 
 		.header {
+			background: url('../../assets/images/index-bg.png') no-repeat;
+			background-size: 100% 100%;
 			padding: 16px;
+			width: 100%;
+			height: 110vw;
+			box-sizing: border-box;
 
 			.remind {
 				width: 100%;
@@ -171,12 +179,11 @@
 				width: 100%;
 				border-radius: 8px;
 				overflow: hidden;
-				height: 220px;
-				margin-bottom: 150px;
+				height: 70vw;
 
 				image {
 					width: 100%;
-					height: 220px;
+					height: 70vw;
 				}
 
 				.indicator {
@@ -205,7 +212,6 @@
 			width: 100%;
 			background: url('../../assets/images/tab-bg.png') no-repeat;
 			background-size: 100% auto;
-			padding-top: 30px;
 
 			.tab {
 				display: flex;
@@ -290,8 +296,8 @@
 					overflow: hidden;
 
 					image {
-						width: 50%;
-						height: 130px;
+						width: 40%;
+						height: 120px;
 					}
 
 					.right {
@@ -361,11 +367,13 @@
 							}
 
 							.selectionCar {
-								line-height: 14px;
-								padding: 4px 12px;
-								background-color: #9048d8;
+								font-size: 14px;
+								height: 26px;
+								line-height: 26px;
+								padding: 0px 16px;
 								color: #FFF;
-								border-radius: 12px;
+								border-radius: 13px;
+								background-color: #9048d8;
 							}
 						}
 					}

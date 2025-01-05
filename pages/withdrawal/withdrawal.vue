@@ -157,7 +157,7 @@
 
 		.content {
 			width: 100%;
-			min-height: calc(100vh - 148px);
+			min-height: calc(100vh - 194px);
 			box-sizing: border-box;
 			padding: 16px;
 			border-radius: 8px;
