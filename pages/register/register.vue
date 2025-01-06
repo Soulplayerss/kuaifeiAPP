@@ -7,13 +7,13 @@
 			<view class="formItem">
 				<u-icon name="phone" size="28" color="#FFF"></u-icon>
 				<view class="itemRight">
-					<u--input type="text" border="bottom" v-model="userInfo.phone" placeholder="请输入手机号" />
+					<u--input type="text" border="bottom" v-model="userInfo.phoneNumber" placeholder="请输入手机号" />
 				</view>
 			</view>
 			<view class="formItem">
 				<u-icon name="email" size="28" color="#FFF"></u-icon>
 				<view class="itemRight">
-					<u--input type="text" border="bottom" v-model="userInfo.phone" placeholder="请输入验证码">
+					<u--input type="text" border="bottom" v-model="userInfo.code" placeholder="请输入验证码">
 						<template slot="suffix">
 							<u-button @tap="getCode" :text="tips" type="success" size="mini" color="#FFF"
 								style="color: #eea618;" :disabled="disabled"></u-button>
@@ -24,13 +24,14 @@
 			<view class="formItem">
 				<u-icon name="account" size="28" color="#FFF"></u-icon>
 				<view class="itemRight">
-					<u--input type="text" border="bottom" v-model="userInfo.phone" placeholder="请输入昵称" />
+					<u--input type="text" border="bottom" v-model="userInfo.username" placeholder="请输入昵称" />
 				</view>
 			</view>
 			<view class="formItem">
 				<u-icon name="share" size="28" color="#FFF"></u-icon>
 				<view class="itemRight">
-					<u--input type="text" border="bottom" v-model="userInfo.code" placeholder="请输入邀请码(选填,填写赠送体验电池)" />
+					<u--input type="text" border="bottom" v-model="userInfo.inviteCode"
+						placeholder="请输入邀请码(选填,填写赠送体验电池)" />
 				</view>
 			</view>
 			<view class="formItem">
@@ -42,7 +43,7 @@
 			<view class="formItem">
 				<u-icon name="lock" size="28" color="#FFF"></u-icon>
 				<view class="itemRight">
-					<u--input type="password" border="bottom" v-model="userInfo.confirmPassword" placeholder="请确认密码" />
+					<u--input type="password" border="bottom" v-model="confirmPassword" placeholder="请确认密码" />
 				</view>
 			</view>
 		</view>
@@ -67,15 +68,20 @@
 
 <script>
 	import Protocol from '@/components/common/Protocol.vue';
+	import {
+		requestUrl
+	} from '@/utils/request';
 	export default {
 		data() {
 			return {
 				userInfo: {
-					phone: '',
+					phoneNumber: '',
 					code: '',
+					username: '',
+					inviteCode: '',
 					password: '',
-					confirmPassword: '',
 				},
+				confirmPassword: '',
 				tips: '发送验证码',
 				protocolValue: [],
 				showOverlay: false,
@@ -87,7 +93,33 @@
 		},
 		methods: {
 			register() {
-
+				uni.request({
+					url: `${requestUrl}/app/user/register`,
+					method: 'POST',
+					data: this.userInfo,
+					success: (res) => {
+						if (res.data.code === 200) {
+							uni.showToast({
+								title: '注册成功',
+								icon: 'success',
+							});
+							this.toLogin()
+						} else {
+							uni.showToast({
+								title: res.data.msg,
+								type: 'error',
+								icon: 'error',
+							});
+						}
+					},
+					fail: (err) => {
+						uni.showToast({
+							title: '请求失败',
+							type: 'error',
+							icon: 'error',
+						});
+					},
+				})
 			},
 			checkboxChange(e) {
 				console.log(e)
@@ -116,9 +148,22 @@
 						this.disabled = true
 					}
 				}, 1000)
-
+				uni.request({
+					url: `${requestUrl}/app/user/getVerificationCode/${this.userInfo.phoneNumber}`,
+					method: 'GET',
+					success: (res) => {
+						if (res.data.code === 200) {
+							console.log('请求成功:', res.data);
+						} else {
+							console.error('请求失败:', res);
+						}
+					},
+					fail: (err) => {
+						console.error('请求失败:', err);
+					},
+				})
 			},
-			toLogin(){
+			toLogin() {
 				uni.navigateTo({
 					url: '/pages/login/login',
 				})

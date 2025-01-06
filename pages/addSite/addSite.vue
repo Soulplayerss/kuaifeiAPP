@@ -12,8 +12,8 @@
 			<view class="siteTag">
 				<view style="padding-right: 32px;width: 110px;" class="color-c2a9bb">场地标签</view>
 				<view class="tags">
-					<view class="u-page__tag-item" v-for="(item, index) in tagList" :key="index">
-						<u-tag :text="item.name" :plain="!item.checked" shape="circle" type="warning" :name="index"
+					<view class="u-page__tag-item" v-for="(item,index) in siteLabel" :key="item.dictCode">
+						<u-tag :text="item.dictLabel" :plain="!item.checked" shape="circle" type="warning" :name="index"
 							@click="checkboxClick">
 						</u-tag>
 					</view>
@@ -42,43 +42,16 @@
 
 <script>
 	import AppBar from '@/components/common/AppBar.vue'
+	import {
+		requestUrl
+	} from '@/utils/request';
 	export default {
 		data() {
 			return {
 				siteName: '',
 				fileList1: [],
-				superiorPage:'car',
-				tagList: [{
-						name: '越野',
-						value: 0,
-						checked: false
-					},
-					{
-						name: '赛道',
-						value: 1,
-						checked: false
-					},
-					{
-						name: '工地',
-						value: 2,
-						checked: false
-					},
-					{
-						name: '工程',
-						value: 3,
-						checked: false
-					},
-					{
-						name: '专业',
-						value: 4,
-						checked: false
-					},
-					{
-						name: '挖机',
-						value: 5,
-						checked: false
-					},
-				]
+				siteLabel:[],
+				superiorPage: 'car'
 			}
 		},
 		components: {
@@ -88,7 +61,6 @@
 			const {
 				page
 			} = options; // 获取具体的参数值
-			console.log(page); // JohnDoe
 			this.superiorPage = page
 		},
 		methods: {
@@ -105,7 +77,7 @@
 				}
 			},
 			checkboxClick(name) {
-				this.tagList[name].checked = !this.tagList[name].checked
+				this.siteLabel[name].checked = !this.siteLabel[name].checked
 			},
 			// 删除图片
 			deletePic(event) {
@@ -151,6 +123,18 @@
 					});
 				})
 			},
+		},
+		mounted() {
+			uni.getStorage({
+				key: 'siteLabel',
+				success(res) {
+					res.data.forEach((item) => {
+						item.checked = false
+					})
+					this.siteLabel = res.data
+					console.log(this.siteLabel)
+				}
+			})
 		}
 	}
 </script>
@@ -170,6 +154,7 @@
 			box-sizing: border-box;
 			margin: 16px;
 			min-height: calc(100vh - 194px);
+
 			.title {
 				font-size: 18px
 			}

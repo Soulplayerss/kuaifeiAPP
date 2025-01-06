@@ -42,7 +42,6 @@
 			uni.getStorage({
 				key: 'statusBarHeight',
 				success(res) {
-					console.log(res.data)
 					that.pageStyle = {
 						paddingTop: `${res.data + 16}px`
 					};

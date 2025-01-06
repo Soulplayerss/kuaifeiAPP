@@ -50,19 +50,23 @@
 				rudderDutyValue: 1500,
 				intervarTime: null,
 				rudderIntervarTime: null,
-				closeSocket: true
+				heartbeatInterval: null, // 心跳定时器
+				heartbeatTimeout: null, // 心跳超时定时器
+				reconnectTimeout: null, // 重连定时器
+				reconnectAttempts: 0, // 重连次数
+				maxReconnectAttempts: 5, // 最大重连次数
 			};
 		},
 		onLoad() {
 			// 设置横屏
-			plus.screen.lockOrientation('landscape-primary');
+			// plus.screen.lockOrientation('landscape-primary');
 			this.initWebSocket();
 		},
 		onUnload() {
 			//链接Socket
 			this.closeWebSocket();
 			// 页面卸载时恢复竖屏
-			plus.screen.lockOrientation('portrait-primary')
+			// plus.screen.lockOrientation('portrait-primary')
 		},
 		mounted() {
 			// 获取父元素和子元素的宽高
@@ -84,7 +88,7 @@
 		},
 		methods: {
 			back() {
-				plus.screen.lockOrientation('portrait-primary')
+				// plus.screen.lockOrientation('portrait-primary')
 				uni.navigateTo({
 					url: '/pages/car/car'
 				});
@@ -245,7 +249,7 @@
 
 			initWebSocket() {
 				this.socket = uni.connectSocket({
-					url: 'ws://6068b2e3.r32.cpolar.top/ws/94:54:C5:E8:07:D4',
+					url: 'ws://1.95.71.155:8888/ws/94:54:C5:E8:07:D4',
 					success: () => {
 						console.log('WebSocket连接成功');
 					},
@@ -256,25 +260,81 @@
 
 				// 监听 WebSocket 打开事件
 				this.socket.onOpen(() => {
-					this.closeSocket = false
 					console.log('WebSocket已打开');
+					this.startHeartbeat(); // 开始心跳机制
 				});
 
 				// 监听 WebSocket 收到消息事件
 				this.socket.onMessage((res) => {
-					console.log('收到消息：', res.data);
+					console.log('收到消息:', event.data);
+					const message = JSON.parse(event.data);
+
+					// 如果是心跳响应
+					if (message.type === 'pong') {
+						console.log('收到心跳响应: pong');
+						this.resetHeartbeatTimeout(); // 重置心跳超时计时器
+					}
 				});
 
 				// 监听 WebSocket 关闭事件
 				this.socket.onClose(() => {
-					this.closeSocket = true
 					console.log('WebSocket已关闭');
+					this.reconnect(); // 尝试重连
 				});
 
 				// 监听 WebSocket 错误事件
 				this.socket.onError((err) => {
 					console.error('WebSocket发生错误', err);
+					this.reconnect(); // 尝试重连
 				});
+			},
+
+			// 开始心跳机制
+			startHeartbeat() {
+				// 定时发送心跳消息
+				this.heartbeatInterval = setInterval(() => {
+					if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+						console.log('发送心跳: ping');
+						this.socket.send(JSON.stringify({
+							type: 'ping'
+						}));
+					}
+				}, 5000); // 每5秒发送一次心跳
+
+				// 设置心跳超时检测
+				this.resetHeartbeatTimeout();
+			},
+
+			// 重置心跳超时计时器
+			resetHeartbeatTimeout() {
+				clearTimeout(this.heartbeatTimeout);
+				this.heartbeatTimeout = setTimeout(() => {
+					console.error('心跳超时，连接断开');
+					this.socket.close(); // 主动关闭连接
+					this.reconnect(); // 尝试重连
+				}, 10000); // 如果10秒内未收到心跳响应，视为超时
+			},
+
+			// 重连逻辑
+			reconnect() {
+				if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+					console.error('超过最大重连次数，停止重连');
+					return;
+				}
+
+				console.log('尝试重连...');
+				this.reconnectAttempts++;
+
+				this.reconnectTimeout = setTimeout(() => {
+					this.initWebSocket(); // 重新初始化 WebSocket 连接
+				}, 3000); // 每3秒尝试重连一次
+			},
+
+			// 清理心跳和重连
+			clearHeartbeat() {
+				clearInterval(this.heartbeatInterval);
+				clearTimeout(this.heartbeatTimeout);
+				clearTimeout(this.reconnectTimeout);
 			},
 
 			// 发送消息
@@ -308,6 +368,12 @@
 				}
 			},
 		},
+		beforeDestroy() {
+			this.clearHeartbeat(); // 清理心跳和重连
+			if (this.socket) {
+				this.socket.close(); // 关闭 WebSocket 连接
+			}
+		}
 	};
 </script>
 

@@ -7,7 +7,7 @@
 			<view class="formItem">
 				<u-icon name="phone" size="28" color="#FFF"></u-icon>
 				<view class="itemRight">
-					<u--input border="bottom" type="text" v-model="userInfo.phone" placeholder="请输入手机号" />
+					<u--input border="bottom" type="text" v-model="userInfo.phoneNumber" placeholder="请输入手机号" />
 				</view>
 			</view>
 			<view class="formItem">
@@ -21,7 +21,7 @@
 			忘记密码
 		</view>
 		<u-button type="primary" shape="circle" text="登录" class="btn"
-			color="linear-gradient(to bottom, rgb(134, 211, 254), rgb(27, 156, 219))" @click="toIndex"></u-button>
+			color="linear-gradient(to bottom, rgb(134, 211, 254), rgb(27, 156, 219))" @click="login"></u-button>
 		<u-button type="primary" shape="circle" text="注册" class="btn" style="color: #30313D;"
 			color="linear-gradient(to bottom, rgb(255,241,204), rgb(255, 227, 157))" @click="toRegister"></u-button>
 		<view class="protocol">
@@ -40,12 +40,15 @@
 
 <script>
 	import Protocol from '@/components/common/Protocol.vue';
-	import TabBar from '@/components/common/TabBar.vue'
+	import {
+		requestUrl
+	} from '@/utils/request';
+	import { mapActions } from 'vuex';
 	export default {
 		data() {
 			return {
 				userInfo: {
-					phone: '',
+					phoneNumber: '',
 					password: '',
 				},
 				protocolValue: [],
@@ -54,14 +57,46 @@
 			};
 		},
 		components: {
-			Protocol,
-			TabBar
+			Protocol
 		},
 		methods: {
-			toIndex() {
-				uni.navigateTo({
-					url: '/pages/index/index',
+			...mapActions(['fetchEmun']),
+			login() {
+				uni.request({
+					url: `${requestUrl}/app/user/login`,
+					method: 'POST',
+					data: this.userInfo,
+					success: (res) => {
+						if (res.data.code === 200) {
+							this.fetchEmun()
+							uni.setStorage({
+								data: res.data.token,
+								key: 'Token'
+							})
+							uni.showToast({
+								title: '登录成功',
+								icon: 'success',
+							});
+							uni.navigateTo({
+								url: '/pages/index/index',
+							})
+						} else {
+							uni.showToast({
+								title: res.data.msg,
+								type: 'error',
+								icon: 'error',
+							});
+						}
+					},
+					fail: (err) => {
+						uni.showToast({
+							title: '请求失败',
+							type: 'error',
+							icon: 'error',
+						});
+					},
 				})
+
 			},
 			toRegister() {
 				uni.navigateTo({

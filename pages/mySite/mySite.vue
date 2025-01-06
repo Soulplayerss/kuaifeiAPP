@@ -14,11 +14,11 @@
 				refresher-enabled :refresher-threshold="50">
 				<!-- 列表内容 -->
 				<view v-for="(item,index) in dataList" :key="index" class="listItem">
-					<image :src="item.img" mode=""></image>
+					<image :src="item.sitePictureUrl" mode=""></image>
 					<view class="right">
-						<view class="name">{{item.name}}</view>
+						<view class="name">{{item.siteName}}</view>
 						<view class="tag">
-							<span v-for="tage in item.tage">{{tage}}</span>
+							<span v-for="name in item.tag">{{name}}</span>
 						</view>
 						<view class="deviceNumber">
 							<view class="total">
@@ -56,20 +56,41 @@
 
 <script>
 	import AppBar from '@/components/common/AppBar.vue'
+	import request from '@/utils/request';
+	import {
+		mapState
+	} from 'vuex';
+	import {
+		requestUrl
+	} from '@/utils/request';
 	export default {
 		data() {
 			return {
-				page: 1,
+				pageNum: 1,
 				pageSize: 10,
 				loading: false,
 				isRefreshing: false,
-				total: 18,
+				total: 0,
 				hittingBottom: false,
 				dataList: []
 			}
 		},
 		components: {
 			AppBar
+		},
+		computed: {
+			...mapState(['siteLabel'])
+		},
+		onReady() {
+			let that = this
+			uni.getStorage({
+				key: 'statusBarHeight',
+				success(res) {
+					that.pageStyle = {
+						paddingTop: `${res.data + 16}px`
+					};
+				}
+			})
 		},
 		methods: {
 			goBank() {
@@ -92,11 +113,11 @@
 				if (this.isRefreshing) return;
 
 				this.isRefreshing = true;
-				this.page = 1;
+				this.pageNum = 1;
 				setTimeout(() => {
 					this.dataList = []
 					this.loadData();
-				}, 1000)
+				}, 500)
 			},
 
 			// 上拉加载更多
@@ -105,88 +126,53 @@
 				if (this.hittingBottom) return;
 				this.loading = true;
 				setTimeout(() => {
-					this.page++;
+					this.pageNum++;
 					this.loadData()
 				}, 1000)
 			},
 
 
 			// 加载数据方法
-			loadData() {
-				const data = [{
-						img: '/static/index-list-img.jpg',
-						name: '我的工地',
-						tage: ['工程车', '越野车'],
-						total: 8,
-						online: 5,
-						idle: 3,
-						driving: 1
-					},
-					{
-						img: '/static/index-list-img.jpg',
-						name: '你的工地',
-						tage: ['工程车', '越野车'],
-						total: 8,
-						online: 5,
-						idle: 3,
-						driving: 2
-					},
-					{
-						img: '/static/index-list-img.jpg',
-						name: '我的工地',
-						tage: ['工程车', '越野车'],
-						total: 8,
-						online: 5,
-						idle: 3,
-						driving: 1
-					},
-					{
-						img: '/static/index-list-img.jpg',
-						name: '你的工地',
-						tage: ['工程车', '越野车'],
-						total: 8,
-						online: 5,
-						idle: 3,
-						driving: 2
-					},
-					{
-						img: '/static/index-list-img.jpg',
-						name: '我的工地',
-						tage: ['工程车', '越野车'],
-						total: 8,
-						online: 5,
-						idle: 3,
-						driving: 1
-					},
-					{
-						img: '/static/index-list-img.jpg',
-						name: '你的工地',
-						tage: ['工程车', '越野车'],
-						total: 8,
-						online: 5,
-						idle: 3,
-						driving: 2
+			async loadData() {
+				try {
+					const response = await request('/app/site/listByUserId', 'POST', {
+						pageNum: this.pageNum,
+						pageSize: this.pageSize
+					})
+					const data = response.rows
+					this.total = response.total
+					this.dataList = this.pageNum === 1 ? data : this.dataList.concat(
+						data)
+					const labelMap = this.siteLabel.reduce((map, label) => {
+					  map[label.dictValue] = label.dictLabel;
+					  return map;
+					}, {});
+					
+					this.dataList.forEach((item) => {
+					  item.sitePictureUrl = requestUrl + item.sitePictureUrl.split(",")[0];
+					
+					  // 使用 labelMap 加速查找
+					  item.tag = item.siteLabel.split(',').map(tagValue => labelMap[tagValue]).filter(Boolean);
+					});
+					if (this.dataList.length >= this.total) {
+						this.hittingBottom = true
+						this.loading = false
+					} else {
+						this.hittingBottom = false
+						this.loading = true
 					}
-				]
 
-				this.dataList = this.page === 1 ? data : this.dataList.concat(
-					data)
-
-				if (this.dataList.length >= this.total) {
-					this.hittingBottom = true
-				} else {
-					this.hittingBottom = false
-				}
-
-				this.isRefreshing = false;
-				this.loading = false;
-				if (this.page >= 5) {
-					this.loading = false;
+					this.isRefreshing = false;
+				} catch (error) {
+					uni.showToast({
+						title: '加载失败',
+						icon: 'none',
+					});
 				}
 			}
 		},
 		mounted() {
-			this.loadData();
+			this.loadData()
 		}
 	}
 </script>
@@ -225,7 +211,7 @@
 
 				image {
 					width: 50%;
-					height: 130px;
+					height: 140px;
 				}
 
 				.right {
@@ -246,7 +232,7 @@
 						gap: 8px;
 						line-height: 10px;
 						margin-bottom: 8px;
-
+						flex-wrap: wrap;
 						span {
 							display: inline-block;
 							padding: 4px 8px;

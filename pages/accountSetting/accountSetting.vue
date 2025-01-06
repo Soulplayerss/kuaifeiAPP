@@ -71,7 +71,7 @@
 		<view class="btns">
 			<view class="btn">
 				<u-button type="primary" shape="circle" text="退出登录" style="color: #30313D;"
-					color="linear-gradient(to bottom, rgb(255,241,204), rgb(255, 227, 157))"></u-button>
+					color="linear-gradient(to bottom, rgb(255,241,204), rgb(255, 227, 157))" @click="logOut"></u-button>
 			</view>
 		</view>
 	</view>
@@ -79,6 +79,7 @@
 
 <script>
 	import AppBar from '@/components/common/AppBar.vue'
+	import request from '@/utils/request';
 	export default {
 		data() {
 			return {
@@ -93,6 +94,20 @@
 				uni.navigateTo({
 					url: '/pages/my/my',
 				})
+			},
+			async logOut() {
+				try {
+					const response = await request('/logout', 'POST', {})
+					uni.clearStorage()
+					uni.navigateTo({
+						url: '/pages/login/login',
+					})
+				} catch (error) {
+					uni.showToast({
+						title: '加载失败',
+						icon: 'none',
+					});
+				}
 			},
 			// 选择图片
 			chooseImage() {
