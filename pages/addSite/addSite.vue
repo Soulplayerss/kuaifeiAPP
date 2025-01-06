@@ -12,7 +12,7 @@
 			<view class="siteTag">
 				<view style="padding-right: 32px;width: 110px;" class="color-c2a9bb">场地标签</view>
 				<view class="tags">
-					<view class="u-page__tag-item" v-for="(item,index) in siteLabel" :key="item.dictCode">
+					<view class="" v-for="(item,index) in tagList" :key="item.dictCode">
 						<u-tag :text="item.dictLabel" :plain="!item.checked" shape="circle" type="warning" :name="index"
 							@click="checkboxClick">
 						</u-tag>
@@ -30,7 +30,8 @@
 		<view class="btns">
 			<view class="btn">
 				<u-button type="primary" shape="circle" text="保存" style="color: #30313D;"
-					color="linear-gradient(to bottom, rgb(255,241,204), rgb(255, 227, 157))"></u-button>
+					color="linear-gradient(to bottom, rgb(255,241,204), rgb(255, 227, 157))"
+					@click="addSite"></u-button>
 			</view>
 			<view class="btn">
 				<u-button type="primary" shape="circle" text="删除场地"
@@ -42,20 +43,29 @@
 
 <script>
 	import AppBar from '@/components/common/AppBar.vue'
+	import request from '@/utils/request';
 	import {
 		requestUrl
 	} from '@/utils/request';
+	import {
+		mapState
+	} from 'vuex';
 	export default {
 		data() {
 			return {
 				siteName: '',
 				fileList1: [],
-				siteLabel:[],
+				tagList: [],
+				sitePictureUrl: '',
+				siteLabelValue: [],
 				superiorPage: 'car'
 			}
 		},
 		components: {
 			AppBar
+		},
+		computed: {
+			...mapState(['siteLabel'])
 		},
 		onLoad(options) {
 			const {
@@ -76,8 +86,22 @@
 					})
 				}
 			},
+
+			addOrRemove(arr, item) {
+				const index = arr.indexOf(item);
+
+				if (index === -1) {
+					arr.push(item);
+				} else {
+					arr.splice(index, 1);
+				}
+
+				return arr.sort((a, b) => a - b);
+
+			},
 			checkboxClick(name) {
-				this.siteLabel[name].checked = !this.siteLabel[name].checked
+				this.tagList[name].checked = !this.tagList[name].checked
+				this.siteLabelValue = this.addOrRemove(this.siteLabelValue, this.tagList[name].dictValue)
 			},
 			// 删除图片
 			deletePic(event) {
@@ -107,15 +131,24 @@
 				}
 			},
 			uploadFilePromise(url) {
+				var token = ''
+				uni.getStorage({
+					key: 'Token',
+					success(res) {
+						token = res.data
+					}
+				})
 				return new Promise((resolve, reject) => {
-					let a = uni.uploadFile({
-						url: 'http://192.168.2.21:7001/upload', // 仅为示例，非真实的接口地址
+					uni.uploadFile({
+						url: `${requestUrl}/common/upload`,
 						filePath: url,
 						name: 'file',
-						formData: {
-							user: 'test'
+						header: {
+							'Authorization': `Bearer ${token}`
 						},
 						success: (res) => {
+							let data = JSON.parse(res.data)
+							this.sitePictureUrl = data.fileName
 							setTimeout(() => {
 								resolve(res.data.data)
 							}, 1000)
@@ -123,17 +156,32 @@
 					});
 				})
 			},
+			async addSite() {
+				try {
+					const response = await request('/app/site/addSite', 'POST', {
+						siteName: this.siteName,
+						sitePictureUrl: this.sitePictureUrl,
+						siteLabel: this.siteLabelValue.join(',')
+					})
+					
+					if(response.data.code === 200){
+						this.goBank()
+					}
+				} catch (error) {
+					uni.showToast({
+						title: '加载失败',
+						icon: 'none',
+					});
+				}
+
+			}
 		},
 		mounted() {
-			uni.getStorage({
-				key: 'siteLabel',
-				success(res) {
-					res.data.forEach((item) => {
-						item.checked = false
-					})
-					this.siteLabel = res.data
-					console.log(this.siteLabel)
-				}
+			this.$nextTick(() => {
+				this.tagList = [...this.siteLabel]
+				this.tagList.forEach((item) => {
+					this.$set(item, 'checked', false)
+				})
 			})
 		}
 	}

@@ -130,8 +130,6 @@
 					this.loadData()
 				}, 1000)
 			},
-
-
 			// 加载数据方法
 			async loadData() {
 				try {

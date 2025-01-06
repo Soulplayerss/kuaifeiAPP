@@ -80,6 +80,9 @@
 <script>
 	import AppBar from '@/components/common/AppBar.vue'
 	import request from '@/utils/request';
+	import {
+		requestUrl
+	} from '@/utils/request';
 	export default {
 		data() {
 			return {
@@ -123,26 +126,31 @@
 				});
 			},
 			// 上传图片
-			uploadImage(filePath) {
-				this.uploading = true;
-
-				uni.uploadFile({
-					url: 'https://example.com/upload',
-					filePath: filePath,
-					name: 'file',
-					formData: {
-						// 'user': 'test' 
-					},
-					header: {
-						'content-type': 'multipart/form-data'
-					},
-					success: (uploadRes) => {
-						console.log('上传成功', uploadRes);
-					},
-					fail: (err) => {
-						console.log('上传失败', err);
-					},
-				});
+			uploadImage(url) {
+				var token = ''
+				uni.getStorage({
+					key: 'Token',
+					success(res) {
+						token = res.data
+					}
+				})
+				return new Promise((resolve, reject) => {
+					uni.uploadFile({
+						url: `${requestUrl}/system/user/profile/avatar`,
+						filePath: url,
+						name: 'file',
+						header: {
+							'Authorization': `Bearer ${token}`
+						},
+						success: (res) => {
+							let data = JSON.parse(res.data)
+							console.log(data)
+							setTimeout(() => {
+								resolve(res.data.data)
+							}, 1000)
+						}
+					});
+				})
 			},
 		}
 	}
