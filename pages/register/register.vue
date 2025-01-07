@@ -13,12 +13,9 @@
 			<view class="formItem">
 				<u-icon name="email" size="28" color="#FFF"></u-icon>
 				<view class="itemRight">
-					<u--input type="text" border="bottom" v-model="userInfo.code" placeholder="请输入验证码">
-						<template slot="suffix">
-							<u-button @tap="getCode" :text="tips" type="success" size="mini" color="#FFF"
-								style="color: #eea618;" :disabled="disabled"></u-button>
-						</template>
-					</u--input>
+					<u--input type="text" border="bottom" v-model="userInfo.code" placeholder="请输入验证码" />
+					<u-button @tap="getCode" type="success" size="mini" color="#FFF" style="color: #eea618;"
+						:disabled="disabled" class="sendCode">{{tips}}</u-button>
 				</view>
 			</view>
 			<view class="formItem">
@@ -232,6 +229,13 @@
 				color: #30313D !important;
 				line-height: 18px !important;
 			}
+		}
+		.sendCode{
+			position: absolute;
+			right: 16px;
+			bottom: 6px;
+			width: 100px;
+			height: 30px;
 		}
 	}
 </style>

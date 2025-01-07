@@ -33,10 +33,10 @@
 					color="linear-gradient(to bottom, rgb(255,241,204), rgb(255, 227, 157))"
 					@click="addSite"></u-button>
 			</view>
-			<view class="btn">
+			<!-- <view class="btn">
 				<u-button type="primary" shape="circle" text="删除场地"
 					color="linear-gradient(to bottom, rgb(248, 124, 23), rgb(219, 76, 4))"></u-button>
-			</view>
+			</view> -->
 		</view>
 	</view>
 </template>
@@ -163,13 +163,12 @@
 						sitePictureUrl: this.sitePictureUrl,
 						siteLabel: this.siteLabelValue.join(',')
 					})
-					
-					if(response.data.code === 200){
+					if(response.code === 200){
 						this.goBank()
 					}
 				} catch (error) {
 					uni.showToast({
-						title: '加载失败',
+						title: '添加失败',
 						icon: 'none',
 					});
 				}

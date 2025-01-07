@@ -3,6 +3,7 @@
 	export default {
 		onShow() {
 			const systemInfo = uni.getSystemInfo();
+			console.log(systemInfo)
 			// 获取状态栏高度
 			uni.setStorage({
 				data:systemInfo.statusBarHeight || 30,

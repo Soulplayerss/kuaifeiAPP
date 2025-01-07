@@ -43,7 +43,9 @@
 	import {
 		requestUrl
 	} from '@/utils/request';
-	import { mapActions } from 'vuex';
+	import {
+		mapActions
+	} from 'vuex';
 	export default {
 		data() {
 			return {
@@ -62,40 +64,50 @@
 		methods: {
 			...mapActions(['fetchEmun']),
 			login() {
-				uni.request({
-					url: `${requestUrl}/app/user/login`,
-					method: 'POST',
-					data: this.userInfo,
-					success: (res) => {
-						if (res.data.code === 200) {
-							this.fetchEmun()
-							uni.setStorage({
-								data: res.data.token,
-								key: 'Token'
-							})
+				if (this.userInfo.phoneNumber == '' || this.userInfo.password == '') {
+					uni.showToast({
+						title: '请输入账号和密码',
+						type: 'error',
+						icon: 'error',
+					});
+					return
+				} else {
+					uni.request({
+						url: `${requestUrl}/app/user/login`,
+						method: 'POST',
+						data: this.userInfo,
+						success: (res) => {
+							if (res.data.code === 200) {
+								this.fetchEmun()
+								uni.setStorage({
+									data: res.data.token,
+									key: 'Token'
+								})
+								uni.showToast({
+									title: '登录成功',
+									icon: 'success',
+								});
+								uni.navigateTo({
+									url: '/pages/index/index',
+								})
+							} else {
+								uni.showToast({
+									title: res.data.msg,
+									type: 'error',
+									icon: 'error',
+								});
+							}
+						},
+						fail: (err) => {
 							uni.showToast({
-								title: '登录成功',
-								icon: 'success',
-							});
-							uni.navigateTo({
-								url: '/pages/index/index',
-							})
-						} else {
-							uni.showToast({
-								title: res.data.msg,
+								title: '请求失败',
 								type: 'error',
 								icon: 'error',
 							});
-						}
-					},
-					fail: (err) => {
-						uni.showToast({
-							title: '请求失败',
-							type: 'error',
-							icon: 'error',
-						});
-					},
-				})
+						},
+					})
+				}
+
 
 			},
 			toRegister() {

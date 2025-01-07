@@ -86,7 +86,8 @@
 	export default {
 		data() {
 			return {
-				imagePath: '', // 图片路径
+				imagePath: '',
+				avatar:'',
 			}
 		},
 		components: {
@@ -118,7 +119,7 @@
 					count: 1,
 					success: (res) => {
 						this.imagePath = res.tempFilePaths[0];
-						this.uploadImage(this.imagePath);
+						this.uploadImage(this.imagePath, res.tempFiles[0]);
 					},
 					fail: (err) => {
 						console.log('选择图片失败', err);
@@ -126,7 +127,7 @@
 				});
 			},
 			// 上传图片
-			uploadImage(url) {
+			uploadImage(url, file) {
 				var token = ''
 				uni.getStorage({
 					key: 'Token',
@@ -142,9 +143,12 @@
 						header: {
 							'Authorization': `Bearer ${token}`
 						},
+						formData: {
+							avatarfile: file
+						},
 						success: (res) => {
 							let data = JSON.parse(res.data)
-							console.log(data)
+							this.avatar = requestUrl + data.imgUrl
 							setTimeout(() => {
 								resolve(res.data.data)
 							}, 1000)

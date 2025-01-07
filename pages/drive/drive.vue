@@ -6,7 +6,7 @@
 		<view class="operateBox">
 			<view class="parent">
 				<view class="draggable" :style="{ left: positionX + 'px', top: positionY + 'px' }"
-					@touchstart="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd">
+					@touchstart="onMotorTouchStart" @touchmove="onMotorTouchMove" @touchend="onMotorTouchEnd">
 				</view>
 			</view>
 			<view class="parent">
@@ -55,18 +55,19 @@
 				reconnectTimeout: null, // 重连定时器
 				reconnectAttempts: 0, // 重连次数
 				maxReconnectAttempts: 5, // 最大重连次数
+				macAddress: '94:54:C5:E8:0E:54',
 			};
 		},
 		onLoad() {
 			// 设置横屏
-			// plus.screen.lockOrientation('landscape-primary');
+			plus.screen.lockOrientation('landscape-primary');
 			this.initWebSocket();
 		},
 		onUnload() {
 			//链接Socket
 			this.closeWebSocket();
 			// 页面卸载时恢复竖屏
-			// plus.screen.lockOrientation('portrait-primary')
+			plus.screen.lockOrientation('portrait-primary')
 		},
 		mounted() {
 			// 获取父元素和子元素的宽高
@@ -88,18 +89,19 @@
 		},
 		methods: {
 			back() {
-				// plus.screen.lockOrientation('portrait-primary')
+				plus.screen.lockOrientation('portrait-primary')
 				uni.navigateTo({
 					url: '/pages/car/car'
 				});
 			},
-			// 开始触摸
-			onTouchStart(e) {
+			// 电机开始触摸
+			onMotorTouchStart(e) {
 				this.startX = e.touches[0].pageX - this.positionX;
 				this.startY = e.touches[0].pageY - this.positionY;
+				e.stopPropagation(); 
 			},
-			// 拖动过程
-			onTouchMove(e) {
+			// 电机拖动过程
+			onMotorTouchMove(e) {
 				const moveX = e.touches[0].pageX;
 				const moveY = e.touches[0].pageY;
 
@@ -114,22 +116,30 @@
 				this.positionY = newY;
 
 				//判断朝哪个方向
-				this.checkPosition(this.positionX, this.positionY);
+				// this.checkPosition(this.positionX, this.positionY);
 			},
-			// 结束触摸
-			onTouchEnd() {
+			// 电机结束触摸
+			onMotorTouchEnd() {
 				clearInterval(this.intervarTime)
 				this.positionX = 50;
 				this.positionY = 50;
 				this.oldDirection = ''
 				this.newDirection = ''
+				this.sendMessage(JSON.stringify({
+					"bizCode": 602, //固定值
+					"channelNum": 2, // 通道号1-8
+					"duty": 1500, //通道信号的高电平时间（单位微秒）
+					"timestamp": new Date().getTime(),
+					"mac": this.macAddress //设备mac地址
+				}))
 			},
-			// 开始触摸
+			// 航舵开始触摸
 			onRudderTouchStart(e) {
+				
 				this.rudderstartX = e.touches[0].pageX - this.rudderpositionX;
 				this.rudderstartY = e.touches[0].pageY - this.rudderpositionY;
 			},
-			// 拖动过程
+			// 航舵拖动过程
 			onRudderTouchMove(e) {
 				const moveX = e.touches[0].pageX;
 				const moveY = e.touches[0].pageY;
@@ -143,113 +153,161 @@
 				newY = Math.max(0, Math.min(newY, this.parentHeight - this.draggableHeight));
 				this.rudderpositionX = newX;
 				this.rudderpositionY = 50;
+				uni.showToast({
+					title: `${this.rudderpositionX},${this.rudderpositionY}`,
+					icon: 'none',
+				});
 
 				//判断朝哪个方向
-				this.checkPosition(this.rudderpositionX, this.rudderpositionY);
+				// this.checkPosition(this.rudderpositionX, this.rudderpositionY);
 			},
-			// 结束触摸
+			// 航舵结束触摸
 			onRudderTouchEnd() {
 				clearInterval(this.rudderIntervarTime)
 				this.rudderpositionX = 50;
 				this.rudderpositionY = 50;
 				this.rudderoldDirection = ''
 				this.ruddernewDirection = ''
+				this.sendMessage(JSON.stringify({
+					"bizCode": 602, //固定值
+					"channelNum": 1, // 通道号1-8
+					"duty": 1500, //通道信号的高电平时间（单位微秒）
+					"timestamp": new Date().getTime(),
+					"mac": this.macAddress //设备mac地址
+				}))
 			},
 			checkPosition(positionX, positionY, type) {
-				if (positionX == 50 && positionY <= 40) {
-					this.newDirection = "上"
-				} else if (positionX <= 40 && positionY == 50) {
-					this.ruddernewDirection = "左"
-				} else if (positionX == 50 && (positionY > 40 && positionY < 60)) {
+				if (positionX == 50 && (positionY <= 10 && positionY >= 0)) {
+					this.newDirection = "上5"
+				} else if (positionX == 50 && (positionY <= 20 && positionY > 10)) {
+					this.newDirection = "上4"
+				} else if (positionX == 50 && (positionY <= 30 && positionY > 20)) {
+					this.newDirection = "上3"
+				} else if (positionX == 50 && (positionY <= 40 && positionY > 30)) {
+					this.newDirection = "上2"
+				} else if (positionX == 50 && (positionY <= 45 && positionY > 40)) {
+					this.newDirection = "上1"
+				} else if ((positionX > 40 && positionX <= 45) && positionY == 50) {
+					this.ruddernewDirection = "左1"
+				} else if ((positionX > 30 && positionX <= 40) && positionY == 50) {
+					this.ruddernewDirection = "左2"
+				} else if ((positionX > 20 && positionX <= 30) && positionY == 50) {
+					this.ruddernewDirection = "左3"
+				} else if ((positionX > 10 && positionX <= 20) && positionY == 50) {
+					this.ruddernewDirection = "左4"
+				} else if ((positionX >= 0 && positionX <= 10) && positionY == 50) {
+					this.ruddernewDirection = "左5"
+				} else if (positionX == 50 && (positionY > 45 && positionY < 55)) {
 					this.newDirection = "电机停止"
-				} else if ((positionX > 40 && positionX < 60) && positionY == 50) {
+				} else if ((positionX > 45 && positionX < 55) && positionY == 50) {
 					this.ruddernewDirection = "航舵停止"
-				} else if (positionX >= 60 && positionY == 50) {
-					this.ruddernewDirection = "右"
-				} else if (positionX == 50 && positionY >= 60) {
-					this.newDirection = "下"
+				} else if ((positionX >= 55 && positionX < 60) && positionY == 50) {
+					this.ruddernewDirection = "右1"
+				} else if ((positionX >= 60 && positionX < 70) && positionY == 50) {
+					this.ruddernewDirection = "右2"
+				} else if ((positionX >= 70 && positionX < 80) && positionY == 50) {
+					this.ruddernewDirection = "右3"
+				} else if ((positionX >= 80 && positionX < 90) && positionY == 50) {
+					this.ruddernewDirection = "右4"
+				} else if ((positionX >= 90 && positionX <= 100) && positionY == 50) {
+					this.ruddernewDirection = "右5"
+				} else if (positionX == 50 && (positionY >= 55 && positionY < 60)) {
+					this.newDirection = "下1"
+				} else if (positionX == 50 && (positionY >= 60 && positionY < 70)) {
+					this.newDirection = "下2"
+				} else if (positionX == 50 && (positionY >= 70 && positionY < 80)) {
+					this.newDirection = "下3"
+				} else if (positionX == 50 && (positionY >= 80 && positionY < 90)) {
+					this.newDirection = "下4"
+				} else if (positionX == 50 && (positionY >= 90 && positionY <= 100)) {
+					this.newDirection = "下5"
 				}
 
-				this.updataDirection()
+				this.updateDirection()
 			},
-			updataDirection() {
+			updateDirection() {
 				let ChannelDuty = {
 					"bizCode": 602, //固定值
 					"channelNum": 2, // 通道号1-8
 					"duty": this.dutyValue, //通道信号的高电平时间（单位微秒）
 					"timestamp": new Date().getTime(),
-					"mac": "94:54:C5:E8:07:D4" //设备mac地址
+					"mac": this.macAddress //设备mac地址
 				}
 				let rudderChannelDuty = {
 					"bizCode": 602, //固定值
 					"channelNum": 1, // 通道号1-8
 					"duty": this.rudderDutyValue, //通道信号的高电平时间（单位微秒）
 					"timestamp": new Date().getTime(),
-					"mac": "94:54:C5:E8:07:D4" //设备mac地址
+					"mac": this.macAddress //设备mac地址
 				}
+				// Duty 值映射表
+				const dutyMap = {
+					"上1": 1600,
+					"上2": 1700,
+					"上3": 1800,
+					"上4": 1900,
+					"上5": 2000,
+					"电机停止": 1500,
+					"下1": 1400,
+					"下2": 1300,
+					"下3": 1200,
+					"下4": 1100,
+					"下5": 1000
+				};
+
+				const rudderDutyMap = {
+					"右1": 1700,
+					"右2": 1900,
+					"右3": 2100,
+					"右4": 2300,
+					"右5": 2500,
+					"航舵停止": 1500,
+					"左1": 1300,
+					"左2": 1100,
+					"左3": 900,
+					"左4": 700,
+					"左5": 500
+				};
+
+				// 清理和启动定时器的函数
+				const clearAndStartInterval = (direction, dutyMap, channelDuty, intervalTime, isRudder = false) => {
+					const duty = dutyMap[direction] || 1500; // 默认为 1500 (停止)
+					clearInterval(isRudder ? this.rudderIntervarTime : this.intervarTime);
+
+					// 停止信号直接发送一次
+					if (direction === '电机停止' || direction === '航舵停止') {
+						channelDuty.duty = duty;
+						this.sendMessage(JSON.stringify(channelDuty));
+					} else {
+						const sendDutyUpdate = () => {
+							channelDuty.duty = duty;
+							this.sendMessage(JSON.stringify(channelDuty));
+						};
+						const intervalID = setInterval(sendDutyUpdate, intervalTime);
+						// 存储定时器ID
+						if (isRudder) {
+							this.rudderIntervarTime = intervalID;
+						} else {
+							this.intervarTime = intervalID;
+						}
+					}
+				};
+
+				// 电机方向变化处理
 				if (this.newDirection !== this.oldDirection) {
-					clearInterval(this.intervarTime)
-					ChannelDuty.duty = this.dutyValue
-					if (this.newDirection == '上') {
-						this.intervarTime = setInterval(() => {
-							if (ChannelDuty.duty >= 2500) {
-								ChannelDuty.duty = 2500
-							} else {
-								ChannelDuty.duty += 100
-							}
-							this.sendMessage(JSON.stringify(ChannelDuty))
-						}, 300)
-					} else if (this.newDirection == '电机停止') {
-						this.intervarTime = setInterval(() => {
-							ChannelDuty.duty = this.dutyValue
-							this.sendMessage(JSON.stringify(ChannelDuty))
-						}, 300)
-					} else if (this.newDirection == '下') {
-						this.intervarTime = setInterval(() => {
-							if (ChannelDuty.duty <= 500) {
-								ChannelDuty.duty = 500
-							} else {
-								ChannelDuty.duty -= 100
-							}
-							this.sendMessage(JSON.stringify(ChannelDuty))
-						}, 300)
-					}
-					this.oldDirection = this.newDirection
+					clearAndStartInterval(this.newDirection, dutyMap, ChannelDuty, 100);
+					this.oldDirection = this.newDirection;
 				}
+
+				// 舵机方向变化处理
 				if (this.ruddernewDirection !== this.rudderoldDirection) {
-					clearInterval(this.rudderIntervarTime)
-					rudderChannelDuty.duty = this.rudderDutyValue
-					if (this.ruddernewDirection == '右') {
-						this.rudderIntervarTime = setInterval(() => {
-							if (rudderChannelDuty.duty >= 2500) {
-								rudderChannelDuty.duty = 2500
-							} else {
-								rudderChannelDuty.duty += 100
-							}
-							this.sendMessage(JSON.stringify(rudderChannelDuty))
-						}, 300)
-					} else if (this.ruddernewDirection == '航舵停止') {
-						this.rudderIntervarTime = setInterval(() => {
-							rudderChannelDuty.duty = this.rudderDutyValue
-							this.sendMessage(JSON.stringify(rudderChannelDuty))
-						}, 300)
-					} else if (this.ruddernewDirection == '左') {
-						this.rudderIntervarTime = setInterval(() => {
-							if (rudderChannelDuty.duty <= 500) {
-								rudderChannelDuty.duty = 500
-							} else {
-								rudderChannelDuty.duty -= 100
-							}
-							this.sendMessage(JSON.stringify(rudderChannelDuty))
-						}, 300)
-					}
-					this.rudderoldDirection = this.ruddernewDirection
+					clearAndStartInterval(this.ruddernewDirection, rudderDutyMap, rudderChannelDuty, 100, true);
+					this.rudderoldDirection = this.ruddernewDirection;
 				}
 			},
-
 			initWebSocket() {
 				this.socket = uni.connectSocket({
-					url: 'ws://1.95.71.155:8888/ws/94:54:C5:E8:07:D4',
+					url: `ws://1.95.71.155:8888/ws/${this.macAddress}`,
 					success: () => {
 						console.log('WebSocket连接成功');
 					},
@@ -261,7 +319,7 @@
 				// 监听 WebSocket 打开事件
 				this.socket.onOpen(() => {
 					console.log('WebSocket已打开');
-					this.startHeartbeat(); // 开始心跳机制
+					// this.startHeartbeat(); // 开始心跳机制
 				});
 
 				// 监听 WebSocket 收到消息事件
@@ -279,13 +337,13 @@
 				// 监听 WebSocket 关闭事件
 				this.socket.onClose(() => {
 					console.log('WebSocket已关闭');
-					this.reconnect(); // 尝试重连
+					// this.reconnect(); // 尝试重连
 				});
 
 				// 监听 WebSocket 错误事件
 				this.socket.onError((err) => {
 					console.error('WebSocket发生错误', err);
-					this.reconnect(); // 尝试重连
+					// this.reconnect(); // 尝试重连
 				});
 			},
 
@@ -294,7 +352,6 @@
 				// 定时发送心跳消息
 				this.heartbeatInterval = setInterval(() => {
 					if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-						console.log('发送心跳: ping');
 						this.socket.send(JSON.stringify({
 							type: 'ping'
 						}));
