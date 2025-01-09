@@ -2,26 +2,31 @@
 	<view class="configuration">
 		<AppBar title='车辆配置' @goBank="goBank" />
 		<view class="content">
-			<image src="../../static/20.png" mode="" class="carImg"></image>
+			<image :src="carInfo.sitePictureUrl" mode="" class="carImg"></image>
 			<view class="item">
 				<span class="left">车辆编号</span>
-				<span class="right">KFYK20241101</span>
+				<span class="right">{{carInfo.carNo}}</span>
 			</view>
 			<view class="item">
 				<span class="left">车辆名称</span>
-				<span class="right">挖机最好玩</span>
+				<span class="right" @click="showChangeName = true">{{carInfo.carName}}</span>
 			</view>
 			<view class="item">
 				<span class="left">车辆状态</span>
-				<span class="right">在线</span>
+				<span class="right"
+					:style="{color:carInfo.carStatus == 0 ? '#c38513' : ''}">{{carInfo.carStatus == 0 ? '离线' : '在线'}}</span>
 			</view>
 			<view class="item">
 				<span class="left">图传状态</span>
 				<span class="right">获取中</span>
 			</view>
-			<view class="item" style="border: none;">
+			<view class="item">
 				<span class="left">电池电量</span>
-				<span class="right">7.8V</span>
+				<span class="right">{{carInfo.carQuantity}}%</span>
+			</view>
+			<view class="item" style="border: none;">
+				<span class="left">电压</span>
+				<span class="right">{{carInfo.carVoltage}}V</span>
 			</view>
 			<u-collapse accordion>
 				<u-collapse-item title="选择场地">
@@ -31,7 +36,16 @@
 					<text class="u-collapse-content">系统设置</text>
 				</u-collapse-item>
 				<u-collapse-item title="通道设置">
-					<text class="u-collapse-content">通道设置川</text>
+					<view class="carChannel" v-for="item in carInfo.appCarChannelList" :key="item.channelId">
+						<view class="channelName">
+							{{item.channelName}}
+						</view>
+						<view class="channelValue">
+							<input type="number" v-model="item.minValue" class="valueInput" />
+							<span>-</span>
+							<input type="number" v-model="item.maxValue" class="valueInput" />
+						</view>
+					</view>
 				</u-collapse-item>
 				<u-collapse-item title="图传设置">
 					<text class="u-collapse-content">图传设置</text>
@@ -48,23 +62,52 @@
 		<view class="btns">
 			<view class="btn">
 				<u-button type="primary" shape="circle" text="保存" style="color: #30313D;"
-					color="linear-gradient(to bottom, rgb(255,241,204), rgb(255, 227, 157))"></u-button>
+					color="linear-gradient(to bottom, rgb(255,241,204), rgb(255, 227, 157))" @click="save"></u-button>
 			</view>
 			<view class="btn">
 				<u-button type="primary" shape="circle" text="删除车辆"
 					color="linear-gradient(to bottom, rgb(248, 124, 23), rgb(219, 76, 4))"></u-button>
 			</view>
 		</view>
+
+		<u-overlay :show="showChangeName">
+			<view class="overlayBox">
+				<view class="serialNumber">
+					新名称
+				</view>
+				<view class="formItem">
+					<view class="itemRight">
+						<u--input border="none" type="text" v-model="carInfo.carName" placeholder="请输入新名称" />
+					</view>
+				</view>
+				<view class="commitBox">
+					<span class="cancel" @click="showChangeName = false">取消</span>
+					<span class="commit" @click="commit">确认</span>
+				</view>
+			</view>
+		</u-overlay>
 	</view>
 </template>
 
 <script>
 	import AppBar from '@/components/common/AppBar.vue'
+	import request from '@/utils/request';
+	import {
+		requestUrl
+	} from '@/utils/request';
 	export default {
 		data() {
 			return {
-
+				carId: '',
+				carInfo: {},
+				showChangeName: false,
 			}
+		},
+		onLoad(options) {
+			const {
+				carId
+			} = options; // 获取具体的参数值
+			this.carId = carId
 		},
 		components: {
 			AppBar
@@ -75,6 +118,58 @@
 					url: '/pages/car/car',
 				})
 			},
+			async getCarInfo() {
+				try {
+					const response = await request(`/app/carInfo/getInfoByCarId/${this.carId}`, 'GET')
+					this.carInfo = response.data
+					this.carInfo.sitePictureUrl = requestUrl + response.data.sitePictureUrl
+				} catch (error) {
+					uni.showToast({
+						title: '加载失败',
+						icon: 'none',
+					});
+				}
+			},
+			commit() {
+				if (this.carName != '') {
+					this.showChangeName = false
+				} else {
+					uni.showToast({
+						title: '请输入名称',
+						icon: 'none',
+					});
+				}
+			},
+			async save() {
+				try {
+					const response = await request(`/app/carInfo/updateCarInfo`, 'POST', {
+						carName: this.carInfo.carName,
+						carId: this.carInfo.carId,
+						carChannelList: this.carInfo.appCarChannelList.map((item) => {
+							return {
+								channelId: item.channelId,
+								minValue: item.minValue,
+								maxValue: item.maxValue,
+							}
+						})
+					})
+					if (response.code === 200) {
+						uni.showToast({
+							title: '保存成功',
+							icon: 'success',
+						});
+						this.goBank()
+					}
+				} catch (error) {
+					uni.showToast({
+						title: '保存失败',
+						icon: 'none',
+					});
+				}
+			}
+		},
+		mounted() {
+			this.getCarInfo()
 		}
 	}
 </script>
@@ -95,8 +190,11 @@
 			margin: 16px;
 			height: calc(100vh - 194px);
 			overflow-y: auto;
+
 			.carImg {
-				width: 100%;
+				width: 80%;
+				margin-left: 10%;
+				margin-bottom: 16px;
 			}
 
 			.item {
@@ -133,6 +231,48 @@
 			.btn {
 				flex: 1;
 			}
+		}
+
+		.carChannel {
+			height: 40px;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 20px;
+
+			.channelName {
+				height: 30px;
+				line-height: 30px;
+				color: #FFF;
+				padding: 0px 12px;
+				border-radius: 4px;
+				background-color: #eea618;
+			}
+
+			.channelValue {
+				flex: 1;
+				display: flex;
+				align-items: center;
+
+				span {
+					padding: 0 16px;
+				}
+
+				.valueInput {
+					display: block;
+					flex: 1;
+					height: 30px;
+					box-sizing: border-box;
+					border: solid 1px #d6d7d9;
+					text-align: center;
+				}
+			}
+		}
+
+		.u-transition {
+			display: flex;
+			align-items: center;
+			justify-content: center;
 		}
 	}
 </style>

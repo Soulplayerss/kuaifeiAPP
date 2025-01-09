@@ -3,10 +3,10 @@
 		<u-toast ref="uToast"></u-toast>
 		<view class="user" :style="pageStyle">
 			<view class="info">
-				<image src="../../assets/images/avatar.jpg" mode="" class="avatar"></image>
+				<image :src="avatar" mode="" class="avatar"></image>
 				<view class="">
 					<view class="userName">
-						张三丰
+						{{userInfo.userName}}
 					</view>
 					<span class="code">邀请码：258644</span>
 				</view>
@@ -18,7 +18,7 @@
 			<view class="wallet" @click="navigateTo('/pages/wallet/wallet')">
 				<image src="../../assets/images/tab-battery.png" mode=""></image>
 				<view class="info">
-					<view style="font-size: 20px;font-weight: bold;line-height:20px;">100</view>
+					<view style="font-size: 20px;font-weight: bold;line-height:20px;">{{userInfo.totalAmount}}</view>
 					<span style="font-size: 14px;">钱包</span>
 				</view>
 			</view>
@@ -28,7 +28,7 @@
 			<view class="income">
 				<image src="../../assets/images/income.png" mode=""></image>
 				<view class="info">
-					<view style="font-size: 20px;font-weight: bold;line-height:20px;">10</view>
+					<view style="font-size: 20px;font-weight: bold;line-height:20px;">{{userInfo.totalIncome}}</view>
 					<span style="font-size: 14px;">收益</span>
 				</view>
 			</view>
@@ -125,13 +125,20 @@
 
 <script>
 	import TabBar from '@/components/common/TabBar.vue'
+	import {
+		requestUrl
+	} from '@/utils/request';
+	import {
+		mapState
+	} from 'vuex';
 	export default {
 		data() {
 			return {
 				showChangePassword: false,
 				oldPassword: '',
 				newPassword: '',
-				pageStyle:{}
+				pageStyle: {},
+				avatar:''
 			}
 		},
 		onReady() {
@@ -147,6 +154,9 @@
 		},
 		components: {
 			TabBar
+		},
+		computed: {
+			...mapState(['userInfo'])
 		},
 		methods: {
 			navigateTo(url) {
@@ -167,7 +177,12 @@
 				this.$refs.uToast.show({
 					...params
 				})
-			}
+			},
+
+		},
+		mounted() {
+			console.log(this.userInfo)
+			this.avatar = requestUrl + this.userInfo.avatar
 		}
 	}
 </script>
@@ -199,6 +214,8 @@
 					width: 68px;
 					height: 68px;
 					border-radius: 50%;
+					border: solid 1px #FFF;
+					box-sizing: border-box;
 				}
 
 				.userName {

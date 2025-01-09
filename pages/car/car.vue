@@ -16,22 +16,21 @@
 				<!-- 列表内容 -->
 				<view v-for="(item,index) in dataList" :key="index" class="dataItem">
 					<view class="carInfo">
-						<image :src="item.img" mode="" class="carImg"></image>
+						<image :src="item.sitePictureUrl" mode="" class="carImg"></image>
 						<view class="carDesc">
 							<view class="carName">
 								{{item.carName}}
 							</view>
-							<view class="attribution">
-								归属：{{item.attribution}}
-							</view>
 							<view class="code">
-								编号：{{item.code}}
+								编号：{{item.carNo}}
 							</view>
 							<view class="btns">
-								<view class="btn" :style="{backgroundColor: item.isDrive===1 ? '#eea618': '#0055ff'}" @click="navigateTo('/pages/drive/drive')">
+								<view class="btn" :style="{backgroundColor: item.isDrive===1 ? '#eea618': '#0055ff'}"
+									@click="navigateTo(`/pages/drive/drive?macAddress=${item.macAddress}&carId=${item.carId}`)">
 									<span>{{item.isDrive===1 ? '围观' : '驾驶'}}</span>
 								</view>
-								<view class="btn watch" @click="navigateTo('/pages/configuration/configuration')">
+								<view class="btn watch"
+									@click="navigateTo(`/pages/configuration/configuration?carId=${item.carId}`)">
 									配置
 								</view>
 							</view>
@@ -39,17 +38,24 @@
 					</view>
 					<view class="configuration">
 						<view class="">
-							<image src="../../assets/images/signal.png" mode=""></image>
+							<span v-show="item.myCsq == '-'" style="margin-right: 8px;">-</span>
+							<image src="../../assets/images/signal1.png" v-show="item.myCsq <= 8" mode=""></image>
+							<image src="../../assets/images/signal2.png" v-show="item.myCsq > 8 && item.myCsq <=16 "
+								mode=""></image>
+							<image src="../../assets/images/signal3.png" v-show="item.myCsq > 16 && item.myCsq <= 24 "
+								mode=""></image>
+							<image src="../../assets/images/signal4.png" v-show="item.myCsq > 24 && item.myCsq <=32 "
+								mode=""></image>
 							<span>状态：<span
-									:style="{color: item.status == '离线' ? '#dd0000' : '#00d400'}">{{item.status}}</span></span>
+									:style="{color: item.carStatus == 0 ? '#dd0000' : '#00d400'}">{{item.carStatus == 0 ? '离线' : '在线'}}</span></span>
 						</view>
 						<view class="">
 							<image src="../../assets/images/battery.png" mode=""></image>
-							<span>电量：{{item.power}}%</span>
+							<span>电量：{{item.carQuantity}}%</span>
 						</view>
 						<view class="">
 							<image src="../../assets/images/battery.png" mode=""></image>
-							<span>电压：{{item.voltage}}</span>
+							<span>电压：{{item.carVoltage}}V</span>
 						</view>
 					</view>
 				</view>
@@ -68,7 +74,7 @@
 				</view>
 				<view class="formItem">
 					<view class="itemRight flex">
-						<u--input border="none" type="number" v-model="serialNumber" placeholder="请输入或扫描12位序列号" />
+						<u--input border="none" type="text" v-model="serialNumber" placeholder="请输入或扫描12位序列号" />
 						<u-icon name="scan" size="28" color="#30313D"></u-icon>
 					</view>
 				</view>
@@ -76,6 +82,7 @@
 					{{serialNumber.length}}/12
 				</view>
 				<view class="btns">
+					<span class="cancel" @click="showAddCar = false">取消</span>
 					<span class="commit" @click="commit">确认</span>
 				</view>
 			</view>
@@ -86,10 +93,15 @@
 
 <script>
 	import TabBar from '@/components/common/TabBar.vue'
+	import NoData from '@/components/common/NoData.vue'
+	import request from '@/utils/request';
+	import {
+		requestUrl
+	} from '@/utils/request';
 	export default {
 		data() {
 			return {
-				page: 1,
+				pageNum: 1,
 				pageSize: 10,
 				loading: false,
 				isRefreshing: false,
@@ -97,13 +109,16 @@
 				hittingBottom: false,
 				showAddCar: false,
 				showAddSite: true,
+				showNoData: false,
 				dataList: [],
 				serialNumber: '',
-				pageStyle:{}
+				pageStyle: {},
+				pollingTime: []
 			}
 		},
 		components: {
-			TabBar
+			TabBar,
+			NoData
 		},
 		onReady() {
 			let that = this
@@ -118,6 +133,7 @@
 		},
 		methods: {
 			navigateTo(url) {
+				clearInterval(this.pollingTime)
 				uni.navigateTo({
 					url
 				})
@@ -126,7 +142,7 @@
 			onRefresh() {
 				if (this.isRefreshing) return;
 				this.isRefreshing = true;
-				this.page = 1;
+				this.pageNum = 1;
 				setTimeout(() => {
 					this.dataList = []
 					this.loadData();
@@ -138,102 +154,92 @@
 				if (this.hittingBottom) return;
 				this.loading = true;
 				setTimeout(() => {
-					this.page++;
+					this.pageNum++;
 					this.loadData()
 				}, 1000)
 			},
-			// 加载数据方法
-			loadData() {
-				const data = [{
-						img: '/static/20.png',
-						carName: '挖挖机',
-						attribution: '这是车辆提供者名称',
-						code: 'KFCFKxingqi4',
-						status: '在线',
-						power: '80',
-						voltage: '8.0V',
-						isDrive: 1
-					},
-					{
-						img: '/static/21.png',
-						carName: '推土机',
-						attribution: '这是车辆提供者名称',
-						code: 'KFCFKxingqi4',
-						status: '离线',
-						power: '88',
-						voltage: '8.0V',
-						isDrive: 0
-					},
-					{
-						img: '/static/22.png',
-						carName: '卡车',
-						attribution: '这是车辆提供者名称',
-						code: 'KFCFKxingqi4',
-						status: '在线',
-						power: '20',
-						voltage: '8.0V',
-						isDrive: 0
-					},
-					{
-						img: '/static/20.png',
-						carName: '挖挖机',
-						attribution: '这是车辆提供者名称',
-						code: 'KFCFKxingqi4',
-						status: '在线',
-						power: '80',
-						voltage: '8.0V',
-						isDrive: 1
-					},
-					{
-						img: '/static/21.png',
-						carName: '推土机',
-						attribution: '这是车辆提供者名称',
-						code: 'KFCFKxingqi4',
-						status: '离线',
-						power: '88',
-						voltage: '8.0V',
-						isDrive: 0
-					},
-					{
-						img: '/static/22.png',
-						carName: '卡车',
-						attribution: '这是车辆提供者名称',
-						code: 'KFCFKxingqi4',
-						status: '在线',
-						power: '20',
-						voltage: '8.0V',
-						isDrive: 0
+			async loadData() {
+				try {
+					const response = await request('/app/carInfo/listByUserId', 'GET', {
+						pageNum: this.pageNum,
+						pageSize: this.pageSize
+					})
+					clearInterval(this.pollingTime)
+					const data = response.rows
+					this.total = response.total
+					this.dataList = this.pageNum === 1 ? data : this.dataList.concat(
+						data)
+					this.showNoData = this.dataList.length == 0 ? true : false;
+					!this.showNoData ? this.dataList.forEach(
+						(item, index) => {
+							item.sitePictureUrl = requestUrl + item.sitePictureUrl.split(",")[0];
+							item.myCsq = this.getValueBetweenChars(item.myCsq || '+signal#10,0', '#', ',')
+							// this.pollingTime[index] = setInterval(() => {
+							// 	this.polling(item.macAddress, index)
+							// }, 10000)
+						}) : ''
+					if (this.dataList.length >= this.total) {
+						this.hittingBottom = true
+						this.loading = false
+					} else {
+						this.hittingBottom = false
+						this.loading = true
 					}
-				]
-				this.dataList = this.page === 1 ? data : this.dataList.concat(
-					data)
-					
-				if (this.dataList.length >= this.total) {
-					this.hittingBottom = true
-				} else {
-					this.hittingBottom = false
-				}
-				
-				this.isRefreshing = false;
-				this.loading = false;
-				if (this.page >= 5) {
-					this.loading = false;
+
+					this.isRefreshing = false;
+				} catch (error) {
+					console.log(error)
+					uni.showToast({
+						title: '加载失败',
+						icon: 'none',
+					});
 				}
 			},
-			commit() {
-				this.showAddCar = false
-				// this.showToast({
-				// 	type: 'success',
-				// 	position: 'top',
-				// 	message: "添加成功",
-				// 	iconUrl: 'https://cdn.uviewui.com/uview/demo/toast/success.png'
-				// })
-				this.showToast({
-					type: 'success',
-					position: 'top',
-					message: "添加失败",
-					iconUrl: 'https://cdn.uviewui.com/uview/demo/toast/error.png'
-				})
+			getValueBetweenChars(str, startChar, endChar) {
+				const startIndex = str.indexOf(startChar);
+				const endIndex = str.indexOf(endChar, startIndex + 1);
+				if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+					return Number(str.substring(startIndex + 1, endIndex))
+				}
+
+				return '-';
+			},
+			async polling(macAddress, index) {
+				try {
+					const response = await request(`/app/carInfo/carData/${macAddress}`, 'GET')
+					this.dataList[index].carQuantity = response.data.carQuantity
+					this.dataList[index].carStatus = response.data.carStatus
+					this.dataList[index].carVoltage = response.data.carVoltage
+					this.dataList[index].myCsq = response.data.myCsq
+				} catch (error) {
+					uni.showToast({
+						title: '加载失败',
+						icon: 'none',
+					});
+				}
+			},
+			async commit() {
+				try {
+					const response = await request(`/app/carInfo/bindCar/${this.serialNumber}`, 'GET')
+					if (response.code === 200) {
+						this.showAddCar = false
+						this.onRefresh()
+						this.showToast({
+							type: 'success',
+							message: "添加成功",
+						})
+					} else {
+						uni.showToast({
+							title: response.msg,
+							icon: 'none',
+						});
+					}
+				} catch (error) {
+					uni.showToast({
+						title: '加载失败',
+						icon: 'none',
+					});
+				}
 			},
 			showToast(params) {
 				this.$refs.uToast.show({
@@ -243,6 +249,13 @@
 		},
 		mounted() {
 			this.loadData();
+		},
+		onHide() {
+			this.dataList.forEach(
+				(item, index) => {
+					clearInterval(this.pollingTime[index])
+				})
+			this.pollingTime = []
 		}
 	}
 </script>
@@ -336,6 +349,7 @@
 				.configuration {
 					display: flex;
 					justify-content: space-between;
+					padding: 8px 16px 0px;
 
 					view {
 						display: flex;
@@ -344,7 +358,7 @@
 
 						image {
 							width: 24px;
-							height: 24px;
+							height: 18px;
 							margin-right: 4px;
 						}
 					}
@@ -362,7 +376,6 @@
 			display: flex;
 			align-items: center;
 			justify-content: center;
-
 		}
 	}
 </style>

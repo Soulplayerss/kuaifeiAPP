@@ -78,11 +78,11 @@
 						data: this.userInfo,
 						success: (res) => {
 							if (res.data.code === 200) {
-								this.fetchEmun()
 								uni.setStorage({
 									data: res.data.token,
 									key: 'Token'
 								})
+								this.fetchEmun()
 								uni.showToast({
 									title: '登录成功',
 									icon: 'success',

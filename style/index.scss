@@ -97,16 +97,22 @@ uni-app, uni-page-head{
 			color: #eea618;
 		}
 
-		.btns {
+		.btns, .commitBox {
 			margin-top: 40rpx;
 			text-align: center;
-
-			.commit {
+			display: flex;
+			gap: 16px;
+			justify-content: center;
+			.commit, .cancel {
 				display: inline-block;
-				padding: 8px 50px;
+				padding: 8px 40px;
 				background-color: #eea618;
 				color: #FFF;
 				border-radius: 19px;
+			}
+			
+			.cancel{
+				background-color: #c7c7c7;
 			}
 		}
 	}
@@ -142,7 +148,7 @@ uni-app, uni-page-head{
 	display: flex;
 	gap: 20px;
 	margin-bottom: 20px;
-	font-size: 14px;
+	font-size: 13px;
 	line-height: 14px;
 	color: #8c8c8c;
 

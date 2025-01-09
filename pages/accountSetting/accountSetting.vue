@@ -8,7 +8,7 @@
 						<span>头像</span>
 					</view>
 					<view class="flex items-center">
-						<image src="../../assets/images/avatar.jpg" mode="" class="avatar mr-8" @click="chooseImage">
+						<image :src="avatar" mode="" class="avatar mr-8" @click="chooseImage">
 						</image>
 						<u-icon name="arrow-right" size="22" color="#b09aaa"></u-icon>
 					</view>
@@ -18,7 +18,7 @@
 						<span>账号</span>
 					</view>
 					<view class="flex items-center">
-						<span class="mr-8 color-c2a9bb">16888855423</span>
+						<span class="mr-8 color-c2a9bb">{{userInfo.phoneNumber}}</span>
 						<u-icon name="arrow-right" size="22" color="#b09aaa"></u-icon>
 					</view>
 				</view>
@@ -27,7 +27,7 @@
 						<span>昵称</span>
 					</view>
 					<view class="flex items-center">
-						<span class="mr-8 color-c2a9bb">张三丰</span>
+						<span class="mr-8 color-c2a9bb">{{userInfo.userName}}</span>
 						<u-icon name="arrow-right" size="22" color="#b09aaa"></u-icon>
 					</view>
 				</view>
@@ -83,6 +83,9 @@
 	import {
 		requestUrl
 	} from '@/utils/request';
+	import {
+		mapState
+	} from 'vuex';
 	export default {
 		data() {
 			return {
@@ -92,6 +95,9 @@
 		},
 		components: {
 			AppBar
+		},
+		computed: {
+			...mapState(['userInfo'])
 		},
 		methods: {
 			goBank() {
@@ -149,6 +155,14 @@
 						success: (res) => {
 							let data = JSON.parse(res.data)
 							this.avatar = requestUrl + data.imgUrl
+							this.userInfo.avatar = data.imgUrl
+							uni.setStorage({
+								key: 'userInfo',
+								data: this.userInfo,
+								success(res) {
+									this.$store.commit('setUserInfo')
+								}
+							})
 							setTimeout(() => {
 								resolve(res.data.data)
 							}, 1000)
@@ -156,6 +170,9 @@
 					});
 				})
 			},
+		},
+		mounted() {
+			this.avatar = requestUrl + this.userInfo.avatar
 		}
 	}
 </script>
@@ -183,6 +200,7 @@
 				height: 40px;
 				border-radius: 50%;
 				margin-right: 8px;
+				border: solid 1px #eea618;
 			}
 		}
 

@@ -4,7 +4,7 @@
 		<view style="padding: 16px;">
 			<view class="content">
 				<view style="text-align: right;margin-bottom: 16px;">
-					<span style="color: #eea618;">刷新</span>
+					<span style="color: #eea618;" @click="onRefresh">刷新</span>
 				</view>
 				<view class="list">
 					<scroll-view v-if="dataList.length" scroll-y @refresherrefresh="onRefresh"
@@ -17,18 +17,20 @@
 							</view>
 							<view class="rightInfo">
 								<view>
-									订单编号：{{item.code}}
+									订单编号：{{item.assetNo}}
 								</view>
 								<view class="flex justify-between">
-									<span>变动金额：{{item.number}}</span>
+									<span>变动金额：{{item.totalAmount}}</span>
 									<span style="min-width:100px;">类型：<span
-											:style="{color:item.status == '提现' ? '#4cee1b' : item.status == '支出' ? '#c38513' : item.status == '充值' ? '#5a5dee' : '#eea816'}">{{item.status}}</span></span>
+											:style="{color:item.type == 3 ? '#4cee1b' : item.type == 0 ? '#c38513' : item.type == 2 ? '#eea816' : '#5a5dee'}">
+											{{item.type == 0 ? '支出' : item.type == 1 ? '收益' :  item.type == 2 ? '充值' : '提现'}}
+										</span></span>
 								</view>
 								<view>
-									资金事项：{{item.remarks}}
+									资金事项：{{item.remark}}
 								</view>
 								<view>
-									订单时间：{{item.processingTime}}
+									订单时间：{{item.createTime}}
 								</view>
 							</view>
 						</view>
@@ -37,6 +39,7 @@
 						<u-loadmore v-show="hittingBottom" loadmoreText="没有更多数据" color="#1CD29B" lineColor="#1CD29B"
 							dashed line />
 					</scroll-view>
+					<NoData v-show="showNoData" />
 				</view>
 			</view>
 		</view>
@@ -45,20 +48,24 @@
 
 <script>
 	import AppBar from '@/components/common/AppBar.vue'
+	import NoData from '@/components/common/NoData.vue'
+	import request from '@/utils/request';
 	export default {
 		data() {
 			return {
-				page: 1,
+				pageNum: 1,
 				pageSize: 10,
 				loading: false,
 				isRefreshing: false,
 				total: 18,
 				hittingBottom: false,
+				showNoData: false,
 				dataList: [],
 			}
 		},
 		components: {
-			AppBar
+			AppBar,
+			NoData
 		},
 		methods: {
 			goBank() {
@@ -71,7 +78,7 @@
 				if (this.isRefreshing) return;
 
 				this.isRefreshing = true;
-				this.page = 1;
+				this.pageNum = 1;
 				setTimeout(() => {
 					this.dataList = []
 					this.loadData();
@@ -84,97 +91,37 @@
 				if (this.hittingBottom) return;
 				this.loading = true;
 				setTimeout(() => {
-					this.page++;
+					this.pageNum++;
 					this.loadData()
 				}, 1000)
 			},
-			// 加载数据方法
-			loadData() {
-				const data = [{
-						code: 'weqdascacacqqeq11346515',
-						status: '收益',
-						processingTime: '2024-12-05',
-						number: '100',
-						remarks: '玩车订单-广场（余额）'
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						status: '收益',
-						processingTime: '2024-12-05',
-						number: '100',
-						remarks: '玩车订单-广场（余额）'
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						status: '收益',
-						processingTime: '2024-12-05',
-						number: '100',
-						remarks: '玩车订单-广场（余额）'
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						status: '收益',
-						processingTime: '2024-12-05',
-						number: '100',
-						remarks: '玩车订单-广场（余额）'
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						status: '收益',
-						processingTime: '2024-12-05',
-						number: '100',
-						remarks: '玩车订单-广场（余额）'
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						status: '收益',
-						processingTime: '2024-12-05',
-						number: '100',
-						remarks: '玩车订单-广场（余额）'
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						status: '收益',
-						processingTime: '2024-12-05',
-						number: '100',
-						remarks: '玩车订单-广场（余额）'
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						status: '收益',
-						processingTime: '2024-12-05',
-						number: '100',
-						remarks: '玩车订单-广场（余额）'
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						status: '收益',
-						processingTime: '2024-12-05',
-						number: '100',
-						remarks: '玩车订单-广场（余额）'
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						status: '收益',
-						processingTime: '2024-12-05',
-						number: '100',
-						remarks: '玩车订单-广场（余额）'
-					},
-				]
+			async loadData() {
+				try {
+					const response = await request('/app/assetDetail/list', 'GET', {
+						pageNum: this.pageNum,
+						pageSize: this.pageSize,
+						type: 1
 
-				this.dataList = this.page === 1 ? data : this.dataList.concat(
-					data)
+					})
+					const data = response.rows
+					this.total = response.total
+					this.dataList = this.pageNum === 1 ? data : this.dataList.concat(
+						data)
+					this.showNoData = this.dataList.length == 0 ? true : false
+					if (this.dataList.length >= this.total) {
+						this.hittingBottom = true
+						this.loading = false
+					} else {
+						this.hittingBottom = false
+						this.loading = true
+					}
 
-				if (this.dataList.length >= this.total) {
-					this.hittingBottom = true
-				} else {
-					this.hittingBottom = false
-				}
-
-				this.isRefreshing = false;
-				this.loading = false;
-				if (this.page >= 5) {
-					this.loading = false;
+					this.isRefreshing = false;
+				} catch (error) {
+					uni.showToast({
+						title: '加载失败',
+						icon: 'none',
+					});
 				}
 			}
 		},
@@ -211,7 +158,7 @@
 
 				.picker {
 					background-color: #fff;
-					
+
 					font-size: 16px;
 				}
 			}

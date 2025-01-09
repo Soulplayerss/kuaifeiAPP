@@ -4,7 +4,7 @@
 		<view style="padding: 16px;">
 			<view class="content">
 				<view style="text-align: right;margin-bottom: 16px;">
-					<span style="color: #eea618;">刷新</span>
+					<span style="color: #eea618;" @click="onRefresh">刷新</span>
 				</view>
 				<view class="list">
 					<scroll-view v-if="dataList.length" scroll-y @refresherrefresh="onRefresh"
@@ -17,19 +17,21 @@
 							</view>
 							<view class="rightInfo">
 								<view>
-									订单编号：{{item.code}}
+									订单编号：{{item.assetNo}}
 								</view>
 								<view>
-									<span>充值数量：{{item.number}}电池</span>
+									<span>充值数量：{{item.totalAmount}}电池</span>
 								</view>
 								<view class="flex justify-between">
-									<span>支付时间：{{item.createTime}}</span>
+									<span>支付时间：{{item.updateTime}}</span>
 									<span style="min-width:90px;">状态：<span
-											:style="{color:item.status == '已到账' ? '#81ee6d' : '#c38513'}">{{item.status}}</span></span>
+											:style="{color:item.status == 1 ? '#81ee6d' : '#c38513'}">
+											{{item.status == 0 ? '审核中' : item.status == 1 ? '已到账' :  item.status == 2 ? '已驳回' : ''}}
+										</span></span>
 								</view>
 								<view class="flex justify-between">
-									创建时间：{{item.processingTime}}
-									<span style="min-width: 90px;">支付：{{item.type}}</span>
+									创建时间：{{item.createTime}}
+									<span style="min-width: 90px;">支付：{{item.remark}}</span>
 								</view>
 							</view>
 						</view>
@@ -38,6 +40,7 @@
 						<u-loadmore v-show="hittingBottom" loadmoreText="没有更多数据" color="#1CD29B" lineColor="#1CD29B"
 							dashed line />
 					</scroll-view>
+					<NoData v-show="showNoData" />
 				</view>
 			</view>
 		</view>
@@ -46,20 +49,24 @@
 
 <script>
 	import AppBar from '@/components/common/AppBar.vue'
+	import NoData from '@/components/common/NoData.vue'
+	import request from '@/utils/request';
 	export default {
 		data() {
 			return {
-				page: 1,
+				pageNum: 1,
 				pageSize: 10,
 				loading: false,
 				isRefreshing: false,
 				total: 18,
 				hittingBottom: false,
+				showNoData: false,
 				dataList: [],
 			}
 		},
 		components: {
-			AppBar
+			AppBar,
+			NoData
 		},
 		methods: {
 			goBank() {
@@ -72,7 +79,7 @@
 				if (this.isRefreshing) return;
 
 				this.isRefreshing = true;
-				this.page = 1;
+				this.pageNum = 1;
 				setTimeout(() => {
 					this.dataList = []
 					this.loadData();
@@ -85,108 +92,37 @@
 				if (this.hittingBottom) return;
 				this.loading = true;
 				setTimeout(() => {
-					this.page++;
+					this.pageNum++;
 					this.loadData()
 				}, 1000)
 			},
-			// 加载数据方法
-			loadData() {
-				const data = [{
-						code: 'weqdascacacqqeq11346515',
-						type: '车辆',
-						status: '已到账',
-						createTime: '2024-12-05',
-						name: '张三风',
-						processingTime: '2024-12-05',
-						number: '100'
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						type: '车辆',
-						status: '已到账',
-						createTime: '2024-12-05',
-						name: '张三风',
-						processingTime: '2024-12-05',
-						number: '100'
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						type: '车辆',
-						status: '未到账',
-						createTime: '2024-12-05',
-						name: '张三风',
-						processingTime: '2024-12-05',
-						number: '100'
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						type: '车辆',
-						status: '未回复',
-						createTime: '2024-12-05',
-						name: '张三风',
-						processingTime: '2024-12-05',
-						number: '100'
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						type: '车辆',
-						status: '已回复',
-						createTime: '2024-12-05',
-						name: '张三风',
-						processingTime: '2024-12-05',
-						number: '100'
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						type: '车辆',
-						status: '未回复',
-						createTime: '2024-12-05',
-						name: '张三风',
-						processingTime: '2024-12-05',
-						number: '100'
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						type: '车辆',
-						status: '已回复',
-						createTime: '2024-12-05',
-						name: '张三风',
-						processingTime: '2024-12-05',
-						number: '100'
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						type: '车辆',
-						status: '未回复',
-						createTime: '2024-12-05',
-						name: '张三风',
-						processingTime: '2024-12-05',
-						number: '100'
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						type: '车辆',
-						status: '已回复',
-						createTime: '2024-12-05',
-						name: '张三风',
-						processingTime: '2024-12-05',
-						number: '100'
-					},
-				]
+			async loadData() {
+				try {
+					const response = await request('/app/assetDetail/list', 'GET', {
+						pageNum: this.pageNum,
+						pageSize: this.pageSize,
+						type: 2
 
-				this.dataList = this.page === 1 ? data : this.dataList.concat(
-					data)
+					})
+					const data = response.rows
+					this.total = response.total
+					this.dataList = this.pageNum === 1 ? data : this.dataList.concat(
+						data)
+					this.showNoData = this.dataList.length == 0 ? true : false
+					if (this.dataList.length >= this.total) {
+						this.hittingBottom = true
+						this.loading = false
+					} else {
+						this.hittingBottom = false
+						this.loading = true
+					}
 
-				if (this.dataList.length >= this.total) {
-					this.hittingBottom = true
-				} else {
-					this.hittingBottom = false
-				}
-
-				this.isRefreshing = false;
-				this.loading = false;
-				if (this.page >= 5) {
-					this.loading = false;
+					this.isRefreshing = false;
+				} catch (error) {
+					uni.showToast({
+						title: '加载失败',
+						icon: 'none',
+					});
 				}
 			}
 		},

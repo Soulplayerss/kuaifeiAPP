@@ -8,6 +8,7 @@ export const store = new Vuex.Store({
 		siteStatus: [],
 		siteType: [],
 		siteLabel: [],
+		userInfo: {}
 	},
 	mutations: {
 		setSiteStatus(state) {
@@ -34,6 +35,14 @@ export const store = new Vuex.Store({
 				}
 			});
 		},
+		setUserInfo(state) {
+			uni.getStorage({
+				key: 'userInfo',
+				success(res) {
+					state.userInfo = res.data;
+				}
+			});
+		},
 	},
 	actions: {
 		async fetchEmun({
@@ -41,10 +50,11 @@ export const store = new Vuex.Store({
 		}) {
 			try {
 				// 并行请求多个接口
-				const [siteStatus, siteType, siteLabel] = await Promise.all([
+				const [siteStatus, siteType, siteLabel,userInfo] = await Promise.all([
 					request('/system/dict/data/type/app_site_status', 'GET'), // 场地状态
 					request('/system/dict/data/type/app_site_type', 'GET'), // 场地类型
 					request('/system/dict/data/type/app_site_label', 'GET'), // 场地标签
+					request('/app/asset/getUserInfo', 'GET'), // 用户信息
 				]);
 
 				// 将返回的结果存储到本地缓存
@@ -69,6 +79,14 @@ export const store = new Vuex.Store({
 						commit('setSiteLabel');
 					}
 				});
+				
+				uni.setStorage({
+					key: 'userInfo',
+					data: userInfo.data,
+					success(res) {
+						commit('setUserInfo');
+					}
+				});
 
 			} catch (error) {
 				// 处理请求失败的情况
@@ -84,5 +102,6 @@ export const store = new Vuex.Store({
 		getSiteStatus: (state) => state.siteStatus,
 		getSiteTyp: (state) => state.siteType,
 		getSiteLabel: (state) => state.siteLabel,
+		getUserInfo: (state) => state.userInfo
 	},
 });
