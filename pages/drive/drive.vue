@@ -4,6 +4,29 @@
 			<image src="../../assets/images/over.png" mode="" style="width: 30px;height: 30px;"></image>
 		</view>
 
+		<view class="slider">
+			<view class="sliderItem" v-for="(item,index) in carInfo.appCarChannelList" :key="item.channelId">
+				<span>{{item.channelName}}</span>
+				<span>{{item.minValue}}</span>
+				<view class="sliderBox">
+					<view class="leftBox" :style="{ left: sliderLeftList[index].x + 'px'}"
+						@touchstart="onSliderLeftTouchStart(index,$event)"
+						@touchmove="onSliderLeftTouchMove(index,$event)" @touchend="onSliderLeftTouchEnd(index,$event)">
+					</view>
+					<view class="box1"></view>
+					<view class="rightBox" :style="{ left: sliderRightList[index].x + 'px'}"
+						@touchstart="onSliderRightTouchStart(index,$event)"
+						@touchmove="onSliderRightTouchMove(index,$event)"
+						@touchend="onSliderRightTouchEnd(index,$event)">
+					</view>
+					<view class="box2" :id="`slider${index + 1}`" :style="{left:sliderLeftList[index].box2Left + 'px'}">
+						<view class="dire"></view>
+					</view>
+				</view>
+				<span>{{item.maxValue}}</span>
+			</view>
+		</view>
+
 		<view class="operateBox">
 			<view class="parent">
 				<view class="draggable" id="motor" :style="{ left: leftHandle.x + 'px', top: leftHandle.y + 'px' }"
@@ -46,7 +69,32 @@
 				isBack: false, // 最大重连次数
 				macAddress: '',
 				carId: '',
-				carInfo: {},
+				carInfo: {
+					appCarChannelList: [{
+							channelId: 1,
+							maxValue: 3000,
+							minValue: 2000
+						},
+						{
+							channelId: 2,
+							maxValue: 3000,
+							minValue: 2000
+						},
+						{
+							channelId: 3,
+							maxValue: 3000,
+							minValue: 2000
+						},
+						{
+							channelId: 4,
+							maxValue: 3000,
+							minValue: 2000
+						},
+					]
+				},
+				sliderLeftList: [],
+				sliderRightList: [],
+				box2Left: 0,
 				leftHandle: {
 					x: 50,
 					y: 50,
@@ -75,7 +123,7 @@
 			// 设置横屏
 			// plus.screen.lockOrientation('landscape-primary');
 			this.getCarInfo()
-			this.initWebSocket();
+			// this.initWebSocket();
 		},
 		onUnload() {
 
@@ -110,6 +158,94 @@
 				uni.navigateTo({
 					url: '/pages/car/car'
 				});
+			},
+			onSliderLeftTouchStart(index, event) {
+				const touch = event.touches[event.touches.length - 1]; // 当前的最后一个触摸点
+				const handle = this.sliderLeftList[index];
+				if (!handle.isDragging) {
+					handle.isDragging = true;
+					handle.startX = touch.clientX - handle.x;
+					handle.startY = touch.clientY - handle.y;
+					handle.identifier = touch.identifier; // 记录触摸点的 identifier
+				}
+			},
+			onSliderLeftTouchMove(index, event) {
+				const handle = this.sliderLeftList[index];
+				if (!handle.isDragging) return;
+
+				// 根据 identifier 找到当前触摸点
+				const touch = Array.from(event.touches).find(
+					(t) => t.identifier === handle.identifier
+				);
+				if (!touch) return;
+
+				const newX = touch.clientX - handle.startX;
+
+				const maxX = this.sliderRightList[index].x - 36;
+
+				handle.x = Math.min(Math.max(newX, 0), maxX)
+				handle.box2Left = Math.min(Math.max(newX, 0), maxX)
+				let sliderDocment = document.getElementById(`slider${index + 1}`)
+				let sliderDocmentWidth = sliderDocment.offsetWidth
+				sliderDocment.style.width = (this.sliderRightList[index].x - Math.min(Math.max(newX, 0), maxX)) + 'px'
+				let channelItem = this.carInfo.appCarChannelList[index]
+				channelItem.minValue = Math.round(channelItem.defaultMinValue + (((channelItem.defaultMaxValue -
+					channelItem.defaultMinValue) / 200) * handle.x))
+			},
+			onSliderLeftTouchEnd(index, event) {
+				const handle = this.sliderLeftList[index];
+				const touch = Array.from(event.changedTouches).find(
+					(t) => t.identifier === handle.identifier
+				);
+				if (touch) {
+					handle.isDragging = false;
+					handle.identifier = null;
+				}
+			},
+			onSliderRightTouchStart(index, event) {
+				const touch = event.touches[event.touches.length - 1]; // 当前的最后一个触摸点
+				const handle = this.sliderRightList[index];
+				if (!handle.isDragging) {
+					handle.isDragging = true;
+					handle.startX = touch.clientX - handle.x;
+					handle.startY = touch.clientY - handle.y;
+					handle.identifier = touch.identifier; // 记录触摸点的 identifier
+				}
+			},
+			onSliderRightTouchMove(index, event) {
+				const handle = this.sliderRightList[index];
+				if (!handle.isDragging) return;
+
+				// 根据 identifier 找到当前触摸点
+				const touch = Array.from(event.touches).find(
+					(t) => t.identifier === handle.identifier
+				);
+				if (!touch) return;
+
+				const newX = touch.clientX - handle.startX;
+
+				const maxX = 182;
+
+				handle.x = Math.min(Math.max(newX, 0), maxX)
+				let sliderDocment = document.getElementById(`slider${index + 1}`)
+				sliderDocment.style.width = (Math.min(Math.max(newX, 0), maxX) - this.sliderLeftList[index].x) + 'px'
+				if (handle.x <= (this.sliderLeftList[index].x + 36)) {
+					handle.x = this.sliderLeftList[index].x + 36
+					sliderDocment.style.width = 36 + 'px'
+				}
+				let channelItem = this.carInfo.appCarChannelList[index]
+				channelItem.maxValue = Math.round(channelItem.defaultMaxValue - (((channelItem.defaultMaxValue -
+					channelItem.defaultMinValue) / 200) * (182 - handle.x)))
+			},
+			onSliderRightTouchEnd(index, event) {
+				const handle = this.sliderRightList[index];
+				const touch = Array.from(event.changedTouches).find(
+					(t) => t.identifier === handle.identifier
+				);
+				if (touch) {
+					handle.isDragging = false;
+					handle.identifier = null;
+				}
 			},
 			// 触摸开始
 			onTouchStart(handleKey, event) {
@@ -164,7 +300,7 @@
 					this.sendMessage(JSON.stringify({
 						"bizCode": 602, //固定值
 						"channelNum": 2, // 通道号1-8
-						"duty": 1500, //通道信号的高电平时间（单位微秒）
+						"duty": this.getDutyValue(2, 0), //通道信号的高电平时间（单位微秒）
 						"timestamp": new Date().getTime(),
 						"mac": this.macAddress //设备mac地址
 					}))
@@ -173,7 +309,7 @@
 					this.sendMessage(JSON.stringify({
 						"bizCode": 602, //固定值
 						"channelNum": 1, // 通道号1-8
-						"duty": 1500, //通道信号的高电平时间（单位微秒）
+						"duty": this.getDutyValue(1, 0), //通道信号的高电平时间（单位微秒）
 						"timestamp": new Date().getTime(),
 						"mac": this.macAddress //设备mac地址
 					}))
@@ -320,7 +456,7 @@
 			},
 			initWebSocket() {
 				this.socket = uni.connectSocket({
-					url: `ws://36552354.r32.cpolar.top/ws/${this.macAddress}`,
+					url: `ws://36d29893.r32.cpolar.top/ws/${this.macAddress}`,
 					success: () => {
 						console.log('WebSocket连接成功');
 					},
@@ -434,22 +570,77 @@
 				}
 			},
 			async getCarInfo() {
-				try {
-					const response = await request(`/app/carInfo/getInfoByCarId/${this.carId}`, 'GET')
-					this.carInfo = response.data
-				} catch (error) {
-					uni.showToast({
-						title: '加载失败',
-						icon: 'none',
-					});
-				}
+				// try {
+				// 	const response = await request(`/app/carInfo/getInfoByCarId/${this.carId}`, 'GET')
+				// 	if (response.code === 200) {
+				// 		this.carInfo = response.data
+				// 		if (this.carInfo.appCarChannelList.length) {
+				// 			this.carInfo.appCarChannelList.forEach((item) => {
+				// 				item.defaultMinValue = item.minValue
+				// 				item.defaultMaxValue = item.maxValue
+				// 				this.sliderLeftList.push({
+				// 					x: 0,
+				// 					y: 0,
+				// 					isDragging: false,
+				// 					startX: 0,
+				// 					startY: 0,
+				// 					box2Left: 0,
+				// 					identifier: null
+				// 				})
+				// 				this.sliderRightList.push({
+				// 					x: 182,
+				// 					y: 0,
+				// 					isDragging: false,
+				// 					startX: 0,
+				// 					startY: 0,
+				// 					box2Left: 0,
+				// 					identifier: null
+				// 				})
+				// 			})
+				// 		}
+				// 	}
+				// } catch (error) {
+				// 	uni.showToast({
+				// 		title: '加载失败',
+				// 		icon: 'none',
+				// 	});
+				// }
+				this.carInfo.appCarChannelList.forEach((item) => {
+					item.defaultMinValue = item.minValue
+					item.defaultMaxValue = item.maxValue
+					this.sliderLeftList.push({
+						x: 0,
+						y: 0,
+						isDragging: false,
+						startX: 0,
+						startY: 0,
+						box2Left: 0,
+						identifier: null
+					})
+					this.sliderRightList.push({
+						x: 182,
+						y: 0,
+						isDragging: false,
+						startX: 0,
+						startY: 0,
+						box2Left: 0,
+						identifier: null
+					})
+				})
 			},
 			getDutyValue(channelName, number) {
 				let maxValue = this.carInfo.appCarChannelList.find((item) => item.channelId == channelName).maxValue
 				let minValue = this.carInfo.appCarChannelList.find((item) => item.channelId == channelName).minValue
 				let median = (maxValue + minValue) / 2 // 中间值
 				let share = (maxValue - minValue) / 10 // 份额
-				let value = median + (share * number)
+				let value = Math.round(median + (share * number))
+				if (number == 5) {
+					value = maxValue
+				} else if (number == -5) {
+					value = minValue
+				}
+
+				return value
 			}
 		},
 		beforeDestroy() {
@@ -463,20 +654,83 @@
 
 <style scoped lang="less">
 	.container {
-		display: flex;
-		justify-content: start;
-		align-items: center;
 		height: 100vh;
 		width: 100vw;
 		background-color: rgba(0, 0, 0, 0.8);
 
 		.back {
-			position: fixed;
-			z-index: 2;
-			top: 20px;
-			left: 20px;
+			padding: 20px;
 			width: 30px;
 			height: 30px;
+		}
+
+		.slider {
+			width: 100%;
+			display: flex;
+			flex-wrap: wrap;
+
+			.sliderItem {
+				width: 50%;
+				display: flex;
+				align-items: center;
+				gap: 16px;
+				box-sizing: border-box;
+				padding: 16px;
+				color: #FFF;
+				font-size: 14px;
+
+				.sliderBox {
+					width: 200px;
+					height: 18px;
+					display: flex;
+					align-items: center;
+					position: relative;
+					overflow: hidden;
+
+					.box1 {
+						width: 100%;
+						height: 3px;
+						background-color: #8fcac3;
+					}
+
+					.box2 {
+						position: absolute;
+						top: 0;
+						left: 0;
+						width: 100%;
+						height: 100%;
+						display: flex;
+						align-items: center;
+						z-index: 2;
+
+						.dire {
+							width: 100%;
+							height: 3px;
+							background-color: #f0dd09;
+						}
+
+					}
+
+					.leftBox,
+					.rightBox {
+						position: absolute;
+						z-index: 3;
+						top: 0;
+						width: 18px;
+						height: 18px;
+						border-radius: 50%;
+						background-color: #eea618;
+					}
+
+					.leftBox {
+						left: 0;
+					}
+
+					.rightBox {
+						right: 182px;
+					}
+				}
+			}
 		}
 	}
 
