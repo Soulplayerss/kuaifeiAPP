@@ -69,29 +69,7 @@
 				isBack: false, // 最大重连次数
 				macAddress: '',
 				carId: '',
-				carInfo: {
-					appCarChannelList: [{
-							channelId: 1,
-							maxValue: 3000,
-							minValue: 2000
-						},
-						{
-							channelId: 2,
-							maxValue: 3000,
-							minValue: 2000
-						},
-						{
-							channelId: 3,
-							maxValue: 3000,
-							minValue: 2000
-						},
-						{
-							channelId: 4,
-							maxValue: 3000,
-							minValue: 2000
-						},
-					]
-				},
+				carInfo: {},
 				sliderLeftList: [],
 				sliderRightList: [],
 				box2Left: 0,
@@ -570,63 +548,41 @@
 				}
 			},
 			async getCarInfo() {
-				// try {
-				// 	const response = await request(`/app/carInfo/getInfoByCarId/${this.carId}`, 'GET')
-				// 	if (response.code === 200) {
-				// 		this.carInfo = response.data
-				// 		if (this.carInfo.appCarChannelList.length) {
-				// 			this.carInfo.appCarChannelList.forEach((item) => {
-				// 				item.defaultMinValue = item.minValue
-				// 				item.defaultMaxValue = item.maxValue
-				// 				this.sliderLeftList.push({
-				// 					x: 0,
-				// 					y: 0,
-				// 					isDragging: false,
-				// 					startX: 0,
-				// 					startY: 0,
-				// 					box2Left: 0,
-				// 					identifier: null
-				// 				})
-				// 				this.sliderRightList.push({
-				// 					x: 182,
-				// 					y: 0,
-				// 					isDragging: false,
-				// 					startX: 0,
-				// 					startY: 0,
-				// 					box2Left: 0,
-				// 					identifier: null
-				// 				})
-				// 			})
-				// 		}
-				// 	}
-				// } catch (error) {
-				// 	uni.showToast({
-				// 		title: '加载失败',
-				// 		icon: 'none',
-				// 	});
-				// }
-				this.carInfo.appCarChannelList.forEach((item) => {
-					item.defaultMinValue = item.minValue
-					item.defaultMaxValue = item.maxValue
-					this.sliderLeftList.push({
-						x: 0,
-						y: 0,
-						isDragging: false,
-						startX: 0,
-						startY: 0,
-						box2Left: 0,
-						identifier: null
-					})
-					this.sliderRightList.push({
-						x: 182,
-						y: 0,
-						isDragging: false,
-						startX: 0,
-						startY: 0,
-						box2Left: 0,
-						identifier: null
-					})
-				})
+				try {
+					const response = await request(`/app/carInfo/getInfoByCarId/${this.carId}`, 'GET')
+					if (response.code === 200) {
+						this.carInfo = response.data
+						if (this.carInfo.appCarChannelList.length) {
+							this.carInfo.appCarChannelList.forEach((item) => {
+								item.defaultMinValue = item.minValue
+								item.defaultMaxValue = item.maxValue
+								this.sliderLeftList.push({
+									x: 0,
+									y: 0,
+									isDragging: false,
+									startX: 0,
+									startY: 0,
+									box2Left: 0,
+									identifier: null
+								})
+								this.sliderRightList.push({
+									x: 182,
+									y: 0,
+									isDragging: false,
+									startX: 0,
+									startY: 0,
+									box2Left: 0,
+									identifier: null
+								})
+							})
+						}
+					}
+				} catch (error) {
+					uni.showToast({
+						title: '加载失败',
+						icon: 'none',
+					});
+				}
 			},
 			getDutyValue(channelName, number) {
 				let maxValue = this.carInfo.appCarChannelList.find((item) => item.channelId == channelName).maxValue
