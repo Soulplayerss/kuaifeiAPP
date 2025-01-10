@@ -1,13 +1,9 @@
-const BASE_URL = 'https://e792bad.r32.cpolar.top';
+const BASE_URL = 'http://1.95.71.155:8888';
+// const BASE_URL = 'https://46dba18f.r32.cpolar.top';
 const request = (url, method = 'GET', data = {}, headers = {}) => {
   return new Promise((resolve, reject) => {
 	var token = ''
-	uni.getStorage({
-		key: 'Token',
-		success(res) {
-			token = res.data
-		}
-	})
+	token = uni.getStorageSync('Token')
     uni.request({
       url: `${BASE_URL}${url}`,
       method: method.toUpperCase(),

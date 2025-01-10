@@ -91,10 +91,9 @@ export const store = new Vuex.Store({
 			} catch (error) {
 				// 处理请求失败的情况
 				uni.showToast({
-					title: '加载失败',
+					title: error,
 					icon: 'none',
 				});
-				console.error('加载数据失败:', error);
 			}
 		},
 	},

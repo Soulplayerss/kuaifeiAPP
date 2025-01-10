@@ -4,7 +4,7 @@
 			<image src="../../assets/images/over.png" mode="" style="width: 30px;height: 30px;"></image>
 		</view>
 
-		<view class="slider">
+		<view class="slider" v-show="carInfo.appCarChannelList && carInfo.appCarChannelList.length> 0">
 			<view class="sliderItem" v-for="(item,index) in carInfo.appCarChannelList" :key="item.channelId">
 				<span>{{item.channelName}}</span>
 				<span>{{item.minValue}}</span>
@@ -19,7 +19,8 @@
 						@touchmove="onSliderRightTouchMove(index,$event)"
 						@touchend="onSliderRightTouchEnd(index,$event)">
 					</view>
-					<view class="box2" :id="`slider${index + 1}`" :style="{left:sliderLeftList[index].box2Left + 'px'}">
+					<view class="box2" :id="`slider${index + 1}`"
+						:style="{left:sliderLeftList[index].box2Left + 'px', width:sliderLeftList[index].box2Width + 'px'}">
 						<view class="dire"></view>
 					</view>
 				</view>
@@ -99,15 +100,14 @@
 			this.macAddress = macAddress
 			this.carId = carId
 			// 设置横屏
-			// plus.screen.lockOrientation('landscape-primary');
+			plus.screen.lockOrientation('landscape-primary');
 			this.getCarInfo()
-			// this.initWebSocket();
+			this.initWebSocket();
 		},
 		onUnload() {
-
 			this.closeWebSocket();
 			// 页面卸载时恢复竖屏
-			// plus.screen.lockOrientation('portrait-primary')
+			plus.screen.lockOrientation('portrait-primary')
 		},
 		mounted() {
 			// 获取父元素和子元素的宽高
@@ -130,9 +130,10 @@
 		},
 		methods: {
 			back() {
-				// plus.screen.lockOrientation('portrait-primary')
+				this.clearHeartbeat(); // 清理心跳和重连
 				this.closeWebSocket();
 				this.isBack = true
+				plus.screen.lockOrientation('portrait-primary')
 				uni.navigateTo({
 					url: '/pages/car/car'
 				});
@@ -163,9 +164,8 @@
 
 				handle.x = Math.min(Math.max(newX, 0), maxX)
 				handle.box2Left = Math.min(Math.max(newX, 0), maxX)
-				let sliderDocment = document.getElementById(`slider${index + 1}`)
-				let sliderDocmentWidth = sliderDocment.offsetWidth
-				sliderDocment.style.width = (this.sliderRightList[index].x - Math.min(Math.max(newX, 0), maxX)) + 'px'
+				handle.box2Width = this.sliderRightList[index].x - Math.min(Math.max(newX, 0), maxX)
+
 				let channelItem = this.carInfo.appCarChannelList[index]
 				channelItem.minValue = Math.round(channelItem.defaultMinValue + (((channelItem.defaultMaxValue -
 					channelItem.defaultMinValue) / 200) * handle.x))
@@ -205,12 +205,11 @@
 				const maxX = 182;
 
 				handle.x = Math.min(Math.max(newX, 0), maxX)
-				let sliderDocment = document.getElementById(`slider${index + 1}`)
-				sliderDocment.style.width = (Math.min(Math.max(newX, 0), maxX) - this.sliderLeftList[index].x) + 'px'
+
 				if (handle.x <= (this.sliderLeftList[index].x + 36)) {
 					handle.x = this.sliderLeftList[index].x + 36
-					sliderDocment.style.width = 36 + 'px'
 				}
+				this.sliderLeftList[index].box2Width = handle.x - this.sliderLeftList[index].x
 				let channelItem = this.carInfo.appCarChannelList[index]
 				channelItem.maxValue = Math.round(channelItem.defaultMaxValue - (((channelItem.defaultMaxValue -
 					channelItem.defaultMinValue) / 200) * (182 - handle.x)))
@@ -273,7 +272,7 @@
 				const touch = Array.from(event.changedTouches).find(
 					(t) => t.identifier === handle.identifier
 				);
-				if (event.target.id == 'motor') {
+				if (event.target.id == 'motor' && this.carInfo) {
 					clearInterval(this.intervarTime)
 					this.sendMessage(JSON.stringify({
 						"bizCode": 602, //固定值
@@ -432,9 +431,30 @@
 					this.rudderoldDirection = this.ruddernewDirection;
 				}
 			},
+
+			getCurrentTime() {
+				const now = new Date(); // 获取当前时间
+
+				// 获取各个时间部分
+				const year = now.getFullYear(); // 年
+				const month = now.getMonth() + 1; // 月（0-11，所以要加 1）
+				const day = now.getDate(); // 日
+				const hours = now.getHours(); // 时
+				const minutes = now.getMinutes(); // 分
+				const seconds = now.getSeconds(); // 秒
+
+				// 格式化时间为 年月日 时分秒
+				let currentTime =
+					`${year}年${this.formatTime(month)}月${this.formatTime(day)}日 ${this.formatTime(hours)}:${this.formatTime(minutes)}:${this.formatTime(seconds)}`
+				return currentTime
+			},
+			// 补零函数，确保两位数显示
+			formatTime(time) {
+				return time < 10 ? `0${time}` : time;
+			},
 			initWebSocket() {
 				this.socket = uni.connectSocket({
-					url: `ws://36d29893.r32.cpolar.top/ws/${this.macAddress}`,
+					url: `ws://1.95.71.155:8888/ws/${this.macAddress}`,
 					success: () => {
 						console.log('WebSocket连接成功');
 					},
@@ -451,7 +471,7 @@
 
 				// 监听 WebSocket 收到消息事件
 				this.socket.onMessage((event) => {
-					console.log('收到消息：', event)
+					this.message = event.data
 					// 如果是心跳响应
 					if (event.data === 'pong') {
 						console.log('收到心跳响应: pong');
@@ -478,9 +498,7 @@
 			startHeartbeat() {
 				// 定时发送心跳消息
 				this.heartbeatInterval = setInterval(() => {
-					if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-						this.sendMessage('ping')
-					}
+					this.sendMessage('ping')
 				}, 5000); // 每5秒发送一次心跳
 
 				// 设置心跳超时检测
@@ -524,6 +542,7 @@
 						data: message,
 						success: () => {
 							console.log('消息发送成功:', message);
+							this.ping = message
 						},
 						fail: (err) => {
 							console.error('消息发送失败:', err);
@@ -563,6 +582,7 @@
 									startX: 0,
 									startY: 0,
 									box2Left: 0,
+									box2Width: 200,
 									identifier: null
 								})
 								this.sliderRightList.push({
@@ -585,18 +605,23 @@
 				}
 			},
 			getDutyValue(channelName, number) {
-				let maxValue = this.carInfo.appCarChannelList.find((item) => item.channelId == channelName).maxValue
-				let minValue = this.carInfo.appCarChannelList.find((item) => item.channelId == channelName).minValue
-				let median = (maxValue + minValue) / 2 // 中间值
-				let share = (maxValue - minValue) / 10 // 份额
-				let value = Math.round(median + (share * number))
-				if (number == 5) {
-					value = maxValue
-				} else if (number == -5) {
-					value = minValue
-				}
+				if (this.carInfo.appCarChannelList && this.carInfo.appCarChannelList.length > 0) {
 
-				return value
+					let maxValue = this.carInfo.appCarChannelList.find((item) => item.channelId == channelName).maxValue
+					let minValue = this.carInfo.appCarChannelList.find((item) => item.channelId == channelName).minValue
+					let median = (maxValue + minValue) / 2 // 中间值
+					let share = (maxValue - minValue) / 10 // 份额
+					let value = Math.round(median + (share * number))
+					if (number == 5) {
+						value = maxValue
+					} else if (number == -5) {
+						value = minValue
+					}
+
+					return value
+				} else {
+					return 0
+				}
 			}
 		},
 		beforeDestroy() {
@@ -634,6 +659,7 @@
 				padding: 16px;
 				color: #FFF;
 				font-size: 14px;
+				flex-wrap: wrap;
 
 				.sliderBox {
 					width: 200px;
@@ -653,7 +679,6 @@
 						position: absolute;
 						top: 0;
 						left: 0;
-						width: 100%;
 						height: 100%;
 						display: flex;
 						align-items: center;
@@ -699,6 +724,8 @@
 		justify-content: space-between;
 		box-sizing: border-box;
 		padding: 30px;
+		text-align: center;
+		color: #FFF;
 
 		.parent {
 			position: relative;

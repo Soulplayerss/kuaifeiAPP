@@ -174,9 +174,9 @@
 						(item, index) => {
 							item.sitePictureUrl = requestUrl + item.sitePictureUrl.split(",")[0];
 							item.myCsq = this.getValueBetweenChars(item.myCsq || '+signal#10,0', '#', ',')
-							// this.pollingTime[index] = setInterval(() => {
-							// 	this.polling(item.macAddress, index)
-							// }, 10000)
+							this.pollingTime[index] = setInterval(() => {
+								this.polling(item.macAddress, index)
+							}, 10000)
 						}) : ''
 					if (this.dataList.length >= this.total) {
 						this.hittingBottom = true
@@ -251,10 +251,12 @@
 			this.loadData();
 		},
 		onHide() {
-			this.dataList.forEach(
-				(item, index) => {
-					clearInterval(this.pollingTime[index])
-				})
+			if (this.dataList.length) {
+				this.dataList.forEach(
+					(item, index) => {
+						clearInterval(this.pollingTime[index])
+					})
+			}
 			this.pollingTime = []
 		}
 	}

@@ -78,18 +78,22 @@
 						data: this.userInfo,
 						success: (res) => {
 							if (res.data.code === 200) {
-								uni.setStorage({
-									data: res.data.token,
-									key: 'Token'
-								})
-								this.fetchEmun()
-								uni.showToast({
-									title: '登录成功',
-									icon: 'success',
-								});
-								uni.navigateTo({
-									url: '/pages/index/index',
-								})
+								uni.setStorageSync('Token', res.data.token)
+								let tokenInterval = setInterval(() => {
+									var token = ''
+									token = uni.getStorageSync('Token')
+									if (token != '') {
+										clearInterval(tokenInterval)
+										this.fetchEmun()
+										uni.showToast({
+											title: '登录成功',
+											icon: 'success',
+										});
+										uni.navigateTo({
+											url: '/pages/index/index',
+										})
+									}
+								}, 200)
 							} else {
 								uni.showToast({
 									title: res.data.msg,
