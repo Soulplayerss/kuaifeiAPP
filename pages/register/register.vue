@@ -47,6 +47,9 @@
 		<view class="forgetPassword" @click="toLogin">
 			有账号？去登陆
 		</view>
+		<view class="">
+			验证码：{{code}}
+		</view>
 		<u-button type="primary" shape="circle" text="注册" class="btn" style="color: #30313D;"
 			color="linear-gradient(to bottom, rgb(255,241,204), rgb(255, 227, 157))" @click="register"></u-button>
 		<view class="protocol">
@@ -78,6 +81,7 @@
 					inviteCode: '',
 					password: '',
 				},
+				code:'',
 				confirmPassword: '',
 				tips: '发送验证码',
 				protocolValue: [],
@@ -130,7 +134,6 @@
 			},
 			clsoeEvent(type) {
 				this.protocolValue = [type]
-
 			},
 			getCode() {
 				let count = 10
@@ -151,6 +154,7 @@
 					success: (res) => {
 						if (res.data.code === 200) {
 							console.log('请求成功:', res.data);
+							this.code = res.data.msg
 						} else {
 							console.error('请求失败:', res);
 						}

@@ -104,7 +104,6 @@
 			this.closeWebSocket();
 		},
 		mounted() {
-			console.log(this.carInfo)
 			if (this.carInfo.appCarChannelList.length) {
 				this.carInfo.appCarChannelList.forEach((item) => {
 					item.defaultMinValue = item.minValue
