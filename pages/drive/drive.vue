@@ -1,8 +1,5 @@
 <template>
 	<view class="drive">
-		<view class="back" @click="back">
-			<image src="../../assets/images/over.png" mode="" style="width: 30px;height: 30px;"></image>
-		</view>
 		<DualChannel :carInfo="carInfo" :macAddress="macAddress" v-if="showDualChannel" />
 		<FourChannel :carInfo="carInfo" :macAddress="macAddress" v-if="showFourChannel" />
 	</view>
@@ -40,13 +37,10 @@
 			// 页面卸载时恢复竖屏
 			plus.screen.lockOrientation('portrait-primary')
 		},
+		onHide() {
+			plus.screen.lockOrientation('portrait-primary')
+		},
 		methods: {
-			back() {
-				plus.screen.lockOrientation('portrait-primary')
-				uni.navigateTo({
-					url: '/pages/car/car'
-				});
-			},
 			async getCarInfo() {
 				try {
 					const response = await request(`/app/carInfo/getInfoByCarId/${this.carId}`, 'GET')
@@ -78,10 +72,6 @@
 		height: 100%;
 		background-color: rgba(0, 0, 0, 0.8);
 		overflow: hidden;
-		.back {
-			padding: 20px;
-			width: 30px;
-			height: 30px;
-		}
+
 	}
 </style>

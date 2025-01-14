@@ -36,14 +36,14 @@
 					<text class="u-collapse-content">系统设置</text>
 				</u-collapse-item>
 				<u-collapse-item title="通道设置">
-					<view class="carChannel" v-for="item in carInfo.appCarChannelList" :key="item.channelId">
+					<view class="carChannel" v-for="(item,index) in carInfo.appCarChannelList" :key="item.channelId">
 						<view class="channelName">
 							{{item.channelName}}
 						</view>
 						<view class="channelValue">
-							<input type="number" v-model="item.minValue" class="valueInput" />
+							<input type="number" @blur="handleBlur($event,index,'minValue')" v-model="item.minValue" class="valueInput" />
 							<span>-</span>
-							<input type="number" v-model="item.maxValue" class="valueInput" />
+							<input type="number" @blur="handleBlur($event,index,'maxValue')" v-model="item.maxValue" class="valueInput" />
 						</view>
 					</view>
 				</u-collapse-item>
@@ -118,6 +118,20 @@
 					url: '/pages/car/car',
 				})
 			},
+			handleBlur(event,index,type){
+				let value = event.detail.value
+				if(type == 'minValue'){
+					if(value >= 1400){
+						this.carInfo.appCarChannelList[index].minValue = 1400
+					}else if(value <= 0){
+						this.carInfo.appCarChannelList[index].minValue = 0
+					}
+				}else {
+					if(value <= 1600){
+						this.carInfo.appCarChannelList[index].maxValue = 1600
+					}
+				}
+			},
 			async getCarInfo() {
 				try {
 					const response = await request(`/app/carInfo/getInfoByCarId/${this.carId}`, 'GET')
@@ -158,7 +172,10 @@
 							title: '保存成功',
 							icon: 'success',
 						});
-						this.goBank()
+						setTimeout(() => {
+
+							this.goBank()
+						}, 1000)
 					}
 				} catch (error) {
 					uni.showToast({

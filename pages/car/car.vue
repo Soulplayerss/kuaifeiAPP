@@ -258,6 +258,7 @@
 					})
 			}
 			this.pollingTime = []
+			clearInterval()
 		}
 	}
 </script>

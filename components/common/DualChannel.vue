@@ -1,9 +1,12 @@
 <template>
 	<view class="container">
-		<view class="slider" v-show="carInfo.appCarChannelList && carInfo.appCarChannelList.length> 0">
+		<view class="back" @click="back">
+			<image src="../../assets/images/over.png" mode="" style="width: 30px;height: 30px;"></image>
+		</view>
+		<!-- <view class="slider" v-show="carInfo.appCarChannelList && carInfo.appCarChannelList.length> 0">
 			<view class="sliderItem" v-for="(item,index) in carInfo.appCarChannelList" :key="item.channelId">
 				<span>{{item.channelName}}</span>
-				<span>{{item.minValue}}</span>
+				<span style="display: inline-block;width: 35px;">{{item.minValue}}</span>
 				<view class="sliderBox" v-if="sliderLeftList.length">
 					<view class="leftBox" :style="{ left: sliderLeftList[index].x + 'px'}"
 						@touchstart="onSliderLeftTouchStart(index,$event)"
@@ -20,9 +23,9 @@
 						<view class="dire"></view>
 					</view>
 				</view>
-				<span>{{item.maxValue}}</span>
+				<span style="display: inline-block;width: 35px;">{{item.maxValue}}</span>
 			</view>
-		</view>
+		</view> -->
 
 		<view class="operateBox">
 			<view class="parent">
@@ -42,6 +45,9 @@
 </template>
 
 <script>
+	import {
+		socketUrl
+	} from '@/utils/request';
 	export default {
 		props: {
 			carInfo: {
@@ -132,6 +138,17 @@
 			this.isBack = false
 		},
 		methods: {
+			back() {
+				this.clearHeartbeat(); // 清理心跳和重连
+				this.isBack = true
+				this.clearHeartbeat(); // 清理心跳和重连
+				if (this.socket) {
+					this.closeWebSocket();
+				}
+				uni.navigateTo({
+					url: '/pages/car/car'
+				});
+			},
 			onSliderLeftTouchStart(index, event) {
 				const touch = event.touches[event.touches.length - 1]; // 当前的最后一个触摸点
 				const handle = this.sliderLeftList[index];
@@ -257,7 +274,7 @@
 				}
 
 				//判断朝哪个方向
-				this.checkPosition(handle.x, handle.y);
+				this.checkPosition(handle.x, handle.y, event.target.id);
 			},
 
 			// 触摸结束
@@ -268,22 +285,24 @@
 				);
 				if (event.target.id == 'motor' && this.carInfo) {
 					clearInterval(this.intervarTime)
-					// this.sendMessage(JSON.stringify({
-					// 	"bizCode": 602, //固定值
-					// 	"channelNum": 2, // 通道号1-8
-					// 	"duty": this.getDutyValue(2, 0), //通道信号的高电平时间（单位微秒）
-					// 	"timestamp": new Date().getTime(),
-					// 	"mac": this.macAddress //设备mac地址
-					// }))
+					this.sendMessage(JSON.stringify({
+						"bizCode": 602, //固定值
+						"channelNum": this.carInfo.appCarChannelList[1].channelNum, // 通道号1-8
+						"duty": this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum,
+							0), //通道信号的高电平时间（单位微秒）
+						"timestamp": new Date().getTime(),
+						"mac": this.macAddress //设备mac地址
+					}))
 				} else {
 					clearInterval(this.rudderIntervarTime)
-					// this.sendMessage(JSON.stringify({
-					// 	"bizCode": 602, //固定值
-					// 	"channelNum": 1, // 通道号1-8
-					// 	"duty": this.getDutyValue(1, 0), //通道信号的高电平时间（单位微秒）
-					// 	"timestamp": new Date().getTime(),
-					// 	"mac": this.macAddress //设备mac地址
-					// }))
+					this.sendMessage(JSON.stringify({
+						"bizCode": 602, //固定值
+						"channelNum": this.carInfo.appCarChannelList[0].channelNum, // 通道号1-8
+						"duty": this.getDutyValue(this.carInfo.appCarChannelList[0].channelNum,
+							0), //通道信号的高电平时间（单位微秒）
+						"timestamp": new Date().getTime(),
+						"mac": this.macAddress //设备mac地址
+					}))
 				}
 				if (touch) {
 					handle.isDragging = false;
@@ -296,7 +315,7 @@
 				this.rudderoldDirection = ''
 				this.ruddernewDirection = ''
 			},
-			checkPosition(positionX, positionY) {
+			checkPosition(positionX, positionY, id) {
 				if (positionX == 50 && (positionY <= 10 && positionY >= 0)) {
 					this.newDirection = "top5"
 				} else if (positionX == 50 && (positionY <= 20 && positionY > 10)) {
@@ -343,50 +362,102 @@
 					this.newDirection = "bottom5"
 				}
 
-				this.updateDirection()
+				this.updateDirection(id)
 			},
-			updateDirection() {
-				let ChannelDuty = {
-					"bizCode": 602, //固定值
-					"channelNum": 2, // 通道号1-8
-					"duty": 0, //通道信号的高电平时间（单位微秒）
-					"timestamp": new Date().getTime(),
-					"mac": this.macAddress //设备mac地址
-				}
-				let rudderChannelDuty = {
-					"bizCode": 602, //固定值
-					"channelNum": 1, // 通道号1-8
-					"duty": 0, //通道信号的高电平时间（单位微秒）
-					"timestamp": new Date().getTime(),
-					"mac": this.macAddress //设备mac地址
-				}
+			updateDirection(id) {
 				// Duty 值映射表
 				const dutyMap = {
-					"top1": this.getDutyValue(2, 1),
-					"top2": this.getDutyValue(2, 2),
-					"top3": this.getDutyValue(2, 3),
-					"top4": this.getDutyValue(2, 4),
-					"top5": this.getDutyValue(2, 5),
-					"motorStop": this.getDutyValue(2, 0),
-					"bottom1": this.getDutyValue(2, -1),
-					"bottom2": this.getDutyValue(2, -2),
-					"bottom3": this.getDutyValue(2, -3),
-					"bottom4": this.getDutyValue(2, -4),
-					"bottom5": this.getDutyValue(2, -5)
+					"top1": {
+						duty: this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum, 1),
+						channelNum: this.carInfo.appCarChannelList[1].channelNum
+					},
+					"top2": {
+						duty: this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum, 2),
+						channelNum: this.carInfo.appCarChannelList[1].channelNum
+					},
+					"top3": {
+						duty: this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum, 3),
+						channelNum: this.carInfo.appCarChannelList[1].channelNum
+					},
+					"top4": {
+						duty: this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum, 4),
+						channelNum: this.carInfo.appCarChannelList[1].channelNum
+					},
+					"top5": {
+						duty: this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum, 5),
+						channelNum: this.carInfo.appCarChannelList[1].channelNum
+					},
+					"motorStop": {
+						duty: 1500,
+						channelNum: this.carInfo.appCarChannelList[1].channelNum
+					},
+					"bottom1": {
+						duty: this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum, -1),
+						channelNum: this.carInfo.appCarChannelList[1].channelNum
+					},
+					"bottom2": {
+						duty: this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum, -2),
+						channelNum: this.carInfo.appCarChannelList[1].channelNum
+					},
+					"bottom3": {
+						duty: this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum, -3),
+						channelNum: this.carInfo.appCarChannelList[1].channelNum
+					},
+					"bottom4": {
+						duty: this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum, -4),
+						channelNum: this.carInfo.appCarChannelList[1].channelNum
+					},
+					"bottom5": {
+						duty: this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum, -5),
+						channelNum: this.carInfo.appCarChannelList[1].channelNum
+					}
 				};
 
 				const rudderDutyMap = {
-					"right1": this.getDutyValue(1, 1),
-					"right2": this.getDutyValue(1, 2),
-					"right3": this.getDutyValue(1, 3),
-					"right4": this.getDutyValue(1, 4),
-					"right5": this.getDutyValue(1, 5),
-					"rudderStop": this.getDutyValue(1, 0),
-					"left1": this.getDutyValue(1, -1),
-					"left2": this.getDutyValue(1, -2),
-					"left3": this.getDutyValue(1, -3),
-					"left4": this.getDutyValue(1, -4),
-					"left5": this.getDutyValue(1, -5)
+					"right1": {
+						duty: this.getDutyValue(this.carInfo.appCarChannelList[2].channelNum, 1),
+						channelNum: this.carInfo.appCarChannelList[2].channelNum
+					},
+					"right2": {
+						duty: this.getDutyValue(this.carInfo.appCarChannelList[2].channelNum, 2),
+						channelNum: this.carInfo.appCarChannelList[2].channelNum
+					},
+					"right3": {
+						duty: this.getDutyValue(this.carInfo.appCarChannelList[2].channelNum, 3),
+						channelNum: this.carInfo.appCarChannelList[2].channelNum
+					},
+					"right4": {
+						duty: this.getDutyValue(this.carInfo.appCarChannelList[2].channelNum, 4),
+						channelNum: this.carInfo.appCarChannelList[2].channelNum
+					},
+					"right5": {
+						duty: this.getDutyValue(this.carInfo.appCarChannelList[2].channelNum, 5),
+						channelNum: this.carInfo.appCarChannelList[2].channelNum
+					},
+					"rudderStop": {
+						duty: 1500,
+						channelNum: this.carInfo.appCarChannelList[2].channelNum
+					},
+					"left1": {
+						duty: this.getDutyValue(this.carInfo.appCarChannelList[2].channelNum, -1),
+						channelNum: this.carInfo.appCarChannelList[2].channelNum
+					},
+					"left2": {
+						duty: this.getDutyValue(this.carInfo.appCarChannelList[2].channelNum, -2),
+						channelNum: this.carInfo.appCarChannelList[2].channelNum
+					},
+					"left3": {
+						duty: this.getDutyValue(this.carInfo.appCarChannelList[2].channelNum, -3),
+						channelNum: this.carInfo.appCarChannelList[2].channelNum
+					},
+					"left4": {
+						duty: this.getDutyValue(this.carInfo.appCarChannelList[2].channelNum, -4),
+						channelNum: this.carInfo.appCarChannelList[2].channelNum
+					},
+					"left5": {
+						duty: this.getDutyValue(this.carInfo.appCarChannelList[2].channelNum, -5),
+						channelNum: this.carInfo.appCarChannelList[2].channelNum
+					}
 				};
 
 				// 清理和启动定时器的函数
@@ -396,14 +467,22 @@
 
 					// 停止信号直接发送一次
 					if (direction === 'motorStop' || direction === 'rudderStop') {
-						channelDuty.duty = duty;
-						console.log(JSON.stringify(channelDuty))
-						// this.sendMessage(JSON.stringify(channelDuty));
+						this.sendMessage(JSON.stringify({
+							bizCode: 602, //固定值
+							channelNum: dutyMap[direction].channelNum, // 通道号1-8
+							duty: dutyMap[direction].duty, //通道信号的高电平时间（单位微秒）
+							timestamp: new Date().getTime(),
+							mac: this.macAddress //设备mac地址
+						}));
 					} else {
 						const sendDutyUpdate = () => {
-							channelDuty.duty = duty;
-							console.log(JSON.stringify(channelDuty))
-							// this.sendMessage(JSON.stringify(channelDuty));
+							this.sendMessage(JSON.stringify({
+								bizCode: 602, //固定值
+								channelNum: dutyMap[direction].channelNum, // 通道号1-8
+								duty: dutyMap[direction].duty, //通道信号的高电平时间（单位微秒）
+								timestamp: new Date().getTime(),
+								mac: this.macAddress //设备mac地址
+							}));
 						};
 						const intervalID = setInterval(sendDutyUpdate, intervalTime);
 						// 存储定时器ID
@@ -450,7 +529,7 @@
 			},
 			initWebSocket() {
 				this.socket = uni.connectSocket({
-					url: `ws://1.95.71.155:8888/ws/${this.macAddress}`,
+					url: `ws://${socketUrl}/ws/${this.macAddress}`,
 					success: () => {
 						console.log('WebSocket连接成功');
 					},
@@ -566,18 +645,29 @@
 			getDutyValue(channelName, number) {
 				if (this.carInfo.appCarChannelList && this.carInfo.appCarChannelList.length > 0) {
 
-					let maxValue = this.carInfo.appCarChannelList.find((item) => item.channelId == channelName).maxValue
-					let minValue = this.carInfo.appCarChannelList.find((item) => item.channelId == channelName).minValue
-					let median = (maxValue + minValue) / 2 // 中间值
-					let share = (maxValue - minValue) / 10 // 份额
-					let value = Math.round(median + (share * number))
-					if (number == 5) {
-						value = maxValue
-					} else if (number == -5) {
-						value = minValue
+					let maxValue = this.carInfo.appCarChannelList.find((item) => item.channelNum == channelNum)
+						.maxValue
+					let minValue = this.carInfo.appCarChannelList.find((item) => item.channelNum == channelNum)
+						.minValue
+					if (number > 0) {
+						if (number == 5) {
+							return maxValue
+						}
+						if (maxValue == 1600) {
+							return 1600
+						} else {
+							return (((maxValue - 1600) / 4) * (number - 1)) + 1600
+						}
+					} else if (number < 0) {
+						if (number == -5) {
+							return minValue
+						}
+						if (minValue == 1400) {
+							return 1400
+						} else {
+							return 1400 - (((1400 - minValue) / 4) * (Math.abs(number) - 1))
+						}
 					}
-
-					return value
 				} else {
 					return 0
 				}
@@ -670,6 +760,12 @@
 				}
 			}
 		}
+	}
+
+	.back {
+		padding: 20px;
+		width: 30px;
+		height: 30px;
 	}
 
 	.operateBox {
