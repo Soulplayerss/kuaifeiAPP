@@ -68,7 +68,7 @@
 					uni.showToast({
 						title: '请输入账号和密码',
 						type: 'error',
-						icon: 'error',
+						icon: 'none',
 					});
 					return
 				} else {

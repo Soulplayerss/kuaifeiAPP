@@ -31,7 +31,7 @@
 			this.macAddress = macAddress
 			this.carId = carId
 			// 设置横屏
-			plus.screen.lockOrientation('landscape-primary');
+			plus.screen.lockOrientation('landscape-primary')
 		},
 		onUnload() {
 			// 页面卸载时恢复竖屏
@@ -45,7 +45,8 @@
 				try {
 					const response = await request(`/app/carInfo/getInfoByCarId/${this.carId}`, 'GET')
 					if (response.code === 200) {
-						this.carInfo = response.data
+						let data = JSON.parse(JSON.stringify(response.data))
+						this.carInfo = data
 						if (this.carInfo.appCarChannelList.length == 2) {
 							this.showDualChannel = true
 						} else if (this.carInfo.appCarChannelList.length >= 4) {

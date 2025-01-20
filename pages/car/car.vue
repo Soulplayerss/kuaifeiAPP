@@ -269,14 +269,14 @@
 		height: 100vh;
 		background-color: #eea618;
 		box-sizing: border-box;
-		padding-bottom: 86px;
+		padding-bottom: 22.9vw;
 
 		.content {
 			width: 100%;
-			height: calc(100vh - 96px);
+			height: calc(100vh - 25.6vw);
 			box-sizing: border-box;
 			padding: 16px;
-			padding-bottom: 50px;
+			padding-bottom: 13.33vw;
 
 			.title {
 				display: flex;
@@ -303,8 +303,8 @@
 					display: flex;
 
 					.carImg {
-						width: 140px;
-						height: 120px;
+						width: 37.33vw;
+						height: 32vw;
 						margin-right: 20px;
 					}
 

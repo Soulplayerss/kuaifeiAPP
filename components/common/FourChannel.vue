@@ -1,7 +1,35 @@
 <template>
 	<view class="container">
-		<view class="back" @click="back">
-			<image src="../../assets/images/over.png" mode="" style="width: 30px;height: 30px;"></image>
+		<view class="topInfo">
+			<view class="back" @click="back">
+				<image src="../../assets/images/over.png" mode="" style="width: 30px;height: 30px;"></image>
+			</view>
+			<view class="_item">
+				<span>电池电压：{{socket503Data.voltage_battery}} V</span>
+				<span>电池电流：{{socket503Data.current_battery}} A</span>
+				<span>电池电量：{{socket503Data.battery_remaining}}</span>
+				<span>信号强度：{{socket501Data.myCsq}}</span>
+			</view>
+		</view>
+		<view class="centerInfo">
+			<view class="_item" style="width: 30%;">
+				<span>纬度：{{socket502Data.lat}}</span>
+				<span>经度：{{socket502Data.lon}}</span>
+				<span>绝对高度：{{socket502Data.alt}}</span>
+				<span>相对高度：{{socket502Data.relative_alt}}</span>
+				<span>X速度：{{socket502Data.vx}}</span>
+				<span>Y速度：{{socket502Data.vy}}</span>
+				<span>Z速度：{{socket502Data.vz}}</span>
+				<span>航向角：{{socket502Data.hdg}}</span>
+			</view>
+			<view class="_item" style="width: 65%;">
+				<span>滚转角：{{socket504Data.roll}} rad</span>
+				<span>俯仰角：{{socket504Data.pitch}} rad</span>
+				<span>偏航角：{{socket504Data.yaw}} rad</span>
+				<span>滚转角速度：{{socket504Data.rollspeed}} rad/s</span>
+				<span>俯仰角速度：{{socket504Data.pitchspeed}} rad/s</span>
+				<span>偏航角速度：{{socket504Data.yawspeed}} rad/s</span>
+			</view>
 		</view>
 		<!-- <view class="slider" v-show="carInfo.appCarChannelList && carInfo.appCarChannelList.length> 0">
 			<view class="sliderItem" v-for="(item,index) in carInfo.appCarChannelList" :key="item.channelNum"
@@ -27,9 +55,9 @@
 				<span style="display: inline-block;width: 35px;">{{item.maxValue}}</span>
 			</view>
 		</view> -->
-		<view class="" style="padding: 16px;color: #FFF;">
+		<!-- <view class="" style="padding: 16px;color: #FFF;">
 			{{message}}
-		</view>
+		</view> -->
 		<view class="operateBox">
 			<view class="parent">
 				<view class="draggable" id="motor" :style="{ left: leftHandle.x + 'px', top: leftHandle.y + 'px' }"
@@ -76,8 +104,9 @@
 		},
 		data() {
 			return {
-				// carInfo: this.carInfo,
-				// macAddress: this.macAddress,
+				hours: 0,
+				minutes: 0,
+				seconds: 0,
 				parentWidth: 150, // 父元素宽度
 				parentHeight: 150, // 父元素高度
 				draggableWidth: 50, // 子元素宽度
@@ -103,6 +132,10 @@
 				maxReconnectAttempts: 5, // 最大重连次数
 				isBack: false, // 最大重连次数
 				carId: '',
+				socket501Data: {},
+				socket502Data: {},
+				socket503Data: {},
+				socket504Data: {},
 				logList: [],
 				sliderLeftList: [{
 					x: 0,
@@ -166,7 +199,6 @@
 			this.closeWebSocket();
 		},
 		mounted() {
-			console.log(this.carInfo.appCarChannelList)
 			if (this.carInfo.appCarChannelList.length) {
 				this.initWebSocket();
 				this.carInfo.appCarChannelList.forEach((item) => {
@@ -340,71 +372,72 @@
 				const touch = Array.from(event.changedTouches).find(
 					(t) => t.identifier === handle.identifier
 				);
-				if (event.target.id == 'motor' && this.carInfo) {
-					clearInterval(this.intervarTime)
-					this.sendMessage(JSON.stringify({
-						"bizCode": 602, //固定值
-						"channelNum": this.carInfo.appCarChannelList[0].channelNum, // 通道号1-8
-						"duty": 1500, //通道信号的高电平时间（单位微秒）
-						"timestamp": new Date().getTime(),
-						"mac": this.macAddress //设备mac地址
-					}))
-					this.sendMessage(JSON.stringify({
-						"bizCode": 602, //固定值
-						"channelNum": this.carInfo.appCarChannelList[1].channelNum, // 通道号1-8
-						"duty": 1500, //通道信号的高电平时间（单位微秒）
-						"timestamp": new Date().getTime(),
-						"mac": this.macAddress //设备mac地址
-					}))
-				} else if (event.target.id == 'rudder' && this.carInfo) {
-					clearInterval(this.rudderIntervarTime)
-					this.sendMessage(JSON.stringify({
-						"bizCode": 602, //固定值
-						"channelNum": this.carInfo.appCarChannelList[2].channelNum, // 通道号1-8
-						"duty": 1500, //通道信号的高电平时间（单位微秒）
-						"timestamp": new Date().getTime(),
-						"mac": this.macAddress //设备mac地址
-					}))
-					this.sendMessage(JSON.stringify({
-						"bizCode": 602, //固定值
-						"channelNum": this.carInfo.appCarChannelList[3].channelNum, // 通道号1-8
-						"duty": 1500, //通道信号的高电平时间（单位微秒）
-						"timestamp": new Date().getTime(),
-						"mac": this.macAddress //设备mac地址
-					}))
-				} else if (event.target.id == 'fiveChannel' && this.carInfo) {
-					clearInterval(this.fiveIntervarTime)
-					this.sendMessage(JSON.stringify({
-						"bizCode": 602, //固定值
-						"channelNum": this.carInfo.appCarChannelList[4].channelNum, // 通道号1-8
-						"duty": 1500, //通道信号的高电平时间（单位微秒）
-						"timestamp": new Date().getTime(),
-						"mac": this.macAddress //设备mac地址
-					}))
-				} else if (event.target.id == 'sixChannel' && this.carInfo) {
-					clearInterval(this.sixIntervarTime)
-					this.sendMessage(JSON.stringify({
-						"bizCode": 602, //固定值
-						"channelNum": this.carInfo.appCarChannelList[5].channelNum, // 通道号1-8
-						"duty": 1500, //通道信号的高电平时间（单位微秒）
-						"timestamp": new Date().getTime(),
-						"mac": this.macAddress //设备mac地址
-					}))
-				}
 				if (touch) {
 					handle.isDragging = false;
 					handle.identifier = null; // 释放触摸点
 					handle.x = 50;
 					handle.y = 50;
 				}
-				this.oldDirection = ''
-				this.newDirection = ''
-				this.rudderoldDirection = ''
-				this.ruddernewDirection = ''
-				this.fivenewDirection = ''
-				this.fiveoldDirection = ''
-				this.sixnewDirection = ''
-				this.sixoldDirection = ''
+				if (event.target.id == 'motor' && this.carInfo) {
+					clearInterval(this.intervarTime)
+					this.sendMessage(JSON.stringify({
+						"bizCode": 602, //固定值
+						"channelNum": this.getChannelNum(1), // 通道号1-8
+						"duty": 1500, //通道信号的高电平时间（单位微秒）
+						"timestamp": new Date().getTime(),
+						"mac": this.macAddress //设备mac地址
+					}))
+					this.sendMessage(JSON.stringify({
+						"bizCode": 602, //固定值
+						"channelNum": this.getChannelNum(2), // 通道号1-8
+						"duty": 1500, //通道信号的高电平时间（单位微秒）
+						"timestamp": new Date().getTime(),
+						"mac": this.macAddress //设备mac地址
+					}))
+					this.oldDirection = ''
+					this.newDirection = ''
+				} else if (event.target.id == 'rudder' && this.carInfo) {
+					clearInterval(this.rudderIntervarTime)
+					this.sendMessage(JSON.stringify({
+						"bizCode": 602, //固定值
+						"channelNum": this.getChannelNum(3), // 通道号1-8
+						"duty": 1500, //通道信号的高电平时间（单位微秒）
+						"timestamp": new Date().getTime(),
+						"mac": this.macAddress //设备mac地址
+					}))
+					this.sendMessage(JSON.stringify({
+						"bizCode": 602, //固定值
+						"channelNum": this.getChannelNum(4), // 通道号1-8
+						"duty": 1500, //通道信号的高电平时间（单位微秒）
+						"timestamp": new Date().getTime(),
+						"mac": this.macAddress //设备mac地址
+					}))
+					this.rudderoldDirection = ''
+					this.ruddernewDirection = ''
+				} else if (event.target.id == 'fiveChannel' && this.carInfo) {
+					clearInterval(this.fiveIntervarTime)
+					this.sendMessage(JSON.stringify({
+						"bizCode": 602, //固定值
+						"channelNum": this.getChannelNum(5), // 通道号1-8
+						"duty": 1500, //通道信号的高电平时间（单位微秒）
+						"timestamp": new Date().getTime(),
+						"mac": this.macAddress //设备mac地址
+					}))
+					this.fivenewDirection = ''
+					this.fiveoldDirection = ''
+				} else if (event.target.id == 'sixChannel' && this.carInfo) {
+					clearInterval(this.sixIntervarTime)
+					this.sendMessage(JSON.stringify({
+						"bizCode": 602, //固定值
+						"channelNum": this.getChannelNum(6), // 通道号1-8
+						"duty": 1500, //通道信号的高电平时间（单位微秒）
+						"timestamp": new Date().getTime(),
+						"mac": this.macAddress //设备mac地址
+					}))
+					this.sixnewDirection = ''
+					this.sixoldDirection = ''
+				}
+
 			},
 			checkPosition(positionX, positionY, id) {
 				if (positionX > 45 && positionX < 55) {
@@ -545,316 +578,316 @@
 				// Duty 值映射表
 				const dutyMap = {
 					"leftTop": {
-						dutyX: this.getDutyValue(this.carInfo.appCarChannelList[0].channelNum, -4),
-						channelNumX: this.carInfo.appCarChannelList[0].channelNum,
-						dutyY: this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum, 4),
-						channelNumY: this.carInfo.appCarChannelList[1].channelNum
+						dutyX: this.getDutyValue(1, -4),
+						channelNumX: this.getChannelNum(1),
+						dutyY: this.getDutyValue(2, 4),
+						channelNumY: this.getChannelNum(2)
 					},
 					"leftBottom": {
-						dutyX: this.getDutyValue(this.carInfo.appCarChannelList[0].channelNum, -4),
-						channelNumX: this.carInfo.appCarChannelList[0].channelNum,
-						dutyY: this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum, -4),
-						channelNumY: this.carInfo.appCarChannelList[1].channelNum
+						dutyX: this.getDutyValue(1, -4),
+						channelNumX: this.getChannelNum(1),
+						dutyY: this.getDutyValue(2, -4),
+						channelNumY: this.getChannelNum(2)
 					},
 					"rightTop": {
-						dutyX: this.getDutyValue(this.carInfo.appCarChannelList[0].channelNum, 4),
-						channelNumX: this.carInfo.appCarChannelList[0].channelNum,
-						dutyY: this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum, 4),
-						channelNumY: this.carInfo.appCarChannelList[1].channelNum
+						dutyX: this.getDutyValue(1, 4),
+						channelNumX: this.getChannelNum(1),
+						dutyY: this.getDutyValue(2, 4),
+						channelNumY: this.getChannelNum(2)
 					},
 					"rightBottom": {
-						dutyX: this.getDutyValue(this.carInfo.appCarChannelList[0].channelNum, 4),
-						channelNumX: this.carInfo.appCarChannelList[0].channelNum,
-						dutyY: this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum, -4),
-						channelNumY: this.carInfo.appCarChannelList[1].channelNum
+						dutyX: this.getDutyValue(1, 4),
+						channelNumX: this.getChannelNum(1),
+						dutyY: this.getDutyValue(2, -4),
+						channelNumY: this.getChannelNum(2)
 					},
 					"top1": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum, 1),
-						channelNum: this.carInfo.appCarChannelList[1].channelNum
+						duty: this.getDutyValue(2, 1),
+						channelNum: this.getChannelNum(2)
 					},
 					"top2": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum, 2),
-						channelNum: this.carInfo.appCarChannelList[1].channelNum
+						duty: this.getDutyValue(2, 2),
+						channelNum: this.getChannelNum(2)
 					},
 					"top3": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum, 3),
-						channelNum: this.carInfo.appCarChannelList[1].channelNum
+						duty: this.getDutyValue(2, 3),
+						channelNum: this.getChannelNum(2)
 					},
 					"top4": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum, 4),
-						channelNum: this.carInfo.appCarChannelList[1].channelNum
+						duty: this.getDutyValue(2, 4),
+						channelNum: this.getChannelNum(2)
 					},
 					"top5": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum, 5),
-						channelNum: this.carInfo.appCarChannelList[1].channelNum
+						duty: this.getDutyValue(2, 5),
+						channelNum: this.getChannelNum(2)
 					},
 					"motorStop": {
 						duty: 1500,
-						channelNum: this.carInfo.appCarChannelList[1].channelNum
+						channelNum: this.getChannelNum(2)
 					},
 					"bottom1": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum, -1),
-						channelNum: this.carInfo.appCarChannelList[1].channelNum
+						duty: this.getDutyValue(2, -1),
+						channelNum: this.getChannelNum(2)
 					},
 					"bottom2": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum, -2),
-						channelNum: this.carInfo.appCarChannelList[1].channelNum
+						duty: this.getDutyValue(2, -2),
+						channelNum: this.getChannelNum(2)
 					},
 					"bottom3": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum, -3),
-						channelNum: this.carInfo.appCarChannelList[1].channelNum
+						duty: this.getDutyValue(2, -3),
+						channelNum: this.getChannelNum(2)
 					},
 					"bottom4": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum, -4),
-						channelNum: this.carInfo.appCarChannelList[1].channelNum
+						duty: this.getDutyValue(2, -4),
+						channelNum: this.getChannelNum(2)
 					},
 					"bottom5": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[1].channelNum, -5),
-						channelNum: this.carInfo.appCarChannelList[1].channelNum
+						duty: this.getDutyValue(2, -5),
+						channelNum: this.getChannelNum(2)
 					},
 					"right1": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[0].channelNum, 1),
-						channelNum: this.carInfo.appCarChannelList[0].channelNum
+						duty: this.getDutyValue(1, 1),
+						channelNum: this.getChannelNum(1)
 					},
 					"right2": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[0].channelNum, 2),
-						channelNum: this.carInfo.appCarChannelList[0].channelNum
+						duty: this.getDutyValue(1, 2),
+						channelNum: this.getChannelNum(1)
 					},
 					"right3": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[0].channelNum, 3),
-						channelNum: this.carInfo.appCarChannelList[0].channelNum
+						duty: this.getDutyValue(1, 3),
+						channelNum: this.getChannelNum(1)
 					},
 					"right4": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[0].channelNum, 4),
-						channelNum: this.carInfo.appCarChannelList[0].channelNum
+						duty: this.getDutyValue(1, 4),
+						channelNum: this.getChannelNum(1)
 					},
 					"right5": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[0].channelNum, 5),
-						channelNum: this.carInfo.appCarChannelList[0].channelNum
+						duty: this.getDutyValue(1, 5),
+						channelNum: this.getChannelNum(1)
 					},
 					"left1": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[0].channelNum, -1),
-						channelNum: this.carInfo.appCarChannelList[0].channelNum
+						duty: this.getDutyValue(1, -1),
+						channelNum: this.getChannelNum(1)
 					},
 					"left2": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[0].channelNum, -2),
-						channelNum: this.carInfo.appCarChannelList[0].channelNum
+						duty: this.getDutyValue(1, -2),
+						channelNum: this.getChannelNum(1)
 					},
 					"left3": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[0].channelNum, -3),
-						channelNum: this.carInfo.appCarChannelList[0].channelNum
+						duty: this.getDutyValue(1, -3),
+						channelNum: this.getChannelNum(1)
 					},
 					"left4": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[0].channelNum, -4),
-						channelNum: this.carInfo.appCarChannelList[0].channelNum
+						duty: this.getDutyValue(1, -4),
+						channelNum: this.getChannelNum(1)
 					},
 					"left5": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[0].channelNum, -5),
-						channelNum: this.carInfo.appCarChannelList[0].channelNum
+						duty: this.getDutyValue(1, -5),
+						channelNum: this.getChannelNum(1)
 					}
 				};
 
 				const rudderDutyMap = {
 					"leftTop": {
-						dutyX: this.getDutyValue(this.carInfo.appCarChannelList[3].channelNum, -4),
-						channelNumX: this.carInfo.appCarChannelList[3].channelNum,
-						dutyY: this.getDutyValue(this.carInfo.appCarChannelList[2].channelNum, 4),
-						channelNumY: this.carInfo.appCarChannelList[2].channelNum
+						dutyX: this.getDutyValue(4, -4),
+						channelNumX: this.getChannelNum(4),
+						dutyY: this.getDutyValue(3, 4),
+						channelNumY: this.getChannelNum(3)
 					},
 					"leftBottom": {
-						dutyX: this.getDutyValue(this.carInfo.appCarChannelList[3].channelNum, -4),
-						channelNumX: this.carInfo.appCarChannelList[3].channelNum,
-						dutyY: this.getDutyValue(this.carInfo.appCarChannelList[2].channelNum, -4),
-						channelNumY: this.carInfo.appCarChannelList[2].channelNum
+						dutyX: this.getDutyValue(4, -4),
+						channelNumX: this.getChannelNum(4),
+						dutyY: this.getDutyValue(3, -4),
+						channelNumY: this.getChannelNum(3)
 					},
 					"rightTop": {
-						dutyX: this.getDutyValue(this.carInfo.appCarChannelList[3].channelNum, 4),
-						channelNumX: this.carInfo.appCarChannelList[3].channelNum,
-						dutyY: this.getDutyValue(this.carInfo.appCarChannelList[2].channelNum, 4),
-						channelNumY: this.carInfo.appCarChannelList[2].channelNum
+						dutyX: this.getDutyValue(4, 4),
+						channelNumX: this.getChannelNum(4),
+						dutyY: this.getDutyValue(3, 4),
+						channelNumY: this.getChannelNum(3)
 					},
 					"rightBottom": {
-						dutyX: this.getDutyValue(this.carInfo.appCarChannelList[3].channelNum, 4),
-						channelNumX: this.carInfo.appCarChannelList[3].channelNum,
-						dutyY: this.getDutyValue(this.carInfo.appCarChannelList[2].channelNum, -4),
-						channelNumY: this.carInfo.appCarChannelList[2].channelNum
+						dutyX: this.getDutyValue(4, 4),
+						channelNumX: this.getChannelNum(4),
+						dutyY: this.getDutyValue(3, -4),
+						channelNumY: this.getChannelNum(3)
 					},
 					"top1": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[2].channelNum, 1),
-						channelNum: this.carInfo.appCarChannelList[2].channelNum
+						duty: this.getDutyValue(3, 1),
+						channelNum: this.getChannelNum(3)
 					},
 					"top2": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[2].channelNum, 2),
-						channelNum: this.carInfo.appCarChannelList[2].channelNum
+						duty: this.getDutyValue(3, 2),
+						channelNum: this.getChannelNum(3)
 					},
 					"top3": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[2].channelNum, 3),
-						channelNum: this.carInfo.appCarChannelList[2].channelNum
+						duty: this.getDutyValue(3, 3),
+						channelNum: this.getChannelNum(3)
 					},
 					"top4": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[2].channelNum, 4),
-						channelNum: this.carInfo.appCarChannelList[2].channelNum
+						duty: this.getDutyValue(3, 4),
+						channelNum: this.getChannelNum(3)
 					},
 					"top5": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[2].channelNum, 5),
-						channelNum: this.carInfo.appCarChannelList[2].channelNum
+						duty: this.getDutyValue(3, 5),
+						channelNum: this.getChannelNum(3)
 					},
 					"bottom1": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[2].channelNum, -1),
-						channelNum: this.carInfo.appCarChannelList[2].channelNum
+						duty: this.getDutyValue(3, -1),
+						channelNum: this.getChannelNum(3)
 					},
 					"bottom2": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[2].channelNum, -2),
-						channelNum: this.carInfo.appCarChannelList[2].channelNum
+						duty: this.getDutyValue(3, -2),
+						channelNum: this.getChannelNum(3)
 					},
 					"bottom3": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[2].channelNum, -3),
-						channelNum: this.carInfo.appCarChannelList[2].channelNum
+						duty: this.getDutyValue(3, -3),
+						channelNum: this.getChannelNum(3)
 					},
 					"bottom4": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[2].channelNum, -4),
-						channelNum: this.carInfo.appCarChannelList[2].channelNum
+						duty: this.getDutyValue(3, -4),
+						channelNum: this.getChannelNum(3)
 					},
 					"bottom5": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[2].channelNum, -5),
-						channelNum: this.carInfo.appCarChannelList[2].channelNum
+						duty: this.getDutyValue(3, -5),
+						channelNum: this.getChannelNum(3)
 					},
 					"right1": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[3].channelNum, 1),
-						channelNum: this.carInfo.appCarChannelList[3].channelNum
+						duty: this.getDutyValue(4, 1),
+						channelNum: this.getChannelNum(4)
 					},
 					"right2": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[3].channelNum, 2),
-						channelNum: this.carInfo.appCarChannelList[3].channelNum
+						duty: this.getDutyValue(4, 2),
+						channelNum: this.getChannelNum(4)
 					},
 					"right3": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[3].channelNum, 3),
-						channelNum: this.carInfo.appCarChannelList[3].channelNum
+						duty: this.getDutyValue(4, 3),
+						channelNum: this.getChannelNum(4)
 					},
 					"right4": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[3].channelNum, 4),
-						channelNum: this.carInfo.appCarChannelList[3].channelNum
+						duty: this.getDutyValue(4, 4),
+						channelNum: this.getChannelNum(4)
 					},
 					"right5": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[3].channelNum, 5),
-						channelNum: this.carInfo.appCarChannelList[3].channelNum
+						duty: this.getDutyValue(4, 5),
+						channelNum: this.getChannelNum(4)
 					},
 					"rudderStop": {
 						duty: 1500,
-						channelNum: this.carInfo.appCarChannelList[3].channelNum
+						channelNum: this.getChannelNum(4)
 					},
 					"left1": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[3].channelNum, -1),
-						channelNum: this.carInfo.appCarChannelList[3].channelNum
+						duty: this.getDutyValue(4, -1),
+						channelNum: this.getChannelNum(4)
 					},
 					"left2": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[3].channelNum, -2),
-						channelNum: this.carInfo.appCarChannelList[3].channelNum
+						duty: this.getDutyValue(4, -2),
+						channelNum: this.getChannelNum(4)
 					},
 					"left3": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[3].channelNum, -3),
-						channelNum: this.carInfo.appCarChannelList[3].channelNum
+						duty: this.getDutyValue(4, -3),
+						channelNum: this.getChannelNum(4)
 					},
 					"left4": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[3].channelNum, -4),
-						channelNum: this.carInfo.appCarChannelList[3].channelNum
+						duty: this.getDutyValue(4, -4),
+						channelNum: this.getChannelNum(4)
 					},
 					"left5": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[3].channelNum, -5),
-						channelNum: this.carInfo.appCarChannelList[3].channelNum
+						duty: this.getDutyValue(4, -5),
+						channelNum: this.getChannelNum(4)
 					}
 				};
 
 				const fivedutyMap = {
 					"top1": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[4].channelNum, 1),
-						channelNum: this.carInfo.appCarChannelList[4].channelNum
+						duty: this.getDutyValue(5, 1),
+						channelNum: this.getChannelNum(5)
 					},
 					"top2": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[4].channelNum, 2),
-						channelNum: this.carInfo.appCarChannelList[4].channelNum
+						duty: this.getDutyValue(5, 2),
+						channelNum: this.getChannelNum(5)
 					},
 					"top3": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[4].channelNum, 3),
-						channelNum: this.carInfo.appCarChannelList[4].channelNum
+						duty: this.getDutyValue(5, 3),
+						channelNum: this.getChannelNum(5)
 					},
 					"top4": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[4].channelNum, 4),
-						channelNum: this.carInfo.appCarChannelList[4].channelNum
+						duty: this.getDutyValue(5, 4),
+						channelNum: this.getChannelNum(5)
 					},
 					"top5": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[4].channelNum, 5),
-						channelNum: this.carInfo.appCarChannelList[4].channelNum
+						duty: this.getDutyValue(5, 5),
+						channelNum: this.getChannelNum(5)
 					},
 					"fiveStop": {
 						duty: 1500,
-						channelNum: this.carInfo.appCarChannelList[4].channelNum
+						channelNum: this.getChannelNum(5)
 					},
 					"bottom1": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[4].channelNum, -1),
-						channelNum: this.carInfo.appCarChannelList[4].channelNum
+						duty: this.getDutyValue(5, -1),
+						channelNum: this.getChannelNum(5)
 					},
 					"bottom2": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[4].channelNum, -2),
-						channelNum: this.carInfo.appCarChannelList[4].channelNum
+						duty: this.getDutyValue(5, -2),
+						channelNum: this.getChannelNum(5)
 					},
 					"bottom3": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[4].channelNum, -3),
-						channelNum: this.carInfo.appCarChannelList[4].channelNum
+						duty: this.getDutyValue(5, -3),
+						channelNum: this.getChannelNum(5)
 					},
 					"bottom4": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[4].channelNum, -4),
-						channelNum: this.carInfo.appCarChannelList[4].channelNum
+						duty: this.getDutyValue(5, -4),
+						channelNum: this.getChannelNum(5)
 					},
 					"bottom5": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[4].channelNum, -5),
-						channelNum: this.carInfo.appCarChannelList[4].channelNum
+						duty: this.getDutyValue(5, -5),
+						channelNum: this.getChannelNum(5)
 					}
 				};
 				const sixDutyMap = {
 					"top1": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[5].channelNum, 1),
-						channelNum: this.carInfo.appCarChannelList[5].channelNum
+						duty: this.getDutyValue(6, 1),
+						channelNum: this.getChannelNum(6)
 					},
 					"top2": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[5].channelNum, 2),
-						channelNum: this.carInfo.appCarChannelList[5].channelNum
+						duty: this.getDutyValue(6, 2),
+						channelNum: this.getChannelNum(6)
 					},
 					"top3": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[5].channelNum, 3),
-						channelNum: this.carInfo.appCarChannelList[5].channelNum
+						duty: this.getDutyValue(6, 3),
+						channelNum: this.getChannelNum(6)
 					},
 					"top4": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[5].channelNum, 4),
-						channelNum: this.carInfo.appCarChannelList[5].channelNum
+						duty: this.getDutyValue(6, 4),
+						channelNum: this.getChannelNum(6)
 					},
 					"top5": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[5].channelNum, 5),
-						channelNum: this.carInfo.appCarChannelList[5].channelNum
+						duty: this.getDutyValue(6, 5),
+						channelNum: this.getChannelNum(6)
 					},
 					"sixStop": {
 						duty: 1500,
-						channelNum: this.carInfo.appCarChannelList[5].channelNum
+						channelNum: this.getChannelNum(6)
 					},
 					"bottom1": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[5].channelNum, -1),
-						channelNum: this.carInfo.appCarChannelList[5].channelNum
+						duty: this.getDutyValue(6, -1),
+						channelNum: this.getChannelNum(6)
 					},
 					"bottom2": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[5].channelNum, -2),
-						channelNum: this.carInfo.appCarChannelList[5].channelNum
+						duty: this.getDutyValue(6, -2),
+						channelNum: this.getChannelNum(6)
 					},
 					"bottom3": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[5].channelNum, -3),
-						channelNum: this.carInfo.appCarChannelList[5].channelNum
+						duty: this.getDutyValue(6, -3),
+						channelNum: this.getChannelNum(6)
 					},
 					"bottom4": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[5].channelNum, -4),
-						channelNum: this.carInfo.appCarChannelList[5].channelNum
+						duty: this.getDutyValue(6, -4),
+						channelNum: this.getChannelNum(6)
 					},
 					"bottom5": {
-						duty: this.getDutyValue(this.carInfo.appCarChannelList[5].channelNum, -5),
-						channelNum: this.carInfo.appCarChannelList[5].channelNum
+						duty: this.getDutyValue(6, -5),
+						channelNum: this.getChannelNum(6)
 					}
 				};
 
@@ -993,20 +1026,27 @@
 						console.log('收到心跳响应: pong');
 						clearTimeout(this.heartbeatTimeout);
 					} else {
-						console.log('收到消息:', JSON.parse(event.data));
+						let data = JSON.parse(event.data)
+						if (data.data && data.data.bizCode == 501) {
+							this.socket501Data = data.data
+						} else if (data.data && data.data.bizCode == 502) {
+							this.socket502Data = data.data
+						} else if (data.data && data.data.bizCode == 503) {
+							this.socket503Data = data.data
+						} else if (data.data && data.data.bizCode == 504) {
+							this.socket504Data = data.data
+						}
 					}
 				});
 
 				// 监听 WebSocket 关闭事件
 				this.socket.onClose(() => {
 					console.log('WebSocket已关闭');
-					this.reconnect(); // 尝试重连
 				});
 
 				// 监听 WebSocket 错误事件
 				this.socket.onError((err) => {
 					console.error('WebSocket发生错误', err);
-					this.reconnect(); // 尝试重连
 				});
 			},
 
@@ -1057,7 +1097,7 @@
 						data: message,
 						success: () => {
 							console.log('消息发送成功:', message);
-							this.message = message + this.getCurrentTime()
+							// this.message = message + this.getCurrentTime()
 						},
 						fail: (err) => {
 							console.error('消息发送失败:', err);
@@ -1082,12 +1122,12 @@
 				}
 			},
 
-			getDutyValue(channelNum, number) {
+			getDutyValue(buttonNo, number) {
 				if (this.carInfo.appCarChannelList && this.carInfo.appCarChannelList.length > 0) {
 
-					let maxValue = this.carInfo.appCarChannelList.find((item) => item.channelNum == channelNum)
+					let maxValue = this.carInfo.appCarChannelList.find((item) => item.buttonNo == buttonNo)
 						.maxValue
-					let minValue = this.carInfo.appCarChannelList.find((item) => item.channelNum == channelNum)
+					let minValue = this.carInfo.appCarChannelList.find((item) => item.buttonNo == buttonNo)
 						.minValue
 					if (number > 0) {
 						if (number == 5) {
@@ -1111,6 +1151,16 @@
 				} else {
 					return 0
 				}
+			},
+			getChannelNum(buttonNo) {
+				if (this.carInfo.appCarChannelList && this.carInfo.appCarChannelList.length > 0) {
+
+					let channelNum = this.carInfo.appCarChannelList.find((item) => item.buttonNo == buttonNo)
+						.channelNum
+					return channelNum
+				} else {
+					return 1
+				}
 			}
 		},
 		beforeDestroy() {
@@ -1123,6 +1173,42 @@
 	.container {
 		height: 100vh;
 		width: 100vw;
+
+		.topInfo {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			width: 100%;
+			box-sizing: border-box;
+			padding: 16px;
+			font-size: 15px;
+			color: #FFF;
+
+			._item {
+				flex: 1;
+				display: flex;
+				justify-content: center;
+				gap: 20px;
+			}
+		}
+
+		.centerInfo {
+			display: flex;
+			justify-content: space-between;
+			width: 100%;
+			box-sizing: border-box;
+			padding: 16px;
+			font-size: 13px;
+			color: #FFF;
+
+			._item {
+				display: flex;
+				justify-content: space-between;
+				align-items: start;
+				flex-wrap: wrap;
+				gap: 8px;
+			}
+		}
 
 		.slider {
 			width: 100%;
@@ -1194,8 +1280,8 @@
 		}
 	}
 
+
 	.back {
-		padding: 20px;
 		width: 30px;
 		height: 30px;
 	}

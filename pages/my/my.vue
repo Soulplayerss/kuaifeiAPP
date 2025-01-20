@@ -62,6 +62,13 @@
 				</view>
 				<u-icon name="arrow-right" size="22" color="#b09aaa"></u-icon>
 			</view>
+			<view class="settingItem" @click="navigateTo('/pages/photoAlbum/photoAlbum')">
+				<view class="left">
+					<image src="../../assets/images/photoAlbum.png" mode=""></image>
+					<span>云控相册</span>
+				</view>
+				<u-icon name="arrow-right" size="22" color="#b09aaa"></u-icon>
+			</view>
 			<view class="settingItem" @click="showChangePassword = true">
 				<view class="left">
 					<image src="../../assets/images/change-password.png" mode=""></image>
@@ -196,7 +203,7 @@
 		background-color: #eea618;
 		padding: 16px;
 		box-sizing: border-box;
-		padding-bottom: 104px;
+		padding-bottom: 27.733vw;
 
 		.user {
 			display: flex;

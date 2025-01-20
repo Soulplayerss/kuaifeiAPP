@@ -283,6 +283,13 @@
 				const touch = Array.from(event.changedTouches).find(
 					(t) => t.identifier === handle.identifier
 				);
+				if (touch) {
+					handle.isDragging = false;
+					handle.identifier = null; // 释放触摸点
+					handle.x = 50;
+					handle.y = 50;
+				}
+				
 				if (event.target.id == 'motor' && this.carInfo) {
 					clearInterval(this.intervarTime)
 					this.sendMessage(JSON.stringify({
@@ -293,6 +300,8 @@
 						"timestamp": new Date().getTime(),
 						"mac": this.macAddress //设备mac地址
 					}))
+					this.oldDirection = ''
+					this.newDirection = ''
 				} else {
 					clearInterval(this.rudderIntervarTime)
 					this.sendMessage(JSON.stringify({
@@ -303,17 +312,9 @@
 						"timestamp": new Date().getTime(),
 						"mac": this.macAddress //设备mac地址
 					}))
+					this.rudderoldDirection = ''
+					this.ruddernewDirection = ''
 				}
-				if (touch) {
-					handle.isDragging = false;
-					handle.identifier = null; // 释放触摸点
-					handle.x = 50;
-					handle.y = 50;
-				}
-				this.oldDirection = ''
-				this.newDirection = ''
-				this.rudderoldDirection = ''
-				this.ruddernewDirection = ''
 			},
 			checkPosition(positionX, positionY, id) {
 				if (positionX == 50 && (positionY <= 10 && positionY >= 0)) {
