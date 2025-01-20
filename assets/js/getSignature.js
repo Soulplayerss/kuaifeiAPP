@@ -3,13 +3,13 @@ import md5 from './md5'
 var timeMillis = generateTimestamp()
 var uuid = '6763c5921f96978377583672'
 // 安卓
-//  var appkey = '762c5a87594f0db8276712240873db11'
-//  var appsecret = '3fad6d6233664195884bcc54f7182781'
-//  var moveCard = 6
+ var appkey = 'd2b66ca4998f1bcedbff6dd62c87c622'
+ var appsecret = '47800faad9614c80893112faedc3c5c5'
+ var moveCard = 5
 // ios
-var appkey = 'd2b66ca4998f1bcedbff6dd62c87c622'
-var appsecret = '47800faad9614c80893112faedc3c5c5'
-var moveCard = 5
+// var appkey = 'd2b66ca4998f1bcedbff6dd62c87c622'
+// var appsecret = '47800faad9614c80893112faedc3c5c5'
+// var moveCard = 5
 
 function Signature() {
 
