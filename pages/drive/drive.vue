@@ -1,15 +1,15 @@
 <template>
 	<view class="drive">
-		<Camera />
-		<!-- <DualChannel :carInfo="carInfo" :macAddress="macAddress" v-if="showDualChannel" />
-		<FourChannel :carInfo="carInfo" :macAddress="macAddress" v-if="showFourChannel" /> -->
+		<!-- <Camera /> -->
+		<DualChannel :carInfo="carInfo" :macAddress="macAddress" v-if="showDualChannel" />
+		<FourChannel :carInfo="carInfo" :macAddress="macAddress" v-if="showFourChannel" />
 	</view>
 </template>
 
 <script>
 	import DualChannel from '@/components/common/DualChannel.vue'
 	import FourChannel from '@/components/common/FourChannel.vue'
-	import Camera from '@/components/common/Camera.vue'
+	// import Camera from '@/components/common/Camera.vue'
 	import request from '@/utils/request';
 	export default {
 		data() {
@@ -24,7 +24,7 @@
 		components: {
 			DualChannel,
 			FourChannel,
-			Camera
+			// Camera
 		},
 		onLoad(options) {
 			const {
@@ -34,14 +34,14 @@
 			this.macAddress = macAddress
 			this.carId = carId
 			// 设置横屏
-			// plus.screen.lockOrientation('landscape-primary');
+			plus.screen.lockOrientation('landscape-primary');
 		},
 		onUnload() {
 			// 页面卸载时恢复竖屏
-			// plus.screen.lockOrientation('portrait-primary')
+			plus.screen.lockOrientation('portrait-primary')
 		},
 		onHide() {
-			// plus.screen.lockOrientation('portrait-primary')
+			plus.screen.lockOrientation('portrait-primary')
 		},
 		methods: {
 			async getCarInfo() {
@@ -65,7 +65,7 @@
 			},
 		},
 		mounted() {
-			// this.getCarInfo()
+			this.getCarInfo()
 		}
 	};
 </script>

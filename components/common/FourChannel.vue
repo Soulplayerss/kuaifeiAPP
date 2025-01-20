@@ -691,65 +691,65 @@
 					"leftTop": {
 						dutyX: this.getDutyValue(4, -4),
 						channelNumX: this.getChannelNum(4),
-						dutyY: this.getDutyValue(3, 4),
+						dutyY: this.getDutyValue(3, -4),
 						channelNumY: this.getChannelNum(3)
 					},
 					"leftBottom": {
 						dutyX: this.getDutyValue(4, -4),
 						channelNumX: this.getChannelNum(4),
-						dutyY: this.getDutyValue(3, -4),
+						dutyY: this.getDutyValue(3, 4),
 						channelNumY: this.getChannelNum(3)
 					},
 					"rightTop": {
 						dutyX: this.getDutyValue(4, 4),
 						channelNumX: this.getChannelNum(4),
-						dutyY: this.getDutyValue(3, 4),
+						dutyY: this.getDutyValue(3, -4),
 						channelNumY: this.getChannelNum(3)
 					},
 					"rightBottom": {
 						dutyX: this.getDutyValue(4, 4),
 						channelNumX: this.getChannelNum(4),
-						dutyY: this.getDutyValue(3, -4),
+						dutyY: this.getDutyValue(3, 4),
 						channelNumY: this.getChannelNum(3)
 					},
 					"top1": {
-						duty: this.getDutyValue(3, 1),
-						channelNum: this.getChannelNum(3)
-					},
-					"top2": {
-						duty: this.getDutyValue(3, 2),
-						channelNum: this.getChannelNum(3)
-					},
-					"top3": {
-						duty: this.getDutyValue(3, 3),
-						channelNum: this.getChannelNum(3)
-					},
-					"top4": {
-						duty: this.getDutyValue(3, 4),
-						channelNum: this.getChannelNum(3)
-					},
-					"top5": {
-						duty: this.getDutyValue(3, 5),
-						channelNum: this.getChannelNum(3)
-					},
-					"bottom1": {
 						duty: this.getDutyValue(3, -1),
 						channelNum: this.getChannelNum(3)
 					},
-					"bottom2": {
+					"top2": {
 						duty: this.getDutyValue(3, -2),
 						channelNum: this.getChannelNum(3)
 					},
-					"bottom3": {
+					"top3": {
 						duty: this.getDutyValue(3, -3),
 						channelNum: this.getChannelNum(3)
 					},
-					"bottom4": {
+					"top4": {
 						duty: this.getDutyValue(3, -4),
 						channelNum: this.getChannelNum(3)
 					},
-					"bottom5": {
+					"top5": {
 						duty: this.getDutyValue(3, -5),
+						channelNum: this.getChannelNum(3)
+					},
+					"bottom1": {
+						duty: this.getDutyValue(3, 1),
+						channelNum: this.getChannelNum(3)
+					},
+					"bottom2": {
+						duty: this.getDutyValue(3, 2),
+						channelNum: this.getChannelNum(3)
+					},
+					"bottom3": {
+						duty: this.getDutyValue(3, 3),
+						channelNum: this.getChannelNum(3)
+					},
+					"bottom4": {
+						duty: this.getDutyValue(3, 4),
+						channelNum: this.getChannelNum(3)
+					},
+					"bottom5": {
+						duty: this.getDutyValue(3, 5),
 						channelNum: this.getChannelNum(3)
 					},
 					"right1": {
@@ -1015,7 +1015,7 @@
 				// 监听 WebSocket 打开事件
 				this.socket.onOpen(() => {
 					console.log('WebSocket已打开');
-					this.startHeartbeat(); // 开始心跳机制
+					// this.startHeartbeat(); // 开始心跳机制
 				});
 
 				// 监听 WebSocket 收到消息事件

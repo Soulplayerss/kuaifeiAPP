@@ -270,9 +270,7 @@
 		computed: {
 			...mapState(['siteLabel'])
 		},
-		onLoad() {
-			this.loadData();
-		},
+		onLoad() {},
 		methods: {
 			changeTab(type) {
 				this.tabActive = type
@@ -282,14 +280,7 @@
 					url: '/pages/selectCar/selectCar?page=index',
 				})
 			},
-			async loadData() {
-				var siteType = []
-				uni.getStorage({
-					key: 'siteType',
-					success(res) {
-						siteType = res.data
-					}
-				});
+			async loadData(siteType) {
 				try {
 					const [siteData, dronesData, yachtData, racingData] = await Promise.all([
 						request('/app/site/getSiteForApp', 'POST', {
@@ -332,6 +323,14 @@
 		},
 		mounted() {
 			console.log(123)
+			let siteTypeInterval = setInterval(() => {
+				var siteType = []
+				siteType = uni.getStorageSync('siteType')
+				if (siteType.length != 0) {
+					clearInterval(siteTypeInterval)
+					this.loadData(siteType);
+				}
+			}, 200)
 		},
 	}
 </script>
