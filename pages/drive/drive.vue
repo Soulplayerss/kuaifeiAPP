@@ -1,15 +1,15 @@
 <template>
 	<view class="drive">
-		<!-- <Camera /> -->
-		<DualChannel :carInfo="carInfo" :macAddress="macAddress" v-if="showDualChannel" />
-		<FourChannel :carInfo="carInfo" :macAddress="macAddress" v-if="showFourChannel" />
+		<Camera />
+		<!-- <DualChannel :carInfo="carInfo" :macAddress="macAddress" v-if="showDualChannel" />
+		<FourChannel :carInfo="carInfo" :macAddress="macAddress" v-if="showFourChannel" /> -->
 	</view>
 </template>
 
 <script>
 	import DualChannel from '@/components/common/DualChannel.vue'
 	import FourChannel from '@/components/common/FourChannel.vue'
-	// import Camera from '@/components/common/Camera.vue'
+	import Camera from '@/components/common/Camera.vue'
 	import request from '@/utils/request';
 	export default {
 		data() {
@@ -24,7 +24,7 @@
 		components: {
 			DualChannel,
 			FourChannel,
-			// Camera
+			Camera
 		},
 		onLoad(options) {
 			const {
@@ -65,7 +65,7 @@
 			},
 		},
 		mounted() {
-			this.getCarInfo()
+			// this.getCarInfo()
 		}
 	};
 </script>
@@ -76,6 +76,5 @@
 		height: 100%;
 		background-color: rgba(0, 0, 0, 0.8);
 		overflow: hidden;
-
 	}
 </style>

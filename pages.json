@@ -4,15 +4,15 @@
 	},
 	"pages": [
 		{
-			"path": "pages/login/login",
+			"path": "pages/drive/drive",
 			"style": {
+				"landscape": true,
 				"navigationStyle": "custom"
 			}
 		},
 		{
-			"path": "pages/drive/drive",
+			"path": "pages/login/login",
 			"style": {
-				"landscape": true,
 				"navigationStyle": "custom"
 			}
 		},

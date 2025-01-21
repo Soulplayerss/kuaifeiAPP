@@ -32,6 +32,7 @@ function getCounter() {
 };
 
 function generateTimestamp() {
+	console.log(getCounter() + new Date().getTime().toString())
 	return getCounter() + new Date().getTime().toString();
 }
 
@@ -102,6 +103,6 @@ Signature.fnMerge = function(encryptByte, changeByte) {
 
 	return temp;
 }
-
+console.log(Signature.fnGetSignature())
 export const fnGetSignature = Signature.fnGetSignature()
 export const generateTime = generateTimestamp()
