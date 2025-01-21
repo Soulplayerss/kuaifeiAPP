@@ -1,8 +1,8 @@
 <template>
 	<view class="drive">
 		<!-- <Camera /> -->
-		<DualChannel :carInfo="carInfo" :macAddress="macAddress" v-if="showDualChannel" />
-		<FourChannel :carInfo="carInfo" :macAddress="macAddress" v-if="showFourChannel" />
+		<DualChannel :carInfo="carInfo" :macAddress="macAddress" :carId="carId" v-if="showDualChannel" />
+		<FourChannel :carInfo="carInfo" :macAddress="macAddress" :carId="carId" v-if="showFourChannel" />
 	</view>
 </template>
 
@@ -26,6 +26,10 @@
 			FourChannel,
 			// Camera
 		},
+		onShow() {
+			// 设置横屏
+			plus.screen.lockOrientation('landscape-primary');
+		},
 		onLoad(options) {
 			const {
 				macAddress,
@@ -33,8 +37,7 @@
 			} = options;
 			this.macAddress = macAddress
 			this.carId = carId
-			// 设置横屏
-			plus.screen.lockOrientation('landscape-primary');
+			
 		},
 		onUnload() {
 			// 页面卸载时恢复竖屏
