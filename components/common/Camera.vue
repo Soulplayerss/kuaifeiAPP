@@ -10,9 +10,9 @@
 		fnGetSignature
 	} from '@/assets/js/getSignature.js';
 	export default {
-		data(){
+		data() {
 			return {
-				headerParms:{
+				headerParms: {
 					'Content-Type': 'application/json',
 					'uuid': '6763c5921f96978377583672',
 					'appKey': 'd2b66ca4998f1bcedbff6dd62c87c622',
@@ -34,7 +34,9 @@
 						sns: ['09bf5ddf079e8069']
 					},
 					success: (res) => {
-						this.getlivestream(res.data.data[0].token)
+						if (res.data.code == 2000) {
+							this.getlivestream(res.data.data[0].token)
+						}
 					},
 					fail: (err) => {
 						uni.showToast({

@@ -12,9 +12,6 @@
 				<span>信号强度：{{socket501Data.myCsq}}</span>
 			</view>
 		</view>
-		<view class="" style="color: #FFF;">
-			{{tochStartText}}
-		</view>
 		<view class="centerInfo">
 			<view class="_item" style="width: 30%;">
 				<span>纬度：{{socket502Data.lat}}</span>
@@ -237,6 +234,7 @@
 		},
 		methods: {
 			back() {
+				this.$emit('back')
 				this.clearHeartbeat(); // 清理心跳和重连
 				this.isBack = true
 				if (this.socket) {
@@ -1115,7 +1113,6 @@
 						data: message,
 						success: () => {
 							console.log('消息发送成功:', message);
-							// this.message = message + this.getCurrentTime()
 						},
 						fail: (err) => {
 							console.error('消息发送失败:', err);
@@ -1202,7 +1199,7 @@
 			align-items: center;
 			width: 100%;
 			box-sizing: border-box;
-			padding: 16px;
+			padding: 32px 16px;
 			font-size: 15px;
 			color: #FFF;
 
