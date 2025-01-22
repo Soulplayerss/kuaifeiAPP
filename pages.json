@@ -4,10 +4,10 @@
 	},
 	"pages": [
 		{
-			"path": "pages/drive/drive",
+			"path": "pages/car/car",
 			"style": {
-				"landscape": true,
-				"navigationStyle": "custom"
+				"navigationStyle": "custom",
+				"keepAlive": true
 			}
 		},
 		{
@@ -17,15 +17,15 @@
 			}
 		},
 		{
-			"path": "pages/index/index",
+			"path": "pages/drive/drive",
 			"style": {
+				"landscape": true,
 				"navigationStyle": "custom"
 			}
 		},
 		{
-			"path": "pages/drive/drive",
+			"path": "pages/index/index",
 			"style": {
-				"landscape": true,
 				"navigationStyle": "custom"
 			}
 		},
@@ -41,13 +41,7 @@
 				"navigationStyle": "custom"
 			}
 		},
-		{
-			"path": "pages/car/car",
-			"style": {
-				"navigationStyle": "custom",
-				"keepAlive": true
-			}
-		},
+		
 		{
 			"path": "pages/my/my",
 			"style": {

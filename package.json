@@ -1,5 +1,8 @@
 {
   "dependencies": {
+    "flv.js": "^1.6.2",
+    "hls.js": "^1.5.19",
+    "mui-player": "^1.8.1",
     "vuex": "^4.1.0"
   }
 }

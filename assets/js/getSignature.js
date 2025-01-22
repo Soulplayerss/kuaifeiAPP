@@ -1,6 +1,5 @@
 import md5 from './md5'
 
-var timeMillis = generateTimestamp()
 var uuid = '6763c5921f96978377583672'
 // 安卓
  var appkey = 'd2b66ca4998f1bcedbff6dd62c87c622'
@@ -36,6 +35,7 @@ function generateTimestamp() {
 	return getCounter() + new Date().getTime().toString();
 }
 
+var timeMillis = generateTimestamp()
 
 Signature.fnGetSignature = function() {
 	var encryptStr = uuid + appkey + appsecret + timeMillis;
@@ -105,4 +105,4 @@ Signature.fnMerge = function(encryptByte, changeByte) {
 }
 console.log(Signature.fnGetSignature())
 export const fnGetSignature = Signature.fnGetSignature()
-export const generateTime = generateTimestamp()
+export const generateTime = timeMillis

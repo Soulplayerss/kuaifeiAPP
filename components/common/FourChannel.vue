@@ -4,6 +4,7 @@
 			<view class="back" @click="back">
 				<image src="../../assets/images/over.png" mode="" style="width: 30px;height: 30px;"></image>
 			</view>
+
 			<view class="_item">
 				<span>电池电压：{{socket503Data.voltage_battery}} V</span>
 				<span>电池电流：{{socket503Data.current_battery}} A</span>
@@ -62,25 +63,25 @@
 			<view class="parent">
 				<view class="draggable" id="motor" :style="{ left: leftHandle.x + 'px', top: leftHandle.y + 'px' }"
 					@touchstart="onTouchStart('leftHandle', $event)" @touchmove="onTouchMove('leftHandle', $event)"
-					@touchend="onTouchEnd('leftHandle', $event)">
+					@touchend="onTouchEnd('leftHandle', $event)" @touchcancel="onTouchCancel('leftHandle', $event)">
 				</view>
 			</view>
 			<view class="parent" v-show="carInfo.appCarChannelList && carInfo.appCarChannelList.length >= 5">
 				<view class="draggable" id="fiveChannel" :style="{ left:fiveHandle.x + 'px', top:fiveHandle.y + 'px' }"
 					@touchstart="onTouchStart('fiveHandle', $event)" @touchmove="onTouchMove('fiveHandle', $event)"
-					@touchend="onTouchEnd('fiveHandle', $event)">
+					@touchend="onTouchEnd('fiveHandle', $event)" @touchcancel="onTouchCancel('fiveHandle', $event)">
 				</view>
 			</view>
 			<view class="parent" v-show="carInfo.appCarChannelList && carInfo.appCarChannelList.length >= 6">
 				<view class="draggable" id="sixChannel" :style="{ left:sixHandle.x + 'px', top:sixHandle.y + 'px' }"
 					@touchstart="onTouchStart('sixHandle', $event)" @touchmove="onTouchMove('sixHandle', $event)"
-					@touchend="onTouchEnd('sixHandle', $event)">
+					@touchend="onTouchEnd('sixHandle', $event)" @touchcancel="onTouchCancel('sixHandle', $event)">
 				</view>
 			</view>
 			<view class="parent">
 				<view class="draggable" id="rudder" :style="{ left: rightHandle.x + 'px', top: rightHandle.y + 'px' }"
 					@touchstart="onTouchStart('rightHandle', $event)" @touchmove="onTouchMove('rightHandle', $event)"
-					@touchend="onTouchEnd('rightHandle', $event)">
+					@touchend="onTouchEnd('rightHandle', $event)" @touchcancel="onTouchCancel('rightHandle', $event)">
 				</view>
 			</view>
 		</view>
@@ -98,6 +99,10 @@
 				default: {}
 			},
 			macAddress: {
+				type: String,
+				default: ''
+			},
+			carId: {
 				type: String,
 				default: ''
 			}
@@ -131,7 +136,6 @@
 				reconnectAttempts: 0, // 重连次数
 				maxReconnectAttempts: 5, // 最大重连次数
 				isBack: false, // 最大重连次数
-				carId: '',
 				socket501Data: {},
 				socket502Data: {},
 				socket503Data: {},
@@ -229,9 +233,9 @@
 		},
 		methods: {
 			back() {
+				this.$emit('back')
 				this.clearHeartbeat(); // 清理心跳和重连
 				this.isBack = true
-				this.clearHeartbeat(); // 清理心跳和重连
 				if (this.socket) {
 					this.closeWebSocket();
 				}
@@ -339,21 +343,22 @@
 
 			// 触摸移动
 			onTouchMove(handleKey, event) {
-				const handle = this[handleKey];
-				if (!handle.isDragging) return;
+				event.preventDefault()
+				const handle = this[handleKey]
+				if (!handle.isDragging) return
 
 				// 根据 identifier 找到当前触摸点
 				const touch = Array.from(event.touches).find(
 					(t) => t.identifier === handle.identifier
 				);
-				if (!touch) return;
+				if (!touch) return
 
-				const newX = touch.clientX - handle.startX;
-				const newY = touch.clientY - handle.startY;
+				const newX = touch.clientX - handle.startX
+				const newY = touch.clientY - handle.startY
 
 				// 限制范围
-				const maxX = 100; // 假设按钮宽度为50
-				const maxY = 100; // 假设按钮高度为50
+				const maxX = 100
+				const maxY = 100
 
 				if (handleKey === 'fiveHandle' || handleKey === 'sixHandle') {
 					handle.x = 50;
@@ -378,7 +383,10 @@
 					handle.x = 50;
 					handle.y = 50;
 				}
-				if (event.target.id == 'motor' && this.carInfo) {
+				this.sendEndMessage(event.target.id)
+			},
+			sendEndMessage(id) {
+				if (id == 'motor' && this.carInfo) {
 					clearInterval(this.intervarTime)
 					this.sendMessage(JSON.stringify({
 						"bizCode": 602, //固定值
@@ -396,7 +404,7 @@
 					}))
 					this.oldDirection = ''
 					this.newDirection = ''
-				} else if (event.target.id == 'rudder' && this.carInfo) {
+				} else if (id == 'rudder' && this.carInfo) {
 					clearInterval(this.rudderIntervarTime)
 					this.sendMessage(JSON.stringify({
 						"bizCode": 602, //固定值
@@ -414,7 +422,7 @@
 					}))
 					this.rudderoldDirection = ''
 					this.ruddernewDirection = ''
-				} else if (event.target.id == 'fiveChannel' && this.carInfo) {
+				} else if (id == 'fiveChannel' && this.carInfo) {
 					clearInterval(this.fiveIntervarTime)
 					this.sendMessage(JSON.stringify({
 						"bizCode": 602, //固定值
@@ -425,7 +433,7 @@
 					}))
 					this.fivenewDirection = ''
 					this.fiveoldDirection = ''
-				} else if (event.target.id == 'sixChannel' && this.carInfo) {
+				} else if (id == 'sixChannel' && this.carInfo) {
 					clearInterval(this.sixIntervarTime)
 					this.sendMessage(JSON.stringify({
 						"bizCode": 602, //固定值
@@ -437,7 +445,15 @@
 					this.sixnewDirection = ''
 					this.sixoldDirection = ''
 				}
-
+			},
+			onTouchCancel() {
+				this.sendEndMessage('motor')
+				this.sendEndMessage('fiveChannel')
+				this.sendEndMessage('sixChannel')
+				this.sendEndMessage('rudder')
+				uni.navigateTo({
+					url:`/pages/drive/drive?macAddress=${this.macAddress}&carId=${this.carId}`
+				})
 			},
 			checkPosition(positionX, positionY, id) {
 				if (positionX > 45 && positionX < 55) {
@@ -982,13 +998,12 @@
 			getCurrentTime() {
 				const now = new Date();
 
-				// 获取年、月、日、时、分、秒
-				const year = now.getFullYear(); // 年
-				const month = now.getMonth() + 1; // 月（从 0 开始，需要加 1）
-				const day = now.getDate(); // 日
-				const hours = now.getHours(); // 时
-				const minutes = now.getMinutes(); // 分
-				const seconds = now.getSeconds(); // 秒
+				const year = now.getFullYear()
+				const month = now.getMonth() + 1
+				const day = now.getDate()
+				const hours = now.getHours()
+				const minutes = now.getMinutes()
+				const seconds = now.getSeconds()
 
 				// 格式化时间
 				const formattedTime =
@@ -1097,7 +1112,6 @@
 						data: message,
 						success: () => {
 							console.log('消息发送成功:', message);
-							// this.message = message + this.getCurrentTime()
 						},
 						fail: (err) => {
 							console.error('消息发送失败:', err);
@@ -1166,6 +1180,9 @@
 		beforeDestroy() {
 
 		},
+		onHide() {
+			console.log('页面被覆盖');
+		}
 	};
 </script>
 
@@ -1173,6 +1190,7 @@
 	.container {
 		height: 100vh;
 		width: 100vw;
+		touch-action: none;
 
 		.topInfo {
 			display: flex;
@@ -1180,7 +1198,7 @@
 			align-items: center;
 			width: 100%;
 			box-sizing: border-box;
-			padding: 16px;
+			padding: 32px 16px;
 			font-size: 15px;
 			color: #FFF;
 

@@ -7,6 +7,12 @@
     "transformPx" : false,
     /* 5+App特有相关 */
     "app-plus" : {
+        "plugins" : {
+            "ttplayer" : {
+                "version" : "1.0.0",
+                "provider" : "uniapp"
+            }
+        },
         "usingComponents" : true,
         "nvueStyleCompiler" : "uni-app",
         "compilerVersion" : 3,
@@ -18,11 +24,11 @@
         },
         /* 模块配置 */
         "modules" : {
-            "VideoPlayer" : {},
             "LivePusher" : {},
             "Barcode" : {},
             "Camera" : {},
-            "Webview-x5" : {}
+            "Webview-x5" : {},
+            "VideoPlayer" : {}
         },
         /* 应用发布信息 */
         "distribute" : {

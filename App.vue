@@ -2,7 +2,7 @@
 <script>
 	export default {
 		onShow() {
-			const systemInfo = uni.getSystemInfo();
+			const systemInfo = uni.getSystemInfoSync();
 			// 获取状态栏高度
 			uni.setStorage({
 				data:systemInfo.statusBarHeight || 30,

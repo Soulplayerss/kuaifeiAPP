@@ -1,15 +1,15 @@
 <template>
 	<view class="drive">
-		<Camera />
-		<!-- <DualChannel :carInfo="carInfo" :macAddress="macAddress" v-if="showDualChannel" />
-		<FourChannel :carInfo="carInfo" :macAddress="macAddress" v-if="showFourChannel" /> -->
+		<!-- <Camera /> -->
+		<DualChannel :carInfo="carInfo" :macAddress="macAddress" :carId="carId" v-if="showDualChannel" />
+		<FourChannel :carInfo="carInfo" :macAddress="macAddress" :carId="carId" @back="back" v-if="showFourChannel" />
 	</view>
 </template>
 
 <script>
 	import DualChannel from '@/components/common/DualChannel.vue'
 	import FourChannel from '@/components/common/FourChannel.vue'
-	import Camera from '@/components/common/Camera.vue'
+	// import Camera from '@/components/common/Camera.vue'
 	import request from '@/utils/request';
 	export default {
 		data() {
@@ -23,8 +23,12 @@
 		},
 		components: {
 			DualChannel,
-			FourChannel,
-			Camera
+			FourChannel
+			// Camera
+		},
+		onShow() {
+			// 设置横屏
+			plus.screen.lockOrientation('landscape-primary');
 		},
 		onLoad(options) {
 			const {
@@ -33,17 +37,16 @@
 			} = options;
 			this.macAddress = macAddress
 			this.carId = carId
-			// 设置横屏
-			plus.screen.lockOrientation('landscape-primary');
+			
 		},
 		onUnload() {
-			// 页面卸载时恢复竖屏
-			plus.screen.lockOrientation('portrait-primary')
 		},
 		onHide() {
-			plus.screen.lockOrientation('portrait-primary')
 		},
 		methods: {
+			back() {
+				plus.screen.lockOrientation('portrait-primary')
+			},
 			async getCarInfo() {
 				try {
 					const response = await request(`/app/carInfo/getInfoByCarId/${this.carId}`, 'GET')
@@ -65,7 +68,7 @@
 			},
 		},
 		mounted() {
-			// this.getCarInfo()
+			this.getCarInfo()
 		}
 	};
 </script>
