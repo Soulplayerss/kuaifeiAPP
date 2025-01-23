@@ -56,9 +56,7 @@
 				<span style="display: inline-block;width: 35px;">{{item.maxValue}}</span>
 			</view>
 		</view> -->
-		<!-- <view class="" style="padding: 16px;color: #FFF;">
-			{{message}}
-		</view> -->
+		
 		<view class="operateBox">
 			<view class="parent">
 				<view class="draggable" id="motor" :style="{ left: leftHandle.x + 'px', top: leftHandle.y + 'px' }"
@@ -194,6 +192,11 @@
 					startY: 0,
 					identifier: null
 				},
+				startTouch: [],
+				moveTouch: [],
+				endTouch: [],
+				endIdentifier: null,
+				unrepeatedObjects: {}
 			};
 		},
 		onLoad(options) {
@@ -259,7 +262,7 @@
 
 				// 根据 identifier 找到当前触摸点
 				const touch = Array.from(event.touches).find(
-					(t) => t.identifier === handle.identifier
+					(t) => t.identifier == handle.identifier
 				);
 				if (!touch) return;
 
@@ -278,7 +281,7 @@
 			onSliderLeftTouchEnd(index, event) {
 				const handle = this.sliderLeftList[index];
 				const touch = Array.from(event.changedTouches).find(
-					(t) => t.identifier === handle.identifier
+					(t) => t.identifier == handle.identifier
 				);
 				if (touch) {
 					handle.isDragging = false;
@@ -301,7 +304,7 @@
 
 				// 根据 identifier 找到当前触摸点
 				const touch = Array.from(event.touches).find(
-					(t) => t.identifier === handle.identifier
+					(t) => t.identifier == handle.identifier
 				);
 				if (!touch) return;
 
@@ -322,7 +325,7 @@
 			onSliderRightTouchEnd(index, event) {
 				const handle = this.sliderRightList[index];
 				const touch = Array.from(event.changedTouches).find(
-					(t) => t.identifier === handle.identifier
+					(t) => t.identifier == handle.identifier
 				);
 				if (touch) {
 					handle.isDragging = false;
@@ -331,14 +334,28 @@
 			},
 			// 触摸开始
 			onTouchStart(handleKey, event) {
+				event.stopPropagation(); // 阻止事件冒泡
 				const touch = event.touches[event.touches.length - 1]; // 当前的最后一个触摸点
+				this.startTouch = event.touches
 				const handle = this[handleKey];
 				if (!handle.isDragging) {
 					handle.isDragging = true;
-					handle.startX = touch.clientX - handle.x;
-					handle.startY = touch.clientY - handle.y;
-					handle.identifier = touch.identifier; // 记录触摸点的 identifier
+					if (this.endTouch.length == 0) {
+						handle.startX = touch.clientX - handle.x;
+						handle.startY = touch.clientY - handle.y;
+						handle.identifier = touch.identifier
+					} else {
+						this.unrepeatedObjects = this.findUnrepeatedObjects(this.startTouch, this.endTouch, 'identifier')
+						handle.startX = this.unrepeatedObjects[0].clientX - handle.x;
+						handle.startY = this.unrepeatedObjects[0].clientY - handle.y;
+						handle.identifier = this.unrepeatedObjects[0].identifier
+					}
 				}
+			},
+
+			findUnrepeatedObjects(array1, array2, key) {
+				return array1.filter(item => !array2.some(i => i[key] == item[key])) // 只存在于第一个数组的对象
+					.concat(array2.filter(item => !array1.some(i => i[key] == item[key]))); // 只存在于第二个数组的对象
 			},
 
 			// 触摸移动
@@ -347,9 +364,11 @@
 				const handle = this[handleKey]
 				if (!handle.isDragging) return
 
+				this.moveTouch = event.touches
+				this.endTouch = JSON.parse(JSON.stringify(this.moveTouch))
 				// 根据 identifier 找到当前触摸点
 				const touch = Array.from(event.touches).find(
-					(t) => t.identifier === handle.identifier
+					(t) => t.identifier == handle.identifier
 				);
 				if (!touch) return
 
@@ -360,7 +379,7 @@
 				const maxX = 100
 				const maxY = 100
 
-				if (handleKey === 'fiveHandle' || handleKey === 'sixHandle') {
+				if (handleKey == 'fiveHandle' || handleKey == 'sixHandle') {
 					handle.x = 50;
 					handle.y = Math.min(Math.max(newY, 0), maxY);
 				} else {
@@ -374,15 +393,12 @@
 			// 触摸结束
 			onTouchEnd(handleKey, event) {
 				const handle = this[handleKey];
-				const touch = Array.from(event.changedTouches).find(
-					(t) => t.identifier === handle.identifier
-				);
-				if (touch) {
-					handle.isDragging = false;
-					handle.identifier = null; // 释放触摸点
-					handle.x = 50;
-					handle.y = 50;
-				}
+
+				this.endTouch = this.endTouch.filter(item => !(item.identifier == event.changedTouches[0].identifier));
+				handle.isDragging = false;
+				handle.identifier = null; // 释放触摸点
+				handle.x = 50;
+				handle.y = 50;
 				this.sendEndMessage(event.target.id)
 			},
 			sendEndMessage(id) {
@@ -452,102 +468,102 @@
 				this.sendEndMessage('sixChannel')
 				this.sendEndMessage('rudder')
 				uni.navigateTo({
-					url:`/pages/drive/drive?macAddress=${this.macAddress}&carId=${this.carId}`
+					url: `/pages/drive/drive?macAddress=${this.macAddress}&carId=${this.carId}`
 				})
 			},
 			checkPosition(positionX, positionY, id) {
 				if (positionX > 45 && positionX < 55) {
 					switch (true) {
 						case positionY <= 10 && positionY >= 0:
-							id === 'motor' ? this.newDirection = "top5" : id === 'rudder' ? this.ruddernewDirection =
-								"top5" : id === 'fiveChannel' ? this.fivenewDirection = "top5" : this.sixnewDirection =
+							id == 'motor' ? this.newDirection = "top5" : id == 'rudder' ? this.ruddernewDirection =
+								"top5" : id == 'fiveChannel' ? this.fivenewDirection = "top5" : this.sixnewDirection =
 								"top5"
 							break;
 						case positionY <= 20 && positionY > 10:
-							id === 'motor' ? this.newDirection = "top4" : id === 'rudder' ? this.ruddernewDirection =
-								"top4" : id === 'fiveChannel' ? this.fivenewDirection = "top4" : this.sixnewDirection =
+							id == 'motor' ? this.newDirection = "top4" : id == 'rudder' ? this.ruddernewDirection =
+								"top4" : id == 'fiveChannel' ? this.fivenewDirection = "top4" : this.sixnewDirection =
 								"top4"
 							break;
 						case positionY <= 30 && positionY > 20:
-							id === 'motor' ? this.newDirection = "top3" : id === 'rudder' ? this.ruddernewDirection =
-								"top3" : id === 'fiveChannel' ? this.fivenewDirection = "top3" : this.sixnewDirection =
+							id == 'motor' ? this.newDirection = "top3" : id == 'rudder' ? this.ruddernewDirection =
+								"top3" : id == 'fiveChannel' ? this.fivenewDirection = "top3" : this.sixnewDirection =
 								"top3"
 							break;
 						case positionY <= 40 && positionY > 30:
-							id === 'motor' ? this.newDirection = "top2" : id === 'rudder' ? this.ruddernewDirection =
-								"top2" : id === 'fiveChannel' ? this.fivenewDirection = "top2" : this.sixnewDirection =
+							id == 'motor' ? this.newDirection = "top2" : id == 'rudder' ? this.ruddernewDirection =
+								"top2" : id == 'fiveChannel' ? this.fivenewDirection = "top2" : this.sixnewDirection =
 								"top2"
 							break;
 						case positionY <= 45 && positionY > 40:
-							id === 'motor' ? this.newDirection = "top1" : id === 'rudder' ? this.ruddernewDirection =
-								"top1" : id === 'fiveChannel' ? this.fivenewDirection = "top1" : this.sixnewDirection =
+							id == 'motor' ? this.newDirection = "top1" : id == 'rudder' ? this.ruddernewDirection =
+								"top1" : id == 'fiveChannel' ? this.fivenewDirection = "top1" : this.sixnewDirection =
 								"top1"
 							break;
 						case positionY <= 55 && positionY > 45:
-							id === 'motor' ? this.newDirection = "motorStop" : id === 'rudder' ? this.ruddernewDirection =
-								"rudderStop" : id === 'fiveChannel' ? this.fivenewDirection = "fiveStop" : this
+							id == 'motor' ? this.newDirection = "motorStop" : id == 'rudder' ? this.ruddernewDirection =
+								"rudderStop" : id == 'fiveChannel' ? this.fivenewDirection = "fiveStop" : this
 								.sixnewDirection = "sixStop"
 							break;
 						case positionY <= 60 && positionY > 55:
-							id === 'motor' ? this.newDirection = "bottom1" : id === 'rudder' ? this.ruddernewDirection =
-								"bottom1" : id === 'fiveChannel' ? this.fivenewDirection = "bottom1" : this
+							id == 'motor' ? this.newDirection = "bottom1" : id == 'rudder' ? this.ruddernewDirection =
+								"bottom1" : id == 'fiveChannel' ? this.fivenewDirection = "bottom1" : this
 								.sixnewDirection = "bottom1"
 							break;
 						case positionY <= 70 && positionY > 60:
-							id === 'motor' ? this.newDirection = "bottom2" : id === 'rudder' ? this.ruddernewDirection =
-								"bottom2" : id === 'fiveChannel' ? this.fivenewDirection = "bottom2" : this
+							id == 'motor' ? this.newDirection = "bottom2" : id == 'rudder' ? this.ruddernewDirection =
+								"bottom2" : id == 'fiveChannel' ? this.fivenewDirection = "bottom2" : this
 								.sixnewDirection = "bottom2"
 							break;
 						case positionY <= 80 && positionY > 70:
-							id === 'motor' ? this.newDirection = "bottom3" : id === 'rudder' ? this.ruddernewDirection =
-								"bottom3" : id === 'fiveChannel' ? this.fivenewDirection = "bottom3" : this
+							id == 'motor' ? this.newDirection = "bottom3" : id == 'rudder' ? this.ruddernewDirection =
+								"bottom3" : id == 'fiveChannel' ? this.fivenewDirection = "bottom3" : this
 								.sixnewDirection = "bottom3"
 							break;
 						case positionY <= 90 && positionY > 80:
-							id === 'motor' ? this.newDirection = "bottom4" : id === 'rudder' ? this.ruddernewDirection =
-								"bottom4" : id === 'fiveChannel' ? this.fivenewDirection = "bottom4" : this
+							id == 'motor' ? this.newDirection = "bottom4" : id == 'rudder' ? this.ruddernewDirection =
+								"bottom4" : id == 'fiveChannel' ? this.fivenewDirection = "bottom4" : this
 								.sixnewDirection = "bottom4"
 							break;
 						case positionY <= 100 && positionY > 90:
-							id === 'motor' ? this.newDirection = "bottom5" : id === 'rudder' ? this.ruddernewDirection =
-								"bottom5" : id === 'fiveChannel' ? this.fivenewDirection = "bottom5" : this
+							id == 'motor' ? this.newDirection = "bottom5" : id == 'rudder' ? this.ruddernewDirection =
+								"bottom5" : id == 'fiveChannel' ? this.fivenewDirection = "bottom5" : this
 								.sixnewDirection = "bottom5"
 							break;
 					}
 				} else if (positionY > 45 && positionY < 55) {
 					switch (true) {
 						case positionX <= 10 && positionX >= 0:
-							id === 'motor' ? this.newDirection = "left5" : this.ruddernewDirection = "left5"
+							id == 'motor' ? this.newDirection = "left5" : this.ruddernewDirection = "left5"
 							break;
 						case positionX <= 20 && positionX > 10:
-							id === 'motor' ? this.newDirection = "left4" : this.ruddernewDirection = "left4"
+							id == 'motor' ? this.newDirection = "left4" : this.ruddernewDirection = "left4"
 							break;
 						case positionX <= 30 && positionX > 20:
-							id === 'motor' ? this.newDirection = "left3" : this.ruddernewDirection = "left3"
+							id == 'motor' ? this.newDirection = "left3" : this.ruddernewDirection = "left3"
 							break;
 						case positionX <= 40 && positionX > 30:
-							id === 'motor' ? this.newDirection = "left2" : this.ruddernewDirection = "left2"
+							id == 'motor' ? this.newDirection = "left2" : this.ruddernewDirection = "left2"
 							break;
 						case positionX <= 45 && positionX > 40:
-							id === 'motor' ? this.newDirection = "left1" : this.ruddernewDirection = "left1"
+							id == 'motor' ? this.newDirection = "left1" : this.ruddernewDirection = "left1"
 							break;
 						case positionX <= 55 && positionX > 45:
-							id === 'motor' ? this.newDirection = "motorStop" : this.ruddernewDirection = "rudderStop"
+							id == 'motor' ? this.newDirection = "motorStop" : this.ruddernewDirection = "rudderStop"
 							break;
 						case positionX <= 60 && positionX > 55:
-							id === 'motor' ? this.newDirection = "right1" : this.ruddernewDirection = "right1"
+							id == 'motor' ? this.newDirection = "right1" : this.ruddernewDirection = "right1"
 							break;
 						case positionX <= 70 && positionX > 60:
-							id === 'motor' ? this.newDirection = "right2" : this.ruddernewDirection = "right2"
+							id == 'motor' ? this.newDirection = "right2" : this.ruddernewDirection = "right2"
 							break;
 						case positionX <= 80 && positionX > 70:
-							id === 'motor' ? this.newDirection = "right3" : this.ruddernewDirection = "right3"
+							id == 'motor' ? this.newDirection = "right3" : this.ruddernewDirection = "right3"
 							break;
 						case positionX <= 90 && positionX > 80:
-							id === 'motor' ? this.newDirection = "right4" : this.ruddernewDirection = "right4"
+							id == 'motor' ? this.newDirection = "right4" : this.ruddernewDirection = "right4"
 							break;
 						case positionX <= 100 && positionX > 90:
-							id === 'motor' ? this.newDirection = "right5" : this.ruddernewDirection = "right5"
+							id == 'motor' ? this.newDirection = "right5" : this.ruddernewDirection = "right5"
 							break;
 					}
 				} else if (positionX < 20 && positionY < 20) {
@@ -915,8 +931,8 @@
 						'fiveChannel' ? this.fiveIntervarTime : this.sixIntervarTime);
 
 					// 停止信号直接发送一次
-					if (direction === 'motorStop' || direction === 'rudderStop' || direction === 'fiveStop' ||
-						direction === 'sixStop') {
+					if (direction == 'motorStop' || direction == 'rudderStop' || direction == 'fiveStop' ||
+						direction == 'sixStop') {
 						this.sendMessage(JSON.stringify({
 							bizCode: 602, //固定值
 							channelNum: dutyMap[direction].channelNum, // 通道号1-8
@@ -926,8 +942,8 @@
 						}));
 					} else {
 						var intervalID = null
-						if (direction === 'leftTop' || direction === 'leftBottom' || direction === 'rightTop' ||
-							direction === 'rightBottom') {
+						if (direction == 'leftTop' || direction == 'leftBottom' || direction == 'rightTop' ||
+							direction == 'rightBottom') {
 							const sendDutyUpdate = () => {
 								this.sendMessage(JSON.stringify({
 									bizCode: 602, //固定值
@@ -1037,7 +1053,7 @@
 				this.socket.onMessage((event) => {
 					this.message = event.data
 					// 如果是心跳响应
-					if (event.data === 'pong') {
+					if (event.data == 'pong') {
 						console.log('收到心跳响应: pong');
 						clearTimeout(this.heartbeatTimeout);
 					} else {
