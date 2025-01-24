@@ -1,5 +1,6 @@
 <template>
 	<view class="mySite">
+		<Loding v-show="showLoading" />
 		<AppBar title='我的场地' @goBank="goBank" />
 		<view class="content">
 			<view class="title">
@@ -42,8 +43,13 @@
 									</view>
 									<view class="driving">
 										<span>正在驾驶中：{{item.driving}}</span>
+									</view>
+									<view class="flex">
 										<view class="selectionCar" @click="selectCar(item)">
 											选车
+										</view>
+										<view class="onlineOffline" @click="changeSiteStatus(item.siteId)">
+											{{item.siteStatus == 1 ? '下线' : '上线'}}
 										</view>
 									</view>
 								</view>
@@ -63,6 +69,7 @@
 
 <script>
 	import AppBar from '@/components/common/AppBar.vue'
+	import Loding from '@/components/common/Loding.vue'
 	import request from '@/utils/request';
 	import {
 		mapState
@@ -73,6 +80,7 @@
 	export default {
 		data() {
 			return {
+				showLoading: false,
 				pageNum: 1,
 				pageSize: 10,
 				loading: false,
@@ -86,7 +94,8 @@
 			}
 		},
 		components: {
-			AppBar
+			AppBar,
+			Loding
 		},
 		computed: {
 			...mapState(['siteLabel'])
@@ -118,19 +127,44 @@
 					url: '/pages/selectCar/selectCar?page=mySite',
 				})
 			},
-			async deleteItem(siteId) {
+			async changeSiteStatus(siteId) {
+				this.showLoading = true
 				try {
-					const response = await request('/app/site/' + siteId, 'POST', {
-					})
-					if(response.code === 200){
-						this.onRefresh();
+					const response = await request(`/app/site/updateStatus/${siteId}`, 'GET')
+					if (response.code === 200) {
+						setTimeout(() => {
+							this.showLoading = false
+							this.loadData();
+						}, 500)
 					}
 				} catch (error) {
+					this.showLoading = false
+					uni.showToast({
+						title: '操作失败',
+						icon: 'none',
+					});
+				}
+
+			},
+			async deleteItem(siteId) {
+				this.showLoading = true
+				try {
+					const response = await request('/app/site/' + siteId, 'POST', {})
+					if (response.code === 200) {
+						setTimeout(() => {
+							this.showLoading = false
+							this.loadData();
+						}, 500)
+					}
+				} catch (error) {
+					this.showLoading = false
 					uni.showToast({
 						title: '删除失败',
 						icon: 'none',
 					});
 				}
+
+
 			},
 			// 下拉刷新
 			onRefresh() {
@@ -206,6 +240,7 @@
 		min-height: 100vh;
 		background-color: #eea618;
 
+
 		.content {
 			width: 100%;
 			height: calc(100vh - 146px);
@@ -233,10 +268,11 @@
 				.itemContent {
 					background-color: #FFF;
 					display: flex;
+					height: 100%;
 
 					image {
-						width: 50%;
-						height: 140px;
+						width: 45%;
+						height: 170px;
 					}
 
 					.right {
@@ -306,14 +342,29 @@
 								color: #aaaa7f;
 							}
 
-							.selectionCar {
-								line-height: 14px;
-								padding: 4px 12px;
-								background-color: #9048d8;
-								color: #FFF;
-								border-radius: 12px;
-							}
 						}
+
+						.selectionCar {
+							line-height: 16px;
+							padding: 5px 5vw;
+							background-color: #9048d8;
+							color: #FFF;
+							border-radius: 12px;
+							margin-right: 16px;
+							font-size: 14px;
+						}
+
+						.onlineOffline {
+							line-height: 16px;
+							padding: 5px 5vw;
+							width: auto;
+							background-color: #eea618;
+							color: #FFF;
+							border-radius: 12px;
+							margin-right: 16px;
+							font-size: 14px;
+						}
+
 					}
 				}
 

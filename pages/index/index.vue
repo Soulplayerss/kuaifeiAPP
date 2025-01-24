@@ -284,16 +284,20 @@
 				try {
 					const [siteData, dronesData, yachtData, racingData] = await Promise.all([
 						request('/app/site/getSiteForApp', 'POST', {
-							siteType: siteType[0].dictValue
+							siteType: siteType[0].dictValue,
+							siteStatus: 1
 						}),
 						request('/app/site/getSiteForApp', 'POST', {
-							siteType: siteType[1].dictValue
+							siteType: siteType[1].dictValue,
+							siteStatus: 1
 						}),
 						request('/app/site/getSiteForApp', 'POST', {
-							siteType: siteType[2].dictValue
+							siteType: siteType[2].dictValue,
+							siteStatus: 1
 						}),
 						request('/app/site/getSiteForApp', 'POST', {
-							siteType: siteType[3].dictValue
+							siteType: siteType[3].dictValue,
+							siteStatus: 1
 						})
 
 					]);

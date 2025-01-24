@@ -56,7 +56,6 @@
 				<span style="display: inline-block;width: 35px;">{{item.maxValue}}</span>
 			</view>
 		</view> -->
-		
 		<view class="operateBox">
 			<view class="parent">
 				<view class="draggable" id="motor" :style="{ left: leftHandle.x + 'px', top: leftHandle.y + 'px' }"
@@ -196,7 +195,10 @@
 				moveTouch: [],
 				endTouch: [],
 				endIdentifier: null,
-				unrepeatedObjects: {}
+				unrepeatedObjects: {},
+				touching: false,
+				isSocket: false,
+				touchCancel: []
 			};
 		},
 		onLoad(options) {
@@ -340,15 +342,40 @@
 				const handle = this[handleKey];
 				if (!handle.isDragging) {
 					handle.isDragging = true;
-					if (this.endTouch.length == 0) {
-						handle.startX = touch.clientX - handle.x;
-						handle.startY = touch.clientY - handle.y;
-						handle.identifier = touch.identifier
+					if (this.touchCancel.length > 1 && this.touching) {
+						if (this.endTouch.length == 0) {
+							let touchs = event.touches.find(item => item.identifier == 0)
+							handle.startX = touchs.clientX - handle.x;
+							handle.startY = touchs.clientY - handle.y;
+							handle.identifier = 0
+							this.endTouch.push(touchs)
+						} else {
+							let identifier = this.touchCancel[this.endTouch.length].identifier
+							let touchs = event.touches.find(item => item.identifier == identifier)
+							handle.startX = touchs.clientX - handle.x;
+							handle.startY = touchs.clientY - handle.y;
+							handle.identifier = identifier
+							this.endTouch.push(touchs)
+							if (this.endTouch.length == this.touchCancel.length) {
+								this.touchCancel = []
+								this.touching = false
+							}
+						}
 					} else {
-						this.unrepeatedObjects = this.findUnrepeatedObjects(this.startTouch, this.endTouch, 'identifier')
-						handle.startX = this.unrepeatedObjects[0].clientX - handle.x;
-						handle.startY = this.unrepeatedObjects[0].clientY - handle.y;
-						handle.identifier = this.unrepeatedObjects[0].identifier
+						this.touching = false
+						if (this.endTouch.length == 0) {
+							handle.startX = touch.clientX - handle.x;
+							handle.startY = touch.clientY - handle.y;
+							handle.identifier = touch.identifier
+							this.endTouch = JSON.parse(JSON.stringify(this.startTouch))
+						} else {
+							this.unrepeatedObjects = this.findUnrepeatedObjects(this.startTouch, this.endTouch,
+								'identifier')
+							handle.startX = this.unrepeatedObjects[0].clientX - handle.x;
+							handle.startY = this.unrepeatedObjects[0].clientY - handle.y;
+							handle.identifier = this.unrepeatedObjects[0].identifier
+						}
+
 					}
 				}
 			},
@@ -365,7 +392,9 @@
 				if (!handle.isDragging) return
 
 				this.moveTouch = event.touches
-				this.endTouch = JSON.parse(JSON.stringify(this.moveTouch))
+				if (!this.touching) {
+					this.endTouch = JSON.parse(JSON.stringify(this.moveTouch))
+				}
 				// 根据 identifier 找到当前触摸点
 				const touch = Array.from(event.touches).find(
 					(t) => t.identifier == handle.identifier
@@ -462,14 +491,46 @@
 					this.sixoldDirection = ''
 				}
 			},
-			onTouchCancel() {
+			onTouchCancel(handleKey, event) {
+				this.touchCancel = JSON.parse(JSON.stringify(this.moveTouch))
+				this.touching = true
+				this.leftHandle = {
+					x: 50,
+					y: 50,
+					isDragging: false,
+					startX: 0,
+					startY: 0,
+					identifier: null
+				}
+				this.fiveHandle = {
+					x: 50,
+					y: 50,
+					isDragging: false,
+					startX: 0,
+					startY: 0,
+					identifier: null
+				}
+				this.sixHandle = {
+					x: 50,
+					y: 50,
+					isDragging: false,
+					startX: 0,
+					startY: 0,
+					identifier: null
+				}
+				this.rightHandle = {
+					x: 50,
+					y: 50,
+					isDragging: false,
+					startX: 0,
+					startY: 0,
+					identifier: null
+				}
+				this.endTouch = []
 				this.sendEndMessage('motor')
 				this.sendEndMessage('fiveChannel')
 				this.sendEndMessage('sixChannel')
 				this.sendEndMessage('rudder')
-				uni.navigateTo({
-					url: `/pages/drive/drive?macAddress=${this.macAddress}&carId=${this.carId}`
-				})
 			},
 			checkPosition(positionX, positionY, id) {
 				if (positionX > 45 && positionX < 55) {
@@ -1046,6 +1107,7 @@
 				// 监听 WebSocket 打开事件
 				this.socket.onOpen(() => {
 					console.log('WebSocket已打开');
+					this.isSocket = true
 					// this.startHeartbeat(); // 开始心跳机制
 				});
 
@@ -1073,11 +1135,13 @@
 				// 监听 WebSocket 关闭事件
 				this.socket.onClose(() => {
 					console.log('WebSocket已关闭');
+					this.isSocket = false
 				});
 
 				// 监听 WebSocket 错误事件
 				this.socket.onError((err) => {
 					console.error('WebSocket发生错误', err);
+					this.isSocket = false
 				});
 			},
 
