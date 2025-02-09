@@ -1,8 +1,20 @@
 <template>
 	<view class="container">
 		<view class="topInfo">
-			<view class="back" @click="back">
-				<image src="../../assets/images/over.png" mode="" style="width: 30px;height: 30px;"></image>
+			<view class="parachute"
+				style="background-color: #FFF;width: 32px;padding: 6px;position: relative;margin-left: 16px;">
+				<image src="../../assets/images/parachute.png" mode="" style="width: 32px;height: 32px;"
+					@click="showVerify = !showVerify"></image>
+				<view class="verifyBox" v-show="showVerify">
+					<u-icon name="play-left-fill" :size="20" color="#FFF"></u-icon>
+					<view class="verifyContent">
+						<view class="flex justify-between title">
+							释放降落伞
+							<u-icon name="close" :size="20" @click="showVerify = false"></u-icon>
+						</view>
+						<XlSliderVerify @success="verifySuccess" v-show="isSocket" />
+					</view>
+				</view>
 			</view>
 
 			<view class="_item">
@@ -10,6 +22,10 @@
 				<span>电池电流：{{socket503Data.current_battery}} A</span>
 				<span>电池电量：{{socket503Data.battery_remaining}}</span>
 				<span>信号强度：{{socket501Data.myCsq}}</span>
+			</view>
+
+			<view class="back" @click="back">
+				<image src="../../assets/images/over.png" mode="" style="width: 30px;height: 30px;"></image>
 			</view>
 		</view>
 		<view class="centerInfo">
@@ -56,23 +72,40 @@
 				<span style="display: inline-block;width: 35px;">{{item.maxValue}}</span>
 			</view>
 		</view> -->
-		<view class="operateBox">
+
+		<view class="operateBox" v-show="isSocket">
 			<view class="parent">
 				<view class="draggable" id="motor" :style="{ left: leftHandle.x + 'px', top: leftHandle.y + 'px' }"
 					@touchstart="onTouchStart('leftHandle', $event)" @touchmove="onTouchMove('leftHandle', $event)"
 					@touchend="onTouchEnd('leftHandle', $event)" @touchcancel="onTouchCancel('leftHandle', $event)">
 				</view>
 			</view>
-			<view class="parent" v-show="carInfo.appCarChannelList && carInfo.appCarChannelList.length >= 5">
-				<view class="draggable" id="fiveChannel" :style="{ left:fiveHandle.x + 'px', top:fiveHandle.y + 'px' }"
-					@touchstart="onTouchStart('fiveHandle', $event)" @touchmove="onTouchMove('fiveHandle', $event)"
-					@touchend="onTouchEnd('fiveHandle', $event)" @touchcancel="onTouchCancel('fiveHandle', $event)">
+			<view class="actionButtonBox">
+				<view class="actionButton" :class="[fiveActive == 'up' ? 'activeFiveButton' : '']"
+					@click="sendFiveMessage(5, 'up')">
+					<image src="../../assets/images/up.png" mode="" style="width: 36px;height: 36px;"></image>
+				</view>
+				<view class="actionButton" :class="[fiveActive == 'center' ? 'activeFiveButton' : '']"
+					@click="sendFiveMessage(0, 'center')">
+					<image src="../../assets/images/center.png" mode="" style="width: 36px;height: 36px;"></image>
+				</view>
+				<view class="actionButton" :class="[fiveActive == 'down' ? 'activeFiveButton' : '']"
+					@click="sendFiveMessage(-5, 'down')">
+					<image src="../../assets/images/down.png" mode="" style="width: 36px;height: 36px;"></image>
 				</view>
 			</view>
-			<view class="parent" v-show="carInfo.appCarChannelList && carInfo.appCarChannelList.length >= 6">
-				<view class="draggable" id="sixChannel" :style="{ left:sixHandle.x + 'px', top:sixHandle.y + 'px' }"
-					@touchstart="onTouchStart('sixHandle', $event)" @touchmove="onTouchMove('sixHandle', $event)"
-					@touchend="onTouchEnd('sixHandle', $event)" @touchcancel="onTouchCancel('sixHandle', $event)">
+			<view class="actionButtonBox">
+				<view class="actionButton" :class="[sixActive == 'up' ? 'activeFiveButton' : '']"
+					@click="sendSixMessage(5, 'up')">
+					<image src="../../assets/images/up.png" mode="" style="width: 36px;height: 36px;"></image>
+				</view>
+				<view class="actionButton" :class="[sixActive == 'center' ? 'activeFiveButton' : '']"
+					@click="sendSixMessage(0, 'center')">
+					<image src="../../assets/images/center.png" mode="" style="width: 36px;height: 36px;"></image>
+				</view>
+				<view class="actionButton" :class="[sixActive == 'down' ? 'activeFiveButton' : '']"
+					@click="sendSixMessage(-5, 'down')">
+					<image src="../../assets/images/down.png" mode="" style="width: 36px;height: 36px;"></image>
 				</view>
 			</view>
 			<view class="parent">
@@ -89,6 +122,7 @@
 	import {
 		socketUrl
 	} from '@/utils/request';
+	import XlSliderVerify from '@/components/common/XlSliderVerify.vue'
 	export default {
 		props: {
 			carInfo: {
@@ -106,6 +140,9 @@
 		},
 		data() {
 			return {
+				fiveActive: 'center',
+				sixActive: 'center',
+				showVerify: false,
 				hours: 0,
 				minutes: 0,
 				seconds: 0,
@@ -117,10 +154,6 @@
 				oldDirection: '', //  电机老方向
 				ruddernewDirection: '', //  航舵新方向
 				rudderoldDirection: '', //  航舵老方向
-				fivenewDirection: '',
-				fiveoldDirection: '',
-				sixnewDirection: '',
-				sixoldDirection: '',
 				counter: 0,
 				socket: null,
 				intervarTime: null,
@@ -167,22 +200,6 @@
 					startY: 0,
 					identifier: null
 				},
-				fiveHandle: {
-					x: 50,
-					y: 50,
-					isDragging: false,
-					startX: 0,
-					startY: 0,
-					identifier: null
-				},
-				sixHandle: {
-					x: 50,
-					y: 50,
-					isDragging: false,
-					startX: 0,
-					startY: 0,
-					identifier: null
-				},
 				rightHandle: {
 					x: 50,
 					y: 50,
@@ -203,6 +220,9 @@
 		},
 		onLoad(options) {
 
+		},
+		components: {
+			XlSliderVerify
 		},
 		onUnload() {
 			this.closeWebSocket();
@@ -247,6 +267,14 @@
 				uni.navigateTo({
 					url: '/pages/car/car'
 				});
+			},
+			verifySuccess() {
+				this.sendMessage(JSON.stringify({
+					"bizCode": 605,
+					"handledParachuteSwitch": 1,
+					"timestamp": this.getTimestamp(),
+					"mac": this.macAddress
+				}))
 			},
 			onSliderLeftTouchStart(index, event) {
 				const touch = event.touches[event.touches.length - 1]; // 当前的最后一个触摸点
@@ -408,13 +436,8 @@
 				const maxX = 100
 				const maxY = 100
 
-				if (handleKey == 'fiveHandle' || handleKey == 'sixHandle') {
-					handle.x = 50;
-					handle.y = Math.min(Math.max(newY, 0), maxY);
-				} else {
-					handle.x = Math.min(Math.max(newX, 0), maxX);
-					handle.y = Math.min(Math.max(newY, 0), maxY);
-				}
+				handle.x = Math.min(Math.max(newX, 0), maxX);
+				handle.y = Math.min(Math.max(newY, 0), maxY);
 				//判断朝哪个方向
 				this.checkPosition(handle.x, handle.y, event.target.id);
 			},
@@ -425,10 +448,36 @@
 
 				this.endTouch = this.endTouch.filter(item => !(item.identifier == event.changedTouches[0].identifier));
 				handle.isDragging = false;
-				handle.identifier = null; // 释放触摸点
+				handle.identifier = null;
 				handle.x = 50;
 				handle.y = 50;
 				this.sendEndMessage(event.target.id)
+			},
+			sendFiveMessage(number, value) {
+				this.fiveActive = value
+				clearInterval(this.fiveIntervarTime);
+				this.fiveIntervarTime = setInterval(() => {
+					this.sendMessage(JSON.stringify({
+						bizCode: 602,
+						channelNum: this.getChannelNum(5),
+						duty: this.getDutyValue(5, number),
+						timestamp: this.getTimestamp(),
+						mac: this.macAddress
+					}))
+				}, 1500)
+			},
+			sendSixMessage(number, value) {
+				this.sixActive = value
+				clearInterval(this.sixIntervarTime);
+				this.sixIntervarTime = setInterval(() => {
+					this.sendMessage(JSON.stringify({
+						bizCode: 602,
+						channelNum: this.getChannelNum(6),
+						duty: this.getDutyValue(6, number),
+						timestamp: this.getTimestamp(),
+						mac: this.macAddress
+					}))
+				}, 1500)
 			},
 			sendEndMessage(id) {
 				if (id == 'motor' && this.carInfo) {
@@ -437,14 +486,14 @@
 						"bizCode": 602, //固定值
 						"channelNum": this.getChannelNum(1), // 通道号1-8
 						"duty": 1500, //通道信号的高电平时间（单位微秒）
-						"timestamp": new Date().getTime(),
+						"timestamp": this.getTimestamp(),
 						"mac": this.macAddress //设备mac地址
 					}))
 					this.sendMessage(JSON.stringify({
 						"bizCode": 602, //固定值
 						"channelNum": this.getChannelNum(2), // 通道号1-8
 						"duty": 1500, //通道信号的高电平时间（单位微秒）
-						"timestamp": new Date().getTime(),
+						"timestamp": this.getTimestamp(),
 						"mac": this.macAddress //设备mac地址
 					}))
 					this.oldDirection = ''
@@ -455,62 +504,24 @@
 						"bizCode": 602, //固定值
 						"channelNum": this.getChannelNum(3), // 通道号1-8
 						"duty": 1500, //通道信号的高电平时间（单位微秒）
-						"timestamp": new Date().getTime(),
+						"timestamp": this.getTimestamp(),
 						"mac": this.macAddress //设备mac地址
 					}))
 					this.sendMessage(JSON.stringify({
 						"bizCode": 602, //固定值
 						"channelNum": this.getChannelNum(4), // 通道号1-8
 						"duty": 1500, //通道信号的高电平时间（单位微秒）
-						"timestamp": new Date().getTime(),
+						"timestamp": this.getTimestamp(),
 						"mac": this.macAddress //设备mac地址
 					}))
 					this.rudderoldDirection = ''
 					this.ruddernewDirection = ''
-				} else if (id == 'fiveChannel' && this.carInfo) {
-					clearInterval(this.fiveIntervarTime)
-					this.sendMessage(JSON.stringify({
-						"bizCode": 602, //固定值
-						"channelNum": this.getChannelNum(5), // 通道号1-8
-						"duty": 1500, //通道信号的高电平时间（单位微秒）
-						"timestamp": new Date().getTime(),
-						"mac": this.macAddress //设备mac地址
-					}))
-					this.fivenewDirection = ''
-					this.fiveoldDirection = ''
-				} else if (id == 'sixChannel' && this.carInfo) {
-					clearInterval(this.sixIntervarTime)
-					this.sendMessage(JSON.stringify({
-						"bizCode": 602, //固定值
-						"channelNum": this.getChannelNum(6), // 通道号1-8
-						"duty": 1500, //通道信号的高电平时间（单位微秒）
-						"timestamp": new Date().getTime(),
-						"mac": this.macAddress //设备mac地址
-					}))
-					this.sixnewDirection = ''
-					this.sixoldDirection = ''
 				}
 			},
 			onTouchCancel(handleKey, event) {
 				this.touchCancel = JSON.parse(JSON.stringify(this.moveTouch))
 				this.touching = true
 				this.leftHandle = {
-					x: 50,
-					y: 50,
-					isDragging: false,
-					startX: 0,
-					startY: 0,
-					identifier: null
-				}
-				this.fiveHandle = {
-					x: 50,
-					y: 50,
-					isDragging: false,
-					startX: 0,
-					startY: 0,
-					identifier: null
-				}
-				this.sixHandle = {
 					x: 50,
 					y: 50,
 					isDragging: false,
@@ -528,8 +539,6 @@
 				}
 				this.endTouch = []
 				this.sendEndMessage('motor')
-				this.sendEndMessage('fiveChannel')
-				this.sendEndMessage('sixChannel')
 				this.sendEndMessage('rudder')
 			},
 			checkPosition(positionX, positionY, id) {
@@ -537,58 +546,47 @@
 					switch (true) {
 						case positionY <= 10 && positionY >= 0:
 							id == 'motor' ? this.newDirection = "top5" : id == 'rudder' ? this.ruddernewDirection =
-								"top5" : id == 'fiveChannel' ? this.fivenewDirection = "top5" : this.sixnewDirection =
-								"top5"
+								"top5" : ''
 							break;
 						case positionY <= 20 && positionY > 10:
 							id == 'motor' ? this.newDirection = "top4" : id == 'rudder' ? this.ruddernewDirection =
-								"top4" : id == 'fiveChannel' ? this.fivenewDirection = "top4" : this.sixnewDirection =
-								"top4"
+								"top4" : ''
 							break;
 						case positionY <= 30 && positionY > 20:
 							id == 'motor' ? this.newDirection = "top3" : id == 'rudder' ? this.ruddernewDirection =
-								"top3" : id == 'fiveChannel' ? this.fivenewDirection = "top3" : this.sixnewDirection =
-								"top3"
+								"top3" : ''
 							break;
 						case positionY <= 40 && positionY > 30:
 							id == 'motor' ? this.newDirection = "top2" : id == 'rudder' ? this.ruddernewDirection =
-								"top2" : id == 'fiveChannel' ? this.fivenewDirection = "top2" : this.sixnewDirection =
-								"top2"
+								"top2" : ''
 							break;
 						case positionY <= 45 && positionY > 40:
 							id == 'motor' ? this.newDirection = "top1" : id == 'rudder' ? this.ruddernewDirection =
-								"top1" : id == 'fiveChannel' ? this.fivenewDirection = "top1" : this.sixnewDirection =
-								"top1"
+								"top1" : ''
 							break;
 						case positionY <= 55 && positionY > 45:
 							id == 'motor' ? this.newDirection = "motorStop" : id == 'rudder' ? this.ruddernewDirection =
-								"rudderStop" : id == 'fiveChannel' ? this.fivenewDirection = "fiveStop" : this
-								.sixnewDirection = "sixStop"
+								"rudderStop" : ''
 							break;
 						case positionY <= 60 && positionY > 55:
 							id == 'motor' ? this.newDirection = "bottom1" : id == 'rudder' ? this.ruddernewDirection =
-								"bottom1" : id == 'fiveChannel' ? this.fivenewDirection = "bottom1" : this
-								.sixnewDirection = "bottom1"
+								"bottom1" : ''
 							break;
 						case positionY <= 70 && positionY > 60:
 							id == 'motor' ? this.newDirection = "bottom2" : id == 'rudder' ? this.ruddernewDirection =
-								"bottom2" : id == 'fiveChannel' ? this.fivenewDirection = "bottom2" : this
-								.sixnewDirection = "bottom2"
+								"bottom2" : ''
 							break;
 						case positionY <= 80 && positionY > 70:
 							id == 'motor' ? this.newDirection = "bottom3" : id == 'rudder' ? this.ruddernewDirection =
-								"bottom3" : id == 'fiveChannel' ? this.fivenewDirection = "bottom3" : this
-								.sixnewDirection = "bottom3"
+								"bottom3" : ''
 							break;
 						case positionY <= 90 && positionY > 80:
 							id == 'motor' ? this.newDirection = "bottom4" : id == 'rudder' ? this.ruddernewDirection =
-								"bottom4" : id == 'fiveChannel' ? this.fivenewDirection = "bottom4" : this
-								.sixnewDirection = "bottom4"
+								"bottom4" : ''
 							break;
 						case positionY <= 100 && positionY > 90:
 							id == 'motor' ? this.newDirection = "bottom5" : id == 'rudder' ? this.ruddernewDirection =
-								"bottom5" : id == 'fiveChannel' ? this.fivenewDirection = "bottom5" : this
-								.sixnewDirection = "bottom5"
+								"bottom5" : ''
 							break;
 					}
 				} else if (positionY > 45 && positionY < 55) {
@@ -779,7 +777,6 @@
 						channelNum: this.getChannelNum(1)
 					}
 				};
-
 				const rudderDutyMap = {
 					"leftTop": {
 						dutyX: this.getDutyValue(4, -4),
@@ -891,114 +888,19 @@
 					}
 				};
 
-				const fivedutyMap = {
-					"top1": {
-						duty: this.getDutyValue(5, 1),
-						channelNum: this.getChannelNum(5)
-					},
-					"top2": {
-						duty: this.getDutyValue(5, 2),
-						channelNum: this.getChannelNum(5)
-					},
-					"top3": {
-						duty: this.getDutyValue(5, 3),
-						channelNum: this.getChannelNum(5)
-					},
-					"top4": {
-						duty: this.getDutyValue(5, 4),
-						channelNum: this.getChannelNum(5)
-					},
-					"top5": {
-						duty: this.getDutyValue(5, 5),
-						channelNum: this.getChannelNum(5)
-					},
-					"fiveStop": {
-						duty: 1500,
-						channelNum: this.getChannelNum(5)
-					},
-					"bottom1": {
-						duty: this.getDutyValue(5, -1),
-						channelNum: this.getChannelNum(5)
-					},
-					"bottom2": {
-						duty: this.getDutyValue(5, -2),
-						channelNum: this.getChannelNum(5)
-					},
-					"bottom3": {
-						duty: this.getDutyValue(5, -3),
-						channelNum: this.getChannelNum(5)
-					},
-					"bottom4": {
-						duty: this.getDutyValue(5, -4),
-						channelNum: this.getChannelNum(5)
-					},
-					"bottom5": {
-						duty: this.getDutyValue(5, -5),
-						channelNum: this.getChannelNum(5)
-					}
-				};
-				const sixDutyMap = {
-					"top1": {
-						duty: this.getDutyValue(6, 1),
-						channelNum: this.getChannelNum(6)
-					},
-					"top2": {
-						duty: this.getDutyValue(6, 2),
-						channelNum: this.getChannelNum(6)
-					},
-					"top3": {
-						duty: this.getDutyValue(6, 3),
-						channelNum: this.getChannelNum(6)
-					},
-					"top4": {
-						duty: this.getDutyValue(6, 4),
-						channelNum: this.getChannelNum(6)
-					},
-					"top5": {
-						duty: this.getDutyValue(6, 5),
-						channelNum: this.getChannelNum(6)
-					},
-					"sixStop": {
-						duty: 1500,
-						channelNum: this.getChannelNum(6)
-					},
-					"bottom1": {
-						duty: this.getDutyValue(6, -1),
-						channelNum: this.getChannelNum(6)
-					},
-					"bottom2": {
-						duty: this.getDutyValue(6, -2),
-						channelNum: this.getChannelNum(6)
-					},
-					"bottom3": {
-						duty: this.getDutyValue(6, -3),
-						channelNum: this.getChannelNum(6)
-					},
-					"bottom4": {
-						duty: this.getDutyValue(6, -4),
-						channelNum: this.getChannelNum(6)
-					},
-					"bottom5": {
-						duty: this.getDutyValue(6, -5),
-						channelNum: this.getChannelNum(6)
-					}
-				};
-
 				// 清理和启动定时器的函数
 				const clearAndStartInterval = (direction, dutyMap, intervalTime, id =
 					'motor') => {
 					clearInterval(id == 'rudder' ? this.rudderIntervarTime : id == 'motor' ? this
-						.intervarTime : id ==
-						'fiveChannel' ? this.fiveIntervarTime : this.sixIntervarTime);
+						.intervarTime : '');
 
 					// 停止信号直接发送一次
-					if (direction == 'motorStop' || direction == 'rudderStop' || direction == 'fiveStop' ||
-						direction == 'sixStop') {
+					if (direction == 'motorStop' || direction == 'rudderStop') {
 						this.sendMessage(JSON.stringify({
 							bizCode: 602, //固定值
 							channelNum: dutyMap[direction].channelNum, // 通道号1-8
 							duty: dutyMap[direction].duty, //通道信号的高电平时间（单位微秒）
-							timestamp: new Date().getTime(),
+							timestamp: this.getTimestamp(),
 							mac: this.macAddress //设备mac地址
 						}));
 					} else {
@@ -1010,14 +912,14 @@
 									bizCode: 602, //固定值
 									channelNum: dutyMap[direction].channelNumX, // 通道号1-8
 									duty: dutyMap[direction].dutyX, //通道信号的高电平时间（单位微秒）
-									timestamp: new Date().getTime(),
+									timestamp: this.getTimestamp(),
 									mac: this.macAddress //设备mac地址
 								}));
 								this.sendMessage(JSON.stringify({
 									bizCode: 602, //固定值
 									channelNum: dutyMap[direction].channelNumY, // 通道号1-8
 									duty: dutyMap[direction].dutyY, //通道信号的高电平时间（单位微秒）
-									timestamp: new Date().getTime(),
+									timestamp: this.getTimestamp(),
 									mac: this.macAddress //设备mac地址
 								}));
 							};
@@ -1028,7 +930,7 @@
 									bizCode: 602, //固定值
 									channelNum: dutyMap[direction].channelNum, // 通道号1-8
 									duty: dutyMap[direction].duty, //通道信号的高电平时间（单位微秒）
-									timestamp: new Date().getTime(),
+									timestamp: this.getTimestamp(),
 									mac: this.macAddress //设备mac地址
 								}));
 							};
@@ -1039,10 +941,6 @@
 							this.intervarTime = intervalID;
 						} else if (id == 'rudder') {
 							this.rudderIntervarTime = intervalID;
-						} else if (id == 'fiveChannel') {
-							this.fiveIntervarTime = intervalID;
-						} else if (id == 'sixChannel') {
-							this.sixIntervarTime = intervalID;
 						}
 					}
 				};
@@ -1059,17 +957,6 @@
 					this.rudderoldDirection = this.ruddernewDirection;
 				}
 
-				// 五通道方向变化处理
-				if (this.fivenewDirection !== this.fiveoldDirection) {
-					clearAndStartInterval(this.fivenewDirection, fivedutyMap, 100, id);
-					this.fiveoldDirection = this.fivenewDirection;
-				}
-
-				// 流通到方向变化处理
-				if (this.sixnewDirection !== this.sixoldDirection) {
-					clearAndStartInterval(this.sixnewDirection, sixDutyMap, 100, id);
-					this.sixoldDirection = this.sixnewDirection;
-				}
 			},
 
 			getCurrentTime() {
@@ -1093,11 +980,15 @@
 			padZero(num) {
 				return num < 10 ? `0${num}` : num;
 			},
+			getTimestamp() {
+				return new Date().getTime().toString()
+			},
 			initWebSocket() {
 				this.socket = uni.connectSocket({
 					url: `ws://${socketUrl}/ws/${this.macAddress}`,
 					success: () => {
 						console.log('WebSocket连接成功');
+						console.log('WebSocket连接地址：', socketUrl);
 					},
 					fail: (err) => {
 						console.error('WebSocket连接失败', err);
@@ -1108,6 +999,8 @@
 				this.socket.onOpen(() => {
 					console.log('WebSocket已打开');
 					this.isSocket = true
+					this.sendFiveMessage(0, 'center')
+					this.sendSixMessage(0, 'center')
 					// this.startHeartbeat(); // 开始心跳机制
 				});
 
@@ -1160,9 +1053,9 @@
 			resetHeartbeatTimeout() {
 				this.heartbeatTimeout = setTimeout(() => {
 					console.error('心跳超时，连接断开');
-					this.socket.close(); // 主动关闭连接
-					this.reconnect(); // 尝试重连
-				}, 10000); // 如果10秒内未收到心跳响应，视为超时
+					this.socket.onClose();
+					this.reconnect();
+				}, 10000);
 			},
 
 			// 重连逻辑
@@ -1181,6 +1074,8 @@
 			// 清理心跳和重连
 			clearHeartbeat() {
 				clearInterval(this.heartbeatInterval);
+				clearInterval(this.fiveIntervarTime);
+				clearInterval(this.sixIntervarTime);
 				clearTimeout(this.heartbeatTimeout);
 				clearTimeout(this.reconnectTimeout);
 			},
@@ -1232,6 +1127,8 @@
 						} else {
 							return (((maxValue - 1600) / 4) * (number - 1)) + 1600
 						}
+					} else if (number == 0) {
+						return 1500
 					} else if (number < 0) {
 						if (number == -5) {
 							return minValue
@@ -1288,7 +1185,29 @@
 				justify-content: center;
 				gap: 20px;
 			}
+
+			.verifyBox {
+				color: #000;
+				position: absolute;
+				left: 56px;
+				top: -50%;
+				display: flex;
+				align-items: center;
+
+				.verifyContent {
+					padding: 16px;
+					background-color: #FFF;
+					margin-left: -5px;
+
+					.title {
+						margin-bottom: 16px;
+					}
+
+				}
+			}
 		}
+
+
 
 		.centerInfo {
 			display: flex;
@@ -1395,6 +1314,31 @@
 		padding: 30px;
 		text-align: center;
 		color: #FFF;
+
+		.actionButtonBox {
+			width: 60px;
+			height: auto;
+			display: flex;
+			flex-direction: column;
+			gap: 1px;
+			background-color: #000;
+			border-radius: 6px;
+			overflow: hidden;
+
+			.actionButton {
+				flex: 1;
+				width: 100%;
+				background-color: #FFF;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+			}
+
+			.activeFiveButton,
+			.activeSixButton {
+				background-color: #ebe388;
+			}
+		}
 
 		.parent {
 			position: relative;

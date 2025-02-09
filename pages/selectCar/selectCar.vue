@@ -1,10 +1,11 @@
 <template>
 	<view class="selectCar">
+		<Loding v-show="showLoading" />
 		<AppBar title='选择车辆' @goBank="goBank" />
 		<view class="content">
 			<view class="title">
 				<span class="car">场地车辆</span>
-				<span>刷新</span>
+				<span @click="getList">刷新</span>
 			</view>
 			<scroll-view v-if="dataList.length" scroll-y @refresherrefresh="onRefresh" refresher-background="#eea618"
 				@scrolltolower="onLoadMore" :refresher-triggered="isRefreshing" :style="{ height: '100%' }"
@@ -12,21 +13,22 @@
 				<!-- 列表内容 -->
 				<view v-for="(item,index) in dataList" :key="index" class="dataItem">
 					<view class="carInfo">
-						<image :src="item.img" mode="" class="carImg"></image>
+						<image :src="item.sitePictureUrl" mode="" class="carImg"></image>
 						<view class="carDesc">
 							<view class="carName">
 								{{item.carName}}
 							</view>
 							<view class="attribution">
-								归属：{{item.attribution}}
+								归属：{{item.userName}}
 							</view>
 							<view class="code">
-								编号：{{item.code}}
+								编号：{{item.carNo}}
 							</view>
 							<view class="btns">
 								<view class="btn operate"
-									:style="{backgroundColor:item.isDrive===1 ? '#eea618' : '#0055ff'}">
-									<span>{{item.isDrive===1 ? '围观' : '驾驶'}}</span>
+									@click="navigateTo(`/pages/drive/drive?macAddress=${item.macAddress}&carId=${item.carId}`)"
+									:style="{backgroundColor:item.carStatus === 3 ? '#eea618' : '#0055ff'}">
+									<span>{{item.isDrive === 3 ? '围观' : item.isDrive === 2 ? '驾驶' : ''}}</span>
 								</view>
 								<view class="btn watch">
 									规则
@@ -36,17 +38,24 @@
 					</view>
 					<view class="configuration">
 						<view class="">
-							<image src="../../assets/images/signal.png" mode=""></image>
+							<span v-show="item.myCsq == '-'" style="margin-right: 8px;">-</span>
+							<image src="../../assets/images/signal1.png" v-show="item.myCsq <= 8" mode=""></image>
+							<image src="../../assets/images/signal2.png" v-show="item.myCsq > 8 && item.myCsq <=16 "
+								mode=""></image>
+							<image src="../../assets/images/signal3.png" v-show="item.myCsq > 16 && item.myCsq <= 24 "
+								mode=""></image>
+							<image src="../../assets/images/signal4.png" v-show="item.myCsq > 24 && item.myCsq <=32 "
+								mode=""></image>
 							<span>状态：<span
-									:style="{color: item.status == '离线' ? '#dd0000' : '#00d400'}">{{item.status}}</span></span>
+									:style="{color: item.carStatus == 0 ? '#dd0000' : '#00d400'}">{{item.carStatus == 0 ? '离线' : '在线'}}</span></span>
 						</view>
 						<view class="">
 							<image src="../../assets/images/battery.png" mode=""></image>
-							<span>电量：{{item.power}}%</span>
+							<span>电量：{{item.carQuantity}}%</span>
 						</view>
 						<view class="">
 							<image src="../../assets/images/battery.png" mode=""></image>
-							<span>电压：{{item.voltage}}</span>
+							<span>电压：{{item.carVoltage}}</span>
 						</view>
 					</view>
 				</view>
@@ -55,6 +64,8 @@
 				<u-loadmore v-show="hittingBottom" loadmoreText="没有更多数据" color="#1CD29B" lineColor="#1CD29B" dashed
 					line />
 			</scroll-view>
+
+			<NoData v-show="showNoData" />
 		</view>
 
 		<view class="allVenues">
@@ -66,28 +77,38 @@
 
 <script>
 	import AppBar from '@/components/common/AppBar.vue'
+	import Loding from '@/components/common/Loding.vue'
+	import NoData from '@/components/common/NoData.vue'
+	import request from '@/utils/request';
+	import {
+		requestUrl
+	} from '@/utils/request';
 	export default {
 		data() {
 			return {
-				page: 1,
-				pageSize: 10,
+				showNoData: false,
+				showLoading: false,
 				loading: false,
 				isRefreshing: false,
-				total: 18,
+				total: 0,
 				hittingBottom: false,
 				dataList: [],
 				superiorPage: 'index',
+				siteId: '',
 			}
 		},
 		components: {
-			AppBar
+			AppBar,
+			Loding,
+			NoData
 		},
 		onLoad(options) {
 			const {
-				page
-			} = options; // 获取具体的参数值
-			console.log(page); // JohnDoe
+				page,
+				siteId
+			} = options;
 			this.superiorPage = page
+			this.siteId = siteId
 		},
 		methods: {
 			goBank() {
@@ -102,16 +123,20 @@
 					})
 				}
 			},
+			navigateTo(url) {
+				clearInterval(this.pollingTime)
+				uni.navigateTo({
+					url
+				})
+			},
 			// 下拉刷新
 			onRefresh() {
 				if (this.isRefreshing) return;
-
 				this.isRefreshing = true;
-				this.page = 1;
 				setTimeout(() => {
 					this.dataList = []
 					this.loadData();
-				}, 1000)
+				}, 500)
 			},
 
 			// 上拉加载更多
@@ -120,94 +145,60 @@
 				if (this.hittingBottom) return;
 				this.loading = true;
 				setTimeout(() => {
-					this.page++;
 					this.loadData()
 				}, 1000)
 			},
 
-
 			// 加载数据方法
-			loadData() {
-				const data = [{
-						img: '/static/20.png',
-						carName: '挖挖机',
-						attribution: '这是车辆提供者名称',
-						code: 'KFCFKxingqi4',
-						status: '在线',
-						power: '80',
-						voltage: '8.0V',
-						isDrive: 1
-					},
-					{
-						img: '/static/21.png',
-						carName: '推土机',
-						attribution: '这是车辆提供者名称',
-						code: 'KFCFKxingqi4',
-						status: '离线',
-						power: '88',
-						voltage: '8.0V',
-						isDrive: 0
-					},
-					{
-						img: '/static/22.png',
-						carName: '卡车',
-						attribution: '这是车辆提供者名称',
-						code: 'KFCFKxingqi4',
-						status: '在线',
-						power: '20',
-						voltage: '8.0V',
-						isDrive: 0
-					},
-					{
-						img: '/static/20.png',
-						carName: '挖挖机',
-						attribution: '这是车辆提供者名称',
-						code: 'KFCFKxingqi4',
-						status: '在线',
-						power: '80',
-						voltage: '8.0V',
-						isDrive: 1
-					},
-					{
-						img: '/static/21.png',
-						carName: '推土机',
-						attribution: '这是车辆提供者名称',
-						code: 'KFCFKxingqi4',
-						status: '离线',
-						power: '88',
-						voltage: '8.0V',
-						isDrive: 0
-					},
-					{
-						img: '/static/22.png',
-						carName: '卡车',
-						attribution: '这是车辆提供者名称',
-						code: 'KFCFKxingqi4',
-						status: '在线',
-						power: '20',
-						voltage: '8.0V',
-						isDrive: 0
+			async loadData() {
+				try {
+					const response = await request(`/app/site/getCarList/${this.siteId}`, 'GET')
+					const data = response.data
+					this.total = response.data.length
+					this.dataList = data
+					this.showLoading = false
+					this.showNoData = this.dataList.length == 0 ? true : false
+
+					this.dataList.forEach((item) => {
+						item.sitePictureUrl = requestUrl + item.sitePictureUrl.split(",")[0];
+						item.myCsq = this.getValueBetweenChars(item.myCsq || '+signal#10,0', '#', ',')
+					});
+					if (this.dataList.length >= this.total) {
+						this.hittingBottom = true
+						this.loading = false
+					} else {
+						this.hittingBottom = false
+						this.loading = true
 					}
-				]
 
-				this.dataList = this.page === 1 ? data : this.dataList.concat(
-					data)
-
-				if (this.dataList.length >= this.total) {
-					this.hittingBottom = true
-				} else {
-					this.hittingBottom = false
+					this.isRefreshing = false;
+				} catch (error) {
+					console.log(error)
+					this.showLoading = false
+					uni.showToast({
+						title: '加载失败',
+						icon: 'none',
+					});
+				}
+			},
+			getValueBetweenChars(str, startChar, endChar) {
+				const startIndex = str.indexOf(startChar);
+				const endIndex = str.indexOf(endChar, startIndex + 1);
+				if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+					return Number(str.substring(startIndex + 1, endIndex))
 				}
 
-				this.isRefreshing = false;
-				this.loading = false;
-				if (this.page >= 5) {
-					this.loading = false;
-				}
+				return '-';
+			},
+			getList() {
+				this.showLoading = true
+				setTimeout(() => {
+					this.loadData();
+				}, 500)
 			}
 		},
 		mounted() {
-			this.loadData();
+			this.getList()
 		}
 	}
 </script>

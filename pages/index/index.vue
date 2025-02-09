@@ -67,7 +67,7 @@
 									<view class="driving">
 										<u-button type="primary" shape="circle" text="选车" class="btn"
 											color="linear-gradient(to bottom, rgb(255, 224, 65), rgb(255, 137, 41))"
-											@click="selectCar(item)"></u-button>
+											@click="selectCar(item.siteId)"></u-button>
 
 									</view>
 								</view>
@@ -238,6 +238,7 @@
 	export default {
 		data() {
 			return {
+				pollingTime: null,
 				current: 0,
 				tabActive: 'car',
 				statusBarHeight: '',
@@ -275,9 +276,10 @@
 			changeTab(type) {
 				this.tabActive = type
 			},
-			selectCar(item) {
+			selectCar(siteId) {
+				clearInterval(this.pollingTime)
 				uni.navigateTo({
-					url: '/pages/selectCar/selectCar?page=index',
+					url: `/pages/selectCar/selectCar?page=index&siteId=${siteId}`,
 				})
 			},
 			async loadData(siteType) {
@@ -326,16 +328,21 @@
 			},
 		},
 		mounted() {
-			console.log(123)
 			let siteTypeInterval = setInterval(() => {
 				var siteType = []
 				siteType = uni.getStorageSync('siteType')
 				if (siteType.length != 0) {
 					clearInterval(siteTypeInterval)
 					this.loadData(siteType);
+					this.pollingTime = setInterval(() => {
+						this.loadData(siteType);
+					}, 10000)
 				}
 			}, 200)
 		},
+		onHide() {
+			clearInterval(this.pollingTime)
+		}
 	}
 </script>
 

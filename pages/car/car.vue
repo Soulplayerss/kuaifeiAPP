@@ -25,9 +25,13 @@
 								编号：{{item.carNo}}
 							</view>
 							<view class="btns">
-								<view class="btn" :style="{backgroundColor: item.isDrive===1 ? '#eea618': '#0055ff'}"
+								<view class="btn"
 									@click="navigateTo(`/pages/drive/drive?macAddress=${item.macAddress}&carId=${item.carId}`)">
-									<span>{{item.isDrive===1 ? '围观' : '驾驶'}}</span>
+									<span>驾驶</span>
+								</view>
+								<view class="btn" v-show="item.carStatus != 0"
+									@click="checkStatus(item.carStatus,item.macAddress)">
+									<span>{{item.carStatus === 1 ? '开放驾驶' : item.carStatus === 2 ? '关闭驾驶' : item.carStatus === 3 ? '驾驶中' : ''}}</span>
 								</view>
 								<view class="btn watch"
 									@click="navigateTo(`/pages/configuration/configuration?carId=${item.carId}`)">
@@ -46,8 +50,8 @@
 								mode=""></image>
 							<image src="../../assets/images/signal4.png" v-show="item.myCsq > 24 && item.myCsq <=32 "
 								mode=""></image>
-							<span>状态：<span
-									:style="{color: item.carStatus == 0 ? '#dd0000' : '#00d400'}">{{item.carStatus == 0 ? '离线' : '在线'}}</span></span>
+							<span>状态：<span :style="{color: item.carStatus == 0 ? '#dd0000' : '#00d400'}">
+									{{item.carStatus == 0 ? '离线' : item.carStatus == 1 ? '在线': item.carStatus == 2 ? '开放驾驶': '驾驶中'}}</span></span>
 						</view>
 						<view class="">
 							<image src="../../assets/images/battery.png" mode=""></image>
@@ -83,7 +87,7 @@
 				</view>
 				<view class="btns">
 					<span class="cancel" @click="showAddCar = false">取消</span>
-					<span class="commit" @click="commit">确认</span>
+					<span class="commit" @click="commitAddCar">确认</span>
 				</view>
 			</view>
 		</u-overlay>
@@ -137,6 +141,24 @@
 				uni.navigateTo({
 					url
 				})
+			},
+			checkStatus(carStatus, macAddress) {
+				if (carStatus != 1) {
+					return
+				} else {
+					this.openDriving(macAddress)
+				}
+			},
+			async openDriving(macAddress) {
+				try {
+					const response = await request(`/app/carInfo/onlineCar/${macAddress}`, 'GET')
+
+				} catch (error) {
+					uni.showToast({
+						title: '开放失败',
+						icon: 'none',
+					});
+				}
 			},
 			// 下拉刷新
 			onRefresh() {
@@ -218,7 +240,7 @@
 					});
 				}
 			},
-			async commit() {
+			async commitAddCar() {
 				try {
 					const response = await request(`/app/carInfo/bindCar/${this.serialNumber}`, 'GET')
 					if (response.code === 200) {

@@ -44,12 +44,16 @@
 									<view class="driving">
 										<span>正在驾驶中：{{item.driving}}</span>
 									</view>
-									<view class="flex">
-										<view class="selectionCar" @click="selectCar(item)">
+									<view class="actionButtons">
+										<view class="selectionCar" @click="selectCar(item.siteId)">
 											选车
 										</view>
 										<view class="onlineOffline" @click="changeSiteStatus(item.siteId)">
 											{{item.siteStatus == 1 ? '下线' : '上线'}}
+										</view>
+
+										<view class="bindCar" @click="bindCar(item.siteId)">
+											绑定车辆
 										</view>
 									</view>
 								</view>
@@ -63,13 +67,31 @@
 				<u-loadmore v-show="hittingBottom" loadmoreText="没有更多数据" color="#1CD29B" lineColor="#1CD29B" dashed
 					line />
 			</scroll-view>
+			<NoData v-show="showNoData" />
+
 		</view>
+		<u-overlay :show="showBindCar">
+			<view class="overlayBox">
+				<view class="title">绑定车辆</view>
+				<view class="carlist">
+					<u-checkbox-group v-model="bindCarIds" placement="column">
+						<u-checkbox v-for="item in bindableList" :key="item.carId" activeColor="green"
+							:label="item.carName" :name="item.carId" style="margin-bottom: 8px;"></u-checkbox>
+					</u-checkbox-group>
+				</view>
+				<view class="btns">
+					<span class="cancel" @click="showBindCar = false">取消</span>
+					<span class="commit" @click="commitbindCar">绑定</span>
+				</view>
+			</view>
+		</u-overlay>
 	</view>
 </template>
 
 <script>
 	import AppBar from '@/components/common/AppBar.vue'
 	import Loding from '@/components/common/Loding.vue'
+	import NoData from '@/components/common/NoData.vue'
 	import request from '@/utils/request';
 	import {
 		mapState
@@ -86,16 +108,22 @@
 				loading: false,
 				isRefreshing: false,
 				total: 0,
+				showNoData: false,
 				hittingBottom: false,
 				dataList: [],
+				bindableList: [],
+				bindCarIds: [],
+				showBindCar: false,
 				options: [{
 					text: '删除'
-				}]
+				}],
+				siteId: ''
 			}
 		},
 		components: {
 			AppBar,
-			Loding
+			Loding,
+			NoData
 		},
 		computed: {
 			...mapState(['siteLabel'])
@@ -122,10 +150,27 @@
 					url: '/pages/addSite/addSite?page=mySite',
 				})
 			},
-			selectCar(item) {
+			selectCar(siteId) {
 				uni.navigateTo({
-					url: '/pages/selectCar/selectCar?page=mySite',
+					url: `/pages/selectCar/selectCar?page=mySite&siteId=${siteId}`,
 				})
+			},
+			async bindCar(siteId) {
+				this.showBindCar = true
+				this.siteId = siteId
+				this.bindableList = []
+				try {
+					const response = await request(`/app/carInfo/getUnBindCarList`, 'GET')
+					if (response.code === 200) {
+						this.bindableList = response.rows
+					}
+				} catch (error) {
+					this.showLoading = false
+					uni.showToast({
+						title: '查询可绑定车辆失败',
+						icon: 'none',
+					});
+				}
 			},
 			async changeSiteStatus(siteId) {
 				this.showLoading = true
@@ -144,7 +189,6 @@
 						icon: 'none',
 					});
 				}
-
 			},
 			async deleteItem(siteId) {
 				this.showLoading = true
@@ -163,13 +207,33 @@
 						icon: 'none',
 					});
 				}
-
-
+			},
+			async commitbindCar() {
+				console.log(this.bindCarIds)
+				try {
+					const response = await request('/app/carInfo/bindSite', 'POST', {
+						siteId: this.siteId,
+						carIds: this.bindCarIds
+					})
+					if (response.code === 200) {
+						uni.showToast({
+							title: '绑定成功',
+							icon: 'success',
+						});
+						this.showBindCar = false
+						this.bindCarIds = []
+					}
+				} catch (error) {
+					this.showLoading = false
+					uni.showToast({
+						title: '删除失败',
+						icon: 'none',
+					});
+				}
 			},
 			// 下拉刷新
 			onRefresh() {
 				if (this.isRefreshing) return;
-
 				this.isRefreshing = true;
 				this.pageNum = 1;
 				setTimeout(() => {
@@ -199,6 +263,7 @@
 					this.total = response.total
 					this.dataList = this.pageNum === 1 ? data : this.dataList.concat(
 						data)
+					this.showNoData = this.dataList.length == 0 ? true : false
 					const labelMap = this.siteLabel.reduce((map, label) => {
 						map[label.dictValue] = label.dictLabel;
 						return map;
@@ -240,7 +305,6 @@
 		min-height: 100vh;
 		background-color: #eea618;
 
-
 		.content {
 			width: 100%;
 			height: calc(100vh - 146px);
@@ -272,7 +336,7 @@
 
 					image {
 						width: 45%;
-						height: 170px;
+						height: auto;
 					}
 
 					.right {
@@ -305,6 +369,7 @@
 
 						.deviceNumber {
 							display: flex;
+							flex-wrap: wrap;
 							font-size: 12px;
 							gap: 6px;
 
@@ -336,6 +401,7 @@
 							justify-content: space-between;
 							align-items: center;
 							font-size: 14px;
+							padding: 4px 0;
 
 							span {
 
@@ -344,30 +410,58 @@
 
 						}
 
-						.selectionCar {
-							line-height: 16px;
-							padding: 5px 5vw;
-							background-color: #9048d8;
-							color: #FFF;
-							border-radius: 12px;
-							margin-right: 16px;
-							font-size: 14px;
+						.actionButtons {
+							display: flex;
+							flex-wrap: wrap;
+							gap: 8px;
+
+							view {
+								line-height: 16px;
+								padding: 5px 5vw;
+								color: #FFF;
+								border-radius: 12px;
+								font-size: 14px;
+							}
+
+							.selectionCar {
+								background-color: #9048d8;
+							}
+
+							.onlineOffline {
+								background-color: #eea618;
+							}
+
+							.bindCar {
+								background-color: #54aeb8;
+							}
 						}
 
-						.onlineOffline {
-							line-height: 16px;
-							padding: 5px 5vw;
-							width: auto;
-							background-color: #eea618;
-							color: #FFF;
-							border-radius: 12px;
-							margin-right: 16px;
-							font-size: 14px;
-						}
 
 					}
 				}
 
+			}
+		}
+
+		.u-transition {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+
+			.carlist {
+				width: 100%;
+				box-sizing: border-box;
+				padding: 16px;
+
+				._item {
+					border-bottom: solid 1px #d6d7d9;
+					width: 100%;
+					box-sizing: border-box;
+					padding: 16px;
+					display: flex;
+					// justify-content: center;
+					align-items: center;
+				}
 			}
 		}
 	}
