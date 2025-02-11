@@ -1,8 +1,8 @@
-<template>
+<!-- <template>
 	<view class="camera">
-		<!-- <view class="paizhao" @click="paizhao">
+		<view class="paizhao" @click="paizhao">
 			拍照
-		</view> -->
+		</view>
 	</view>
 </template>
 
@@ -157,4 +157,10 @@
 
 		}
 	}
-</style>
+</style> -->
+
+<template>
+  <view>
+    <web-view src="/static/webRTC/onminirtc1.html"></web-view>
+  </view>
+</template>

@@ -1,5 +1,6 @@
 <template>
 	<view class="register">
+		<AppBar title='重置密码' @goBank="goBank" />
 		<image src="../../assets/images/logo.png" mode="" class="logo"></image>
 		<span class="kuaifei">快飞云控</span>
 		<span class="loginText">重置密码</span>
@@ -34,15 +35,14 @@
 				</view>
 			</view>
 		</view>
-		<view class="forgetPassword" @click="toLogin">
-			去登陆
-		</view>
+		<view class="forgetPassword"></view>
 		<u-button type="primary" shape="circle" text="确认重置" class="btn" style="color: #30313D;"
 			color="linear-gradient(to bottom, rgb(255,241,204), rgb(255, 227, 157))" @click="register"></u-button>
 	</view>
 </template>
 
 <script>
+	import AppBar from '@/components/common/AppBar.vue'
 	export default {
 		data() {
 			return {
@@ -57,8 +57,14 @@
 			};
 		},
 		components: {
+			AppBar
 		},
 		methods: {
+			goBank() {
+				uni.navigateTo({
+					url: '/pages/my/my',
+				})
+			},
 			register() {
 
 			},
@@ -81,7 +87,7 @@
 				}, 1000)
 
 			},
-			toLogin(){
+			toLogin() {
 				uni.navigateTo({
 					url: '/pages/login/login',
 				})

@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>
+			test
+		</title>
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+		<!--用于兼容IOS--->
+		<script src="adapter.min.js" charset="utf-8"></script>
+		<script src="devdef.js" charset="utf-8"></script>
+		<script src="https://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+		<style>
+			.VideoContainer {
+
+				margin: 5px;
+				height: 202px;
+				border: 1px solid #ddd;
+			}
+
+			.activevideo {
+				background: rgba(0, 0, 0, 1);
+			}
+
+			#theirs {
+				width: 100%;
+				height: 100%;
+
+			}
+
+			#theirsVideo {
+
+				margin: 5px 5px 5px 5px;
+				border: 1px solid #ddd;
+			}
+
+
+
+
+			#LossRate {
+				margin-left: 5px;
+				padding: 0;
+				position: relative;
+				left: 0px;
+				top: -53px;
+				height: 15px;
+				z-Index: 101;
+				font-size: 12px;
+				color: #FFFFFF;
+				display: none;
+			}
+
+			#RtcVideo {
+				margin: 0 auto;
+				width: 128px;
+				z-Index: 222;
+				filter: alpha(opacity=100);
+				opacity: 1;
+			}
+
+			.ipc-ptz {
+				margin: 0 auto;
+				width: 200px;
+				display: flex;
+				justify-content: left;
+			}
+
+			.control-top i {
+				-webkit-transform: rotate(45deg);
+				transform: rotate(45deg);
+			}
+
+			.control-top,
+			.control-top i {
+				border-radius: 5px 100% 5px 0;
+			}
+
+			.control-top {
+				top: -6.2%;
+				left: 28%;
+				transform: rotate(-45deg);
+				border-radius: 5px 100% 5px 0;
+			}
+
+			.control-left {
+				top: 27.5%;
+				left: -7.7%;
+				transform: rotate(45deg);
+				border-radius: 5px 0 5px 100%;
+			}
+
+			.control-left i {
+				-webkit-transform: rotate(-45deg);
+				transform: rotate(-45deg);
+			}
+
+
+			.control-right {
+				top: 27.5%;
+				right: -6.3%;
+				transform: rotate(45deg);
+				border-radius: 5px 100% 5px 0;
+			}
+
+			.control-right i {
+				-webkit-transform: rotate(-45deg);
+				transform: rotate(-45deg);
+			}
+
+			.control-bottom i {
+				-webkit-transform: rotate(-45deg);
+				transform: rotate(-45deg);
+			}
+
+
+			.control-bottom {
+				left: 27%;
+				bottom: -6.2%;
+				transform: rotate(45deg);
+				border-radius: 0 5px 100% 5px;
+			}
+
+			.control-wrapper {
+				position: relative;
+				width: 12.25rem;
+				height: 12.25rem;
+				max-width: 12.25rem;
+				max-height: 12.25rem;
+				border-radius: 100%;
+				margin-top: 1.5rem;
+				margin-left: .5rem;
+				float: left;
+			}
+
+
+			.control-btn {
+				position: absolute;
+				width: 44%;
+				height: 44%;
+				border: 1px solid #78aee4;
+				border-top: 1px solid #78aee4;
+				box-sizing: border-box;
+				transition: all .3s linear;
+				display: flex;
+				justify-content: center;
+			}
+
+			.i_gray {
+				color: rgba(0, 0, 0, 0.6);
+			}
+
+			.i_disable {
+				color: #D5D5D5
+			}
+
+			.control-btn i {
+				font-size: 1.25rem;
+
+				-webkit-box-align: center;
+				align-items: center;
+				display: flex;
+			}
+
+			.i_ptz_color {
+				color: #78aee4;
+			}
+
+			.control-round {
+				position: absolute;
+				top: 23%;
+				left: 23%;
+				width: 53%;
+				height: 53%;
+				background: #F1F1F1;
+				border-radius: 100%;
+				border-top: 1px solid #78aee4;
+				border-right: 1px solid #78aee4;
+				border-left: 1px solid #78aee4;
+				border-bottom: 1px solid #78aee4;
+			}
+
+			.control-top .control-inner {
+				left: -1px;
+				bottom: 0;
+				border-top: 1px solid #78aee4;
+				border-right: 1px solid #78aee4;
+				border-radius: 0 100% 0 0;
+			}
+
+			.control-inner-btn {
+				position: absolute;
+				width: 60%;
+				height: 60%;
+				background: #fafafa;
+			}
+
+			.control-left .control-inner {
+				right: -1px;
+				top: -1px;
+				border-bottom: 1px solid #78aee4;
+				border-left: 1px solid #78aee4;
+				border-radius: 0 0 0 100%;
+			}
+
+
+
+			.control-bottom .control-inner {
+				top: -1px;
+				left: -1px;
+				border-bottom: 1px solid #78aee4;
+				border-right: 1px solid #78aee4;
+				border-radius: 0 0 100% 0;
+			}
+
+			.control-right .control-inner {
+				left: -1px;
+				bottom: -1px;
+				border-top: 1px solid #78aee4;
+				border-right: 1px solid #78aee4;
+				border-radius: 0 100% 0 0;
+			}
+
+
+			.zoom-info {
+				color: #78aee4;
+				border: 1px solid #78aee4;
+				border-radius: 100% 100% 100% 100%;
+			}
+
+			.zoom-info2 {
+				color: #000000;
+				border: 1px solid #78aee4;
+				border-radius: 100% 100% 100% 100%;
+			}
+
+			.zoom-disable {
+				color: #D5D5D5;
+				border: 1px solid #78aee4;
+				border-radius: 100% 100% 100% 100%;
+			}
+
+			.ipadd {
+				margin-right: 20px;
+			}
+
+			.i_ptz {
+				display: flex;
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<div>
+			<!--</div>-->
+			<div class="VideoContainer">
+
+				<video id="theirs" style="height:200px;" autoplay controls webkit-playsinline playsinline muted></video>
+				<video id="Audiotheirs" class="hideAudio" playsinline="true" autoplay="true" x-webkit-airplay="true"
+					webkit-playsinline="true"></video>
+			</div>
+			<div style="position: absolute; left: 1rem; top: 13.8rem; font-size:32px;">
+				<i id="audio_loudspeaker" onclick="OnStartAudio(0)" class="fa fa-volume-up i_gray ipadd ">1</i>
+				<i id="audio_microphone" onclick="OnStartAudio(1)" class="fa fa-microphone i_gray ipadd">2</i>
+			</div>
+		</div>
+
+		<script src="jquery-3.4.1.min.js" charset="utf-8"></script>
+		<script src="wxRtcSdk.js" charset="utf-8"></script>
+		<script>
+			var G_DevId = "ch2000037100"
+			var G_AuthId = 523;
+			var G_AuthCode = "abad26b05a058115d9645afa6a760b26";
+			var G_Series = "icm0f1000a02a07";
+
+			var G_VideoQ = "1";
+			var RtcVideoInfo = null;
+			var RtcAudioInfo = null;
+			var nStartAudio = 0;
+			var nTimer = 0;
+			var nHasOnline = 0;
+
+			var RtcInfoStats = {
+				packetsLost: 0,
+				packetsReceived: 0
+			};
+
+
+			function UserCall(devId, dataType, status) {
+				// alert(devId+":--"+status);
+				if (status == "Dev-Audio-TalkOk") {
+					audio_loudspeaker.style.color = "rgb(0, 0, 0)";
+					audio_microphone.style.color = "rgb(0, 0, 0)";
+
+				} else if (status == "Dev-Audio-TalkErr") {
+					var layer = layui.layer;
+					layer.open({
+						title: '提示',
+						content: '音频通话正在使用或者不支持，无法实现对讲'
+					});
+					// RtcAudioInfo.RtcConn.close();
+					// RtcAudioInfo=null;
+				} else if (status == "connected" || status == "completed") {
+					nHasOnline = 1;
+				} else if (status == "failed") {
+					if (nTimer != 0)
+						clearInterval(nTimer);
+					nTimer = 0;
+
+					//alert( yourConnection.iceConnectionState);
+				} else if (status == "closed") {
+					if (nTimer != 0)
+						clearInterval(nTimer);
+					nTimer = 0;
+					LossRate.style.display = "none";
+				} else if (status == "disconnected" || status == "dev off") {
+					if (nTimer != 0)
+						clearInterval(nTimer);
+					nTimer = 0;
+					if (nHasOnline == 1) {
+
+						setTimeout(reconnect, 35000);
+					} else {
+
+					}
+				}
+			}
+
+
+
+			//连接视频
+			function reconnect() {
+				if (nHasOnline == 1) {
+
+				}
+				if (nTimer != 0)
+					clearInterval(nTimer);
+				//OpenDevRtcVideo(G_AuthId,G_AuthCode,G_DevId,0,theirs,UserCall);
+				RtcInfoStats.packetsLost = 0;
+				RtcInfoStats.packetsReceived = 0;
+				RtcVideoInfo = OpenDevRtcVideo(G_AuthId, G_AuthCode, G_DevId, 0, theirs, UserCall);
+				nTimer = setInterval("GetRtcGetStats()", 1000);
+			}
+			//开始音频
+			function OnStartAudio(audiotype) {
+				//alert("audio 11");
+				if (nStartAudio == 0) {
+					//alert("nStartAudio 11");
+					nStartAudio = 1;
+					Audiotheirs.play();
+
+
+					RtcAudioInfo = OpenDevRtcVideo(G_AuthId, G_AuthCode, G_DevId, 1, Audiotheirs, UserCall);
+					Audiotheirs.play();
+				}
+				//alert("audio 12");
+			}
+
+			function GetRtcGetStats() {
+				RtcVideoInfo.RtcConn.getStats().then(res => {
+					res.forEach(report => {
+						//console.log(report);
+
+						if (report.type == 'inbound-rtp' && report.kind == 'video') {
+							if (report.frameWidth > 0) {
+
+								if (report.frameWidth <= 800) {
+									G_VideoQ = "0";
+
+								} else if (report.frameWidth <= 1400) {
+									G_VideoQ = "1";
+
+								} else if (report.frameWidth > 1400) {
+									G_VideoQ = "2";
+
+								}
+
+							}
+
+
+						} else if (report.type == 'track' && report.kind == 'video') {
+							if (report.frameWidth > 0) {
+
+								if (report.frameWidth <= 800) {
+									G_VideoQ = "0";
+
+								} else if (report.frameWidth <= 1400) {
+									G_VideoQ = "1";
+
+								} else if (report.frameWidth > 1400) {
+									G_VideoQ = "2";
+
+								}
+
+							}
+						}
+					});
+				}); /**/
+			}
+
+			function OnLivePlay() {
+
+				//LossRate.style.display="flex";
+				theirs.play();
+
+
+				//isDevSupAudio(strSeries)
+				reconnect();
+				//OnStartAudio(1);
+				theirs.style.background = "rgba(0, 0, 0, 1)";
+				theirs.play();
+			}
+
+
+			function CallIce(status, tip) {
+				if (status == 1) {
+					OnLivePlay();
+
+				} else {
+
+				}
+			}
+
+
+
+			let ran = navigator.userAgent
+			let isAndroid = ran.indexOf('Android') > -1 || ran.indexOf('Linux') > -1
+			let isIOS = !!ran.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/)
+			if (isIOS) {
+				document.addEventListener("WeixinJSBridgeReady", function() {
+					theirs.play();
+				}, false);
+			} else {
+
+			}
+
+			$(document).ready(function() {
+				GetDevTurnAuth(G_AuthId, G_AuthCode, G_DevId, CallIce);
+
+			});
+		</script>
+
+
+	</body>
+</html>

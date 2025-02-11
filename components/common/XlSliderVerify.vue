@@ -1,9 +1,7 @@
 <template>
 	<view class="verify" style="overflow: hidden;">
 		<view class="content" :style="{ left: left + 'px' }">
-			<view class="round" @touchstart="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd"
-				@touchcancel="onTouchCancel">
-
+			<view class="round" @touchstart="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd">
 			</view>
 		</view>
 	</view>

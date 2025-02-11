@@ -1,54 +1,56 @@
 <template>
 	<view class="container">
-		<view class="topInfo">
-			<view class="parachute"
-				style="background-color: #FFF;width: 32px;padding: 6px;position: relative;margin-left: 16px;">
-				<image src="../../assets/images/parachute.png" mode="" style="width: 32px;height: 32px;"
-					@click="showVerify = !showVerify"></image>
-				<view class="verifyBox" v-show="showVerify">
-					<u-icon name="play-left-fill" :size="20" color="#FFF"></u-icon>
-					<view class="verifyContent">
-						<view class="flex justify-between title">
-							释放降落伞
-							<u-icon name="close" :size="20" @click="showVerify = false"></u-icon>
+		<Camera />
+		<view class="content">
+			<view class="topInfo">
+				<view class="parachute"
+					style="background-color: #FFF;width: 32px;padding: 6px;position: relative;margin-left: 16px;">
+					<image src="../../assets/images/parachute.png" mode="" style="width: 32px;height: 32px;"
+						@click="showVerify = !showVerify"></image>
+					<view class="verifyBox" v-show="showVerify">
+						<u-icon name="play-left-fill" :size="20" color="#FFF"></u-icon>
+						<view class="verifyContent">
+							<view class="flex justify-between title">
+								释放降落伞
+								<u-icon name="close" :size="20" @click="showVerify = false"></u-icon>
+							</view>
+							<XlSliderVerify @success="verifySuccess" v-show="isSocket" />
 						</view>
-						<XlSliderVerify @success="verifySuccess" v-show="isSocket" />
 					</view>
 				</view>
-			</view>
 
-			<view class="_item">
-				<span>电池电压：{{socket503Data.voltage_battery}} V</span>
-				<span>电池电流：{{socket503Data.current_battery}} A</span>
-				<span>电池电量：{{socket503Data.battery_remaining}}</span>
-				<span>信号强度：{{socket501Data.myCsq}}</span>
-			</view>
+				<view class="_item">
+					<span>电池电压：{{socket503Data.voltage_battery}} V</span>
+					<span>电池电流：{{socket503Data.current_battery}} A</span>
+					<span>电池电量：{{socket503Data.battery_remaining}}</span>
+					<span>信号强度：{{socket501Data.myCsq}}</span>
+				</view>
 
-			<view class="back" @click="back">
-				<image src="../../assets/images/over.png" mode="" style="width: 30px;height: 30px;"></image>
+				<view class="back" @click="back">
+					<image src="../../assets/images/over.png" mode="" style="width: 30px;height: 30px;"></image>
+				</view>
 			</view>
-		</view>
-		<view class="centerInfo">
-			<view class="_item" style="width: 30%;">
-				<span>纬度：{{socket502Data.lat}}</span>
-				<span>经度：{{socket502Data.lon}}</span>
-				<span>绝对高度：{{socket502Data.alt}}</span>
-				<span>相对高度：{{socket502Data.relative_alt}}</span>
-				<span>X速度：{{socket502Data.vx}}</span>
-				<span>Y速度：{{socket502Data.vy}}</span>
-				<span>Z速度：{{socket502Data.vz}}</span>
-				<span>航向角：{{socket502Data.hdg}}</span>
+			<view class="centerInfo">
+				<view class="_item" style="width: 30%;">
+					<span>纬度：{{socket502Data.lat}}</span>
+					<span>经度：{{socket502Data.lon}}</span>
+					<span>绝对高度：{{socket502Data.alt}}</span>
+					<span>相对高度：{{socket502Data.relative_alt}}</span>
+					<span>X速度：{{socket502Data.vx}}</span>
+					<span>Y速度：{{socket502Data.vy}}</span>
+					<span>Z速度：{{socket502Data.vz}}</span>
+					<span>航向角：{{socket502Data.hdg}}</span>
+				</view>
+				<view class="_item" style="width: 65%;">
+					<span>滚转角：{{socket504Data.roll}} rad</span>
+					<span>俯仰角：{{socket504Data.pitch}} rad</span>
+					<span>偏航角：{{socket504Data.yaw}} rad</span>
+					<span>滚转角速度：{{socket504Data.rollspeed}} rad/s</span>
+					<span>俯仰角速度：{{socket504Data.pitchspeed}} rad/s</span>
+					<span>偏航角速度：{{socket504Data.yawspeed}} rad/s</span>
+				</view>
 			</view>
-			<view class="_item" style="width: 65%;">
-				<span>滚转角：{{socket504Data.roll}} rad</span>
-				<span>俯仰角：{{socket504Data.pitch}} rad</span>
-				<span>偏航角：{{socket504Data.yaw}} rad</span>
-				<span>滚转角速度：{{socket504Data.rollspeed}} rad/s</span>
-				<span>俯仰角速度：{{socket504Data.pitchspeed}} rad/s</span>
-				<span>偏航角速度：{{socket504Data.yawspeed}} rad/s</span>
-			</view>
-		</view>
-		<!-- <view class="slider" v-show="carInfo.appCarChannelList && carInfo.appCarChannelList.length> 0">
+			<!-- <view class="slider" v-show="carInfo.appCarChannelList && carInfo.appCarChannelList.length> 0">
 			<view class="sliderItem" v-for="(item,index) in carInfo.appCarChannelList" :key="item.channelNum"
 				v-show="index <= 5">
 				<span>{{item.channelName}}</span>
@@ -73,45 +75,48 @@
 			</view>
 		</view> -->
 
-		<view class="operateBox" v-show="isSocket">
-			<view class="parent">
-				<view class="draggable" id="motor" :style="{ left: leftHandle.x + 'px', top: leftHandle.y + 'px' }"
-					@touchstart="onTouchStart('leftHandle', $event)" @touchmove="onTouchMove('leftHandle', $event)"
-					@touchend="onTouchEnd('leftHandle', $event)" @touchcancel="onTouchCancel('leftHandle', $event)">
+			<view class="operateBox" v-show="isSocket">
+				<view class="parent">
+					<view class="draggable" id="motor" :style="{ left: leftHandle.x + 'px', top: leftHandle.y + 'px' }"
+						@touchstart="onTouchStart('leftHandle', $event)" @touchmove="onTouchMove('leftHandle', $event)"
+						@touchend="onTouchEnd('leftHandle', $event)" @touchcancel="onTouchCancel('leftHandle', $event)">
+					</view>
 				</view>
-			</view>
-			<view class="actionButtonBox">
-				<view class="actionButton" :class="[fiveActive == 'up' ? 'activeFiveButton' : '']"
-					@click="sendFiveMessage(5, 'up')">
-					<image src="../../assets/images/up.png" mode="" style="width: 36px;height: 36px;"></image>
+				<view class="actionButtonBox">
+					<view class="actionButton" :class="[fiveActive == 'up' ? 'activeFiveButton' : '']"
+						@click="sendFiveMessage(5, 'up')">
+						<image src="../../assets/images/up.png" mode="" style="width: 36px;height: 36px;"></image>
+					</view>
+					<view class="actionButton" :class="[fiveActive == 'center' ? 'activeFiveButton' : '']"
+						@click="sendFiveMessage(0, 'center')">
+						<image src="../../assets/images/center.png" mode="" style="width: 36px;height: 36px;"></image>
+					</view>
+					<view class="actionButton" :class="[fiveActive == 'down' ? 'activeFiveButton' : '']"
+						@click="sendFiveMessage(-5, 'down')">
+						<image src="../../assets/images/down.png" mode="" style="width: 36px;height: 36px;"></image>
+					</view>
 				</view>
-				<view class="actionButton" :class="[fiveActive == 'center' ? 'activeFiveButton' : '']"
-					@click="sendFiveMessage(0, 'center')">
-					<image src="../../assets/images/center.png" mode="" style="width: 36px;height: 36px;"></image>
+				<view class="actionButtonBox">
+					<view class="actionButton" :class="[sixActive == 'up' ? 'activeFiveButton' : '']"
+						@click="sendSixMessage(5, 'up')">
+						<image src="../../assets/images/up.png" mode="" style="width: 36px;height: 36px;"></image>
+					</view>
+					<view class="actionButton" :class="[sixActive == 'center' ? 'activeFiveButton' : '']"
+						@click="sendSixMessage(0, 'center')">
+						<image src="../../assets/images/center.png" mode="" style="width: 36px;height: 36px;"></image>
+					</view>
+					<view class="actionButton" :class="[sixActive == 'down' ? 'activeFiveButton' : '']"
+						@click="sendSixMessage(-5, 'down')">
+						<image src="../../assets/images/down.png" mode="" style="width: 36px;height: 36px;"></image>
+					</view>
 				</view>
-				<view class="actionButton" :class="[fiveActive == 'down' ? 'activeFiveButton' : '']"
-					@click="sendFiveMessage(-5, 'down')">
-					<image src="../../assets/images/down.png" mode="" style="width: 36px;height: 36px;"></image>
-				</view>
-			</view>
-			<view class="actionButtonBox">
-				<view class="actionButton" :class="[sixActive == 'up' ? 'activeFiveButton' : '']"
-					@click="sendSixMessage(5, 'up')">
-					<image src="../../assets/images/up.png" mode="" style="width: 36px;height: 36px;"></image>
-				</view>
-				<view class="actionButton" :class="[sixActive == 'center' ? 'activeFiveButton' : '']"
-					@click="sendSixMessage(0, 'center')">
-					<image src="../../assets/images/center.png" mode="" style="width: 36px;height: 36px;"></image>
-				</view>
-				<view class="actionButton" :class="[sixActive == 'down' ? 'activeFiveButton' : '']"
-					@click="sendSixMessage(-5, 'down')">
-					<image src="../../assets/images/down.png" mode="" style="width: 36px;height: 36px;"></image>
-				</view>
-			</view>
-			<view class="parent">
-				<view class="draggable" id="rudder" :style="{ left: rightHandle.x + 'px', top: rightHandle.y + 'px' }"
-					@touchstart="onTouchStart('rightHandle', $event)" @touchmove="onTouchMove('rightHandle', $event)"
-					@touchend="onTouchEnd('rightHandle', $event)" @touchcancel="onTouchCancel('rightHandle', $event)">
+				<view class="parent">
+					<view class="draggable" id="rudder"
+						:style="{ left: rightHandle.x + 'px', top: rightHandle.y + 'px' }"
+						@touchstart="onTouchStart('rightHandle', $event)"
+						@touchmove="onTouchMove('rightHandle', $event)" @touchend="onTouchEnd('rightHandle', $event)"
+						@touchcancel="onTouchCancel('rightHandle', $event)">
+					</view>
 				</view>
 			</view>
 		</view>
@@ -123,6 +128,7 @@
 		socketUrl
 	} from '@/utils/request';
 	import XlSliderVerify from '@/components/common/XlSliderVerify.vue'
+	import Camera from '@/components/common/Camera.vue'
 	export default {
 		props: {
 			carInfo: {
@@ -222,7 +228,8 @@
 
 		},
 		components: {
-			XlSliderVerify
+			XlSliderVerify,
+			Camera
 		},
 		onUnload() {
 			this.closeWebSocket();
@@ -669,27 +676,27 @@
 				// Duty 值映射表
 				const dutyMap = {
 					"leftTop": {
-						dutyX: this.getDutyValue(1, -4),
+						dutyX: this.getDutyValue(1, -5),
 						channelNumX: this.getChannelNum(1),
-						dutyY: this.getDutyValue(2, 4),
+						dutyY: this.getDutyValue(2, 5),
 						channelNumY: this.getChannelNum(2)
 					},
 					"leftBottom": {
-						dutyX: this.getDutyValue(1, -4),
+						dutyX: this.getDutyValue(1, -5),
 						channelNumX: this.getChannelNum(1),
-						dutyY: this.getDutyValue(2, -4),
+						dutyY: this.getDutyValue(2, -5),
 						channelNumY: this.getChannelNum(2)
 					},
 					"rightTop": {
-						dutyX: this.getDutyValue(1, 4),
+						dutyX: this.getDutyValue(1, 5),
 						channelNumX: this.getChannelNum(1),
-						dutyY: this.getDutyValue(2, 4),
+						dutyY: this.getDutyValue(2, 5),
 						channelNumY: this.getChannelNum(2)
 					},
 					"rightBottom": {
-						dutyX: this.getDutyValue(1, 4),
+						dutyX: this.getDutyValue(1, 5),
 						channelNumX: this.getChannelNum(1),
-						dutyY: this.getDutyValue(2, -4),
+						dutyY: this.getDutyValue(2, -5),
 						channelNumY: this.getChannelNum(2)
 					},
 					"top1": {
@@ -999,8 +1006,8 @@
 				this.socket.onOpen(() => {
 					console.log('WebSocket已打开');
 					this.isSocket = true
-					this.sendFiveMessage(0, 'center')
-					this.sendSixMessage(0, 'center')
+					// this.sendFiveMessage(0, 'center')
+					// this.sendSixMessage(0, 'center')
 					// this.startHeartbeat(); // 开始心跳机制
 				});
 
@@ -1166,14 +1173,22 @@
 <style scoped lang="less">
 	.container {
 		height: 100vh;
-		width: 100vw;
+		width: 90vw;
 		touch-action: none;
+
+		.content {
+			position: fixed;
+			top: 0;
+			left: 0;
+			z-index: 2;
+			width: 90vw;
+		}
 
 		.topInfo {
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
-			width: 100%;
+			width: 100vw;
 			box-sizing: border-box;
 			padding: 32px 16px;
 			font-size: 15px;
@@ -1307,11 +1322,11 @@
 		position: fixed;
 		bottom: 0;
 		left: 0;
-		width: 100%;
+		width: 90%;
 		display: flex;
 		justify-content: space-between;
 		box-sizing: border-box;
-		padding: 30px;
+		padding: 0px 0px 50px 10%;
 		text-align: center;
 		color: #FFF;
 

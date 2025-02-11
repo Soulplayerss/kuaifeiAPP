@@ -112,16 +112,17 @@
 				<view class="formItem">
 					<span style="margin-right: 16px;">原密码</span>
 					<view class="itemRight flex">
-						<u--input border="none" type="number" v-model="oldPassword" placeholder="请输入原密码" />
+						<u--input border="none" type="password" v-model="oldPassword" placeholder="请输入原密码" />
 					</view>
 				</view>
 				<view class="formItem">
 					<span style="margin-right: 16px;">新密码</span>
 					<view class="itemRight flex">
-						<u--input border="none" type="number" v-model="newPassword" placeholder="请输入新密码" />
+						<u--input border="none" type="password" v-model="newPassword" placeholder="请输入新密码" />
 					</view>
 				</view>
 				<view class="btns">
+					<span class="cancel" @click="showChangePassword = false">取消</span>
 					<span class="commit" @click="commit">确认</span>
 				</view>
 			</view>
@@ -132,6 +133,7 @@
 
 <script>
 	import TabBar from '@/components/common/TabBar.vue'
+	import request from '@/utils/request';
 	import {
 		requestUrl
 	} from '@/utils/request';
@@ -145,7 +147,7 @@
 				oldPassword: '',
 				newPassword: '',
 				pageStyle: {},
-				avatar:''
+				avatar: ''
 			}
 		},
 		onReady() {
@@ -171,14 +173,29 @@
 					url
 				})
 			},
-			commit() {
-				this.showChangePassword = false
-				this.showToast({
-					type: 'success',
-					position: 'top',
-					message: "添加失败",
-					iconUrl: 'https://cdn.uviewui.com/uview/demo/toast/error.png'
-				})
+			async commit() {
+				try {
+					const response = await request(`/app/user/updatePwd?oldPassword=${this.oldPassword}&newPassword=${this.newPassword}`, 'PUT')
+					if (response.code === 200) {
+						this.showChangePassword = false
+						uni.showToast({
+							title: '修改成功',
+							icon: 'success',
+						});
+						setTimeout(() => {
+							uni.clearStorage()
+							// 可跳转到登录页
+							uni.navigateTo({
+								url: '/pages/login/login'
+							})
+						}, 500)
+					}
+				} catch (error) {
+					uni.showToast({
+						title: '修改失败',
+						icon: 'none',
+					});
+				}
 			},
 			showToast(params) {
 				this.$refs.uToast.show({

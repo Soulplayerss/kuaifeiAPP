@@ -1,6 +1,5 @@
 <template>
 	<view class="drive">
-		<!-- <Camera /> -->
 		<DualChannel :carInfo="carInfo" :macAddress="macAddress" :carId="carId" v-if="showDualChannel" />
 		<FourChannel :carInfo="carInfo" :macAddress="macAddress" :carId="carId" @back="back" v-if="showFourChannel" />
 	</view>
@@ -9,7 +8,6 @@
 <script>
 	import DualChannel from '@/components/common/DualChannel.vue'
 	import FourChannel from '@/components/common/FourChannel.vue'
-	// import Camera from '@/components/common/Camera.vue'
 	import request from '@/utils/request';
 	export default {
 		data() {
@@ -24,7 +22,6 @@
 		components: {
 			DualChannel,
 			FourChannel
-			// Camera
 		},
 		onShow() {
 			// 设置横屏
