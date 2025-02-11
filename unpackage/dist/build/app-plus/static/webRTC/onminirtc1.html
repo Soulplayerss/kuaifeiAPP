@@ -391,6 +391,18 @@
 
 			//开始音频
 			function OnStartAudio(audiotype) {
+				navigator.mediaDevices.getUserMedia({
+						audio: true,
+						video: false
+					})
+					.then(function(stream) {
+						// 成功获取音频流
+						console.log("获得麦克风权限", stream);
+					})
+					.catch(function(error) {
+						// 处理错误
+						console.error("获取麦克风失败", error);
+					});
 				if (nStartAudio == 0) {
 					nStartAudio = 1;
 					Audiotheirs.play();
@@ -422,7 +434,7 @@
 				// CloseDevRtcVideo(RtcAudioInfo)
 				// console.log(11)
 			}
-			
+
 			async function openphoto() {
 				try {
 					const response = await fetch(

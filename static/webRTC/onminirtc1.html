@@ -20,8 +20,6 @@
 				height: 100vh;
 				width: 100%;
 				overflow: hidden;
-				position: relative;
-				z-index: 3;
 			}
 
 			.activevideo {
@@ -396,12 +394,18 @@
 						video: false
 					})
 					.then(function(stream) {
-						// 成功获取音频流
-						console.log("获得麦克风权限", stream);
+						GMsgWait = layui.layer.msg('获得麦克风权限', {
+							time: 0,
+							icon: 16,
+							shade: 0.01
+						});
 					})
 					.catch(function(error) {
-						// 处理错误
-						console.error("获取麦克风失败", error);
+						GMsgWait = layui.layer.msg('获取麦克风失败', {
+							time: 0,
+							icon: 16,
+							shade: 0.01
+						});
 					});
 				if (nStartAudio == 0) {
 					nStartAudio = 1;
