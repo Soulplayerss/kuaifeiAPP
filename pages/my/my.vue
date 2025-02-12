@@ -76,7 +76,7 @@
 				</view>
 				<u-icon name="arrow-right" size="22" color="#b09aaa"></u-icon>
 			</view>
-			<view class="settingItem" @click="navigateTo('/pages/forgetPassword/forgetPassword')">
+			<view class="settingItem" @click="navigateTo('/pages/forgetPassword/forgetPassword?page=my')">
 				<view class="left">
 					<image src="../../assets/images/forget-password.png" mode=""></image>
 					<span>忘记密码</span>

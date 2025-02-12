@@ -29,34 +29,54 @@
 				<span class="right">{{carInfo.carVoltage}}V</span>
 			</view>
 			<u-collapse accordion>
-				<u-collapse-item title="选择场地">
+				<!-- <u-collapse-item title="选择场地">
 					<text class="u-collapse-content">选择场地</text>
 				</u-collapse-item>
 				<u-collapse-item title="系统设置">
 					<text class="u-collapse-content">系统设置</text>
-				</u-collapse-item>
+				</u-collapse-item> -->
 				<u-collapse-item title="通道设置">
 					<view class="carChannel" v-for="(item,index) in carInfo.appCarChannelList" :key="item.channelId">
 						<view class="channelName">
 							{{item.channelName}}
 						</view>
 						<view class="channelValue">
-							<input type="number" @blur="handleBlur($event,index,'minValue')" v-model="item.minValue" class="valueInput" />
+							<input type="number" @blur="handleBlur($event,index,'minValue')" v-model="item.minValue"
+								class="valueInput" />
 							<span>-</span>
-							<input type="number" @blur="handleBlur($event,index,'maxValue')" v-model="item.maxValue" class="valueInput" />
+							<input type="number" @blur="handleBlur($event,index,'maxValue')" v-model="item.maxValue"
+								class="valueInput" />
 						</view>
 					</view>
 				</u-collapse-item>
-				<u-collapse-item title="图传设置">
+				<!-- <u-collapse-item title="图传设置">
 					<text class="u-collapse-content">图传设置</text>
 				</u-collapse-item>
 				<u-collapse-item title="操控设置">
 					<text class="u-collapse-content">操控设置</text>
+				</u-collapse-item> -->
+				<u-collapse-item title="摄像头配置">
+					<view class="carChannel">
+						<view class="channelName">
+							DevId
+						</view>
+						<view class="channelValue">
+							<input type="text" v-model="devId" class="valueInput cameraInput" />
+						</view>
+					</view>
+					<view class="carChannel">
+						<view class="channelName">
+							Series
+						</view>
+						<view class="channelValue">
+							<input type="text" v-model="series" class="valueInput cameraInput" />
+						</view>
+					</view>
 				</u-collapse-item>
 			</u-collapse>
-			<view class="item">
+			<!-- <view class="item">
 				<span class="left">共享车辆</span>
-			</view>
+			</view> -->
 		</view>
 
 		<view class="btns">
@@ -101,6 +121,8 @@
 				carId: '',
 				carInfo: {},
 				showChangeName: false,
+				devId: '',
+				series: '',
 			}
 		},
 		onLoad(options) {
@@ -118,16 +140,16 @@
 					url: '/pages/car/car',
 				})
 			},
-			handleBlur(event,index,type){
+			handleBlur(event, index, type) {
 				let value = event.detail.value
-				if(type == 'minValue'){
-					if(value >= 1400){
+				if (type == 'minValue') {
+					if (value >= 1400) {
 						this.carInfo.appCarChannelList[index].minValue = 1400
-					}else if(value <= 0){
+					} else if (value <= 0) {
 						this.carInfo.appCarChannelList[index].minValue = 0
 					}
-				}else {
-					if(value <= 1600){
+				} else {
+					if (value <= 1600) {
 						this.carInfo.appCarChannelList[index].maxValue = 1600
 					}
 				}
@@ -137,6 +159,21 @@
 					const response = await request(`/app/carInfo/getInfoByCarId/${this.carId}`, 'GET')
 					this.carInfo = response.data
 					this.carInfo.sitePictureUrl = requestUrl + response.data.sitePictureUrl
+				} catch (error) {
+					uni.showToast({
+						title: '加载失败',
+						icon: 'none',
+					});
+				}
+			},
+			async getCarCameraInfo() {
+				try {
+					const response = await request(`/app/camera/getInfoByCarId/${this.carId}`, 'GET')
+					console.log(response)
+					if (response.code == 200 && response.data) {
+						this.devId = response.data.devId
+						this.series = response.data.series
+					}
 				} catch (error) {
 					uni.showToast({
 						title: '加载失败',
@@ -187,6 +224,7 @@
 		},
 		mounted() {
 			this.getCarInfo()
+			this.getCarCameraInfo()
 		}
 	}
 </script>
@@ -282,6 +320,11 @@
 					box-sizing: border-box;
 					border: solid 1px #d6d7d9;
 					text-align: center;
+				}
+				
+				.cameraInput{
+					padding-left: 16px;
+					text-align: left;
 				}
 			}
 		}

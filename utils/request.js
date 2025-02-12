@@ -1,7 +1,7 @@
 const BASE_URL = 'http://1.95.71.155:8888';
 const SOCKET_URL = '1.95.71.155:8888';
-// const SOCKET_URL = '7821ba61.r32.cpolar.top';
-// const BASE_URL = 'https://7821ba61.r32.cpolar.top';
+// const SOCKET_URL = '3d2030c9.r32.cpolar.top';
+// const BASE_URL = 'https://3d2030c9.r32.cpolar.top';
 const request = (url, method = 'GET', data = {}, headers = {}) => {
   return new Promise((resolve, reject) => {
 	var token = ''

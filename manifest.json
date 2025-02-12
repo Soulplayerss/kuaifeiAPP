@@ -12,6 +12,9 @@
                 "desc" : "应用需要访问您的麦克风以进行音频通话"
             }
         },
+        "ios" : {
+            "NSMicrophoneUsageDescription" : "应用需要访问您的麦克风以进行音频通话"
+        },
         "plugins" : {
             "ttplayer" : {
                 "version" : "1.0.0",

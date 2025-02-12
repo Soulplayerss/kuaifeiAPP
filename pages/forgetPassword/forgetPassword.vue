@@ -1,6 +1,6 @@
 <template>
 	<view class="register">
-		<AppBar title='重置密码' @goBank="goBank" />
+		<AppBar title='重置密码' @goBank="goBank" v-show="superiorPage == 'my'" />
 		<image src="../../assets/images/logo.png" mode="" class="logo"></image>
 		<span class="kuaifei">快飞云控</span>
 		<span class="loginText">重置密码</span>
@@ -53,11 +53,19 @@
 					confirmPassword: '',
 				},
 				tips: '发送验证码',
-				disabled: false
+				disabled: false,
+				superiorPage: 'login',
 			};
 		},
 		components: {
 			AppBar
+		},
+		onLoad(options) {
+			const {
+				page,
+				siteId
+			} = options;
+			this.superiorPage = page
 		},
 		methods: {
 			goBank() {

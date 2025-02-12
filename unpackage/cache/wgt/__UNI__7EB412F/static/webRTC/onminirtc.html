@@ -2,23 +2,24 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>
-			test
-		</title>
+		<title></title>
 		<meta name="renderer" content="webkit">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-
+		<link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.min.css" media="all">
+		<link rel="stylesheet" href="layui/css/layui.css" media="all">
+		<link rel="stylesheet" href="layui/css/modules/layer/default/layer.css" media="all">
+		<!--<script src="https://cdn.temasys.io/adapterjs/0.15.x/adapter.min.js" charset="utf-8"></script>-->
 		<!--用于兼容IOS--->
 		<script src="adapter.min.js" charset="utf-8"></script>
 		<script src="devdef.js" charset="utf-8"></script>
 		<script src="https://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
 		<style>
 			.VideoContainer {
-
-				margin: 5px;
-				height: 202px;
-				border: 1px solid #ddd;
+				margin: 0px;
+				height: 100vh;
+				width: 100vw;
+				overflow: hidden;
 			}
 
 			.activevideo {
@@ -37,20 +38,8 @@
 				border: 1px solid #ddd;
 			}
 
-
-
-
 			#LossRate {
-				margin-left: 5px;
-				padding: 0;
-				position: relative;
-				left: 0px;
-				top: -53px;
-				height: 15px;
-				z-Index: 101;
-				font-size: 12px;
-				color: #FFFFFF;
-				display: none;
+				font-size: 14px
 			}
 
 			#RtcVideo {
@@ -149,7 +138,7 @@
 			}
 
 			.i_gray {
-				color: rgba(0, 0, 0, 0.6);
+				color: #FFF;
 			}
 
 			.i_disable {
@@ -249,6 +238,20 @@
 			.i_ptz {
 				display: flex;
 			}
+
+			.control {
+				position: absolute;
+				width: 40px;
+				right: 0;
+				top: 0;
+				font-size: 32px;
+				height: 100%;
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: start;
+				gap: 20px;
+			}
 		</style>
 	</head>
 
@@ -258,31 +261,46 @@
 			<!--</div>-->
 			<div class="VideoContainer">
 
-				<video id="theirs" style="height:200px;" autoplay controls webkit-playsinline playsinline muted></video>
+				<video id="theirs" style="height:100%;width: 100%;" autoplay controls webkit-playsinline playsinline
+					muted></video>
+				<!-- controls background:rgba(0, 0, 0, 1) fa-star -->
+
 				<video id="Audiotheirs" class="hideAudio" playsinline="true" autoplay="true" x-webkit-airplay="true"
 					webkit-playsinline="true"></video>
-			</div>
-			<div style="position: absolute; left: 1rem; top: 13.8rem; font-size:32px;">
-				<i id="audio_loudspeaker" onclick="OnStartAudio(0)" class="fa fa-volume-up i_gray ipadd ">1</i>
-				<i id="audio_microphone" onclick="OnStartAudio(1)" class="fa fa-microphone i_gray ipadd">2</i>
+				<div class="control">
+					<img id="audio_close" src="./closeAudio.png" onclick="OnStartAudio(0)" style="width: 32px;"
+						alt="" />
+					<i id="audio_loudspeaker" class="fa fa-volume-up i_gray ipadd" onclick="clonsStartAudio()"
+						style="display: none;"></i>
+					<i id="audio_microphone" onclick="OnStartAudio(1)" class="fa fa-microphone i_gray ipadd"></i>
+					<i id="video_max" onclick="OnChangeVideoQ()" class="fa i_gray fa-star"></i>
+					<!-- <img src="./photograph.png" onclick="openphoto()" style="width: 32px;height: 32px;" alt="" /> -->
+				</div>
+				<div id="LossRate" style="color: #FFF;">
+					丢包率:00%
+				</div>
+				<img id="img_src" src="" style="width: 200px;height: 100%">
 			</div>
 		</div>
 
 		<script src="jquery-3.4.1.min.js" charset="utf-8"></script>
+		<script src="layui/layui.js" charset="utf-8"></script>
 		<script src="wxRtcSdk.js" charset="utf-8"></script>
 		<script>
 			var G_DevId = "ch2000037100"
 			var G_AuthId = 523;
 			var G_AuthCode = "abad26b05a058115d9645afa6a760b26";
 			var G_Series = "icm0f1000a02a07";
-
+			var GMsgWait = 0;
 			var G_VideoQ = "1";
 			var RtcVideoInfo = null;
 			var RtcAudioInfo = null;
 			var nStartAudio = 0;
 			var nTimer = 0;
 			var nHasOnline = 0;
+			layui.use(['form', 'layer'], function() {
 
+			});
 			var RtcInfoStats = {
 				packetsLost: 0,
 				packetsReceived: 0
@@ -292,8 +310,8 @@
 			function UserCall(devId, dataType, status) {
 				// alert(devId+":--"+status);
 				if (status == "Dev-Audio-TalkOk") {
-					audio_loudspeaker.style.color = "rgb(0, 0, 0)";
-					audio_microphone.style.color = "rgb(0, 0, 0)";
+					audio_loudspeaker.style.color = "#FFF";
+					audio_microphone.style.color = "#FFF";
 
 				} else if (status == "Dev-Audio-TalkErr") {
 					var layer = layui.layer;
@@ -309,6 +327,12 @@
 					if (nTimer != 0)
 						clearInterval(nTimer);
 					nTimer = 0;
+					LossRate.style.display = "none";
+					GMsgWait = layui.layer.msg('ICEERR:' + 'yourConnection.iceConnectionState', {
+						time: 0,
+						icon: 2,
+						shade: 0.01
+					});
 
 					//alert( yourConnection.iceConnectionState);
 				} else if (status == "closed") {
@@ -321,20 +345,37 @@
 						clearInterval(nTimer);
 					nTimer = 0;
 					if (nHasOnline == 1) {
-
+						CloseDevRtcVideo(RtcVideoInfo);
+						RtcVideoInfo = 0;
+						LossRate.style.display = "none";
+						GMsgWait = layui.layer.msg('重连', {
+							time: 0,
+							icon: 16,
+							shade: 0.01
+						});
 						setTimeout(reconnect, 35000);
 					} else {
-
+						GMsgWait = layui.layer.msg('摄像头设备已离线', {
+							time: 0,
+							icon: 2,
+							shade: 0.01
+						});
+						$('.VideoContainer').css('display', 'none')
 					}
 				}
 			}
 
-
-
 			//连接视频
 			function reconnect() {
 				if (nHasOnline == 1) {
-
+					if (GMsgWait != 0)
+						layui.layer.close(GMsgWait);
+					GMsgWait = 0;
+					GMsgWait = layui.layer.msg('拼命加载中', {
+						time: 0,
+						icon: 16,
+						shade: 0.01
+					});
 				}
 				if (nTimer != 0)
 					clearInterval(nTimer);
@@ -343,58 +384,207 @@
 				RtcInfoStats.packetsReceived = 0;
 				RtcVideoInfo = OpenDevRtcVideo(G_AuthId, G_AuthCode, G_DevId, 0, theirs, UserCall);
 				nTimer = setInterval("GetRtcGetStats()", 1000);
+				$('.VideoContainer').css('display', 'block')
 			}
+			
 			//开始音频
 			function OnStartAudio(audiotype) {
-				//alert("audio 11");
+				navigator.mediaDevices.getUserMedia({
+						audio: true,
+						video: false
+					})
+					.then(function(stream) {
+						$("#audio_loudspeaker").css('display', 'block')
+						$("#audio_close").css('display', 'none')
+						GMsgWait = layui.layer.msg('获取麦克风权限成功', {
+							time: 0,
+							icon: 16,
+							shade: 0.01
+						});
+					})
+					.catch(function(error) {
+						if (error.name === 'NotAllowedError') {
+							GMsgWait = layui.layer.msg('用户拒绝了麦克风权限', {
+								time: 0,
+								icon: 16,
+								shade: 0.01
+							});
+							console.log('用户拒绝了麦克风权限');
+						} else if (error.name === 'NotFoundError') {
+							GMsgWait = layui.layer.msg('没有找到麦克风设备', {
+								time: 0,
+								icon: 16,
+								shade: 0.01
+							});
+							console.log('没有找到麦克风设备');
+						} else {
+							console.log('发生了其他错误:', error);
+							GMsgWait = layui.layer.msg('发生了其他错误', {
+								time: 0,
+								icon: 16,
+								shade: 0.01
+							});
+						}
+
+					});
 				if (nStartAudio == 0) {
-					//alert("nStartAudio 11");
 					nStartAudio = 1;
 					Audiotheirs.play();
-
-
+					GMsgWait = layui.layer.msg('正在请求音频', {
+						time: 0,
+						icon: 16,
+						shade: 0.01
+					});
 					RtcAudioInfo = OpenDevRtcVideo(G_AuthId, G_AuthCode, G_DevId, 1, Audiotheirs, UserCall);
 					Audiotheirs.play();
 				}
 				//alert("audio 12");
 			}
 
+			function clonsStartAudio() {
+				nStartAudio = 0
+				CloseRtcDialogue(G_AuthId, G_AuthCode, G_DevId)
+			}
+			
+			//关闭设备播放语音
+			function CloseRtcDialogue(strauthId, strauthCode, strdevId) {
+				var jsondata = {
+					AuthId: strauthId,
+					AuthCode: strauthCode,
+					DevId: strdevId,
+					method: "CloseRtcDialogue",
+					data: {
+						DialogueId: returnDialogueId
+					}
+				};
+				var ReqRtcAuidoPlayUrl = RtcAddrHeader + "/Iot/Dev/OnDevComSet";
+				$.ajax({
+					type: "POST",
+					url: ReqRtcAuidoPlayUrl,
+					data: JSON.stringify(jsondata),
+					dataType: "json",
+					success: function(data) {
+						console.log(data);
+						if(data.code == 200){
+							GMsgWait = layui.layer.msg('已关闭音频', {
+								time: 0,
+								icon: 16,
+								shade: 0.01
+							});
+							$("#audio_loudspeaker").css('display', 'none')
+							$("#audio_close").css('display', 'block')
+						}
+					},
+					error: function(event, qq, XMLHttpRequest) {
+						GMsgWait = layui.layer.msg('关闭音频失败', {
+							time: 0,
+							icon: 16,
+							shade: 0.01
+						});
+						FpCallback(strDevId, nDataType, "net-err");
+					}
+				});
+			}
+
+			async function openphoto() {
+				try {
+					const response = await fetch(
+						'https://rtc.minirtc.com/Dev/ch2000037100/OnCapture?AuthId=523&AuthCode=abad26b05a058115d9645afa6a760b26&Sign=4214242423423&Random='
+					);
+					// 检查响应状态码
+					if (!response.ok) {
+						console.log(`HTTP error! Status: ${response.status}`);
+					}
+					// 获取Blob对象（这里假设服务器返回的是二进制数据）
+					const blob = await response.blob();
+					// 创建一个指向该Blob对象的URL
+					const url = URL.createObjectURL(blob);
+					console.log(url)
+					// 将URL设置为img元素的src属性
+					// const imgElement = document.getElementById('img_src');
+					// imgElement.src = url;
+					// // 可选：当图像加载完成后，可以释放URL对象
+					// imgElement.onload = function() {
+					// 	URL.revokeObjectURL(this.src);
+					// };
+					downloadImage(url)
+				} catch (error) {
+					console.error('There was a problem fetching the image:', error);
+					// 可以在这里显示一个错误消息给用户
+				}
+			}
+
+			function downloadImage(imageUrl, fileName) {
+				const a = document.createElement('a');
+				a.style.display = 'none';
+				a.href = imageUrl;
+				a.download = fileName || 'downloaded_image';
+				document.body.appendChild(a);
+				a.click();
+				document.body.removeChild(a);
+			}
+
+
 			function GetRtcGetStats() {
 				RtcVideoInfo.RtcConn.getStats().then(res => {
 					res.forEach(report => {
-						//console.log(report);
-
 						if (report.type == 'inbound-rtp' && report.kind == 'video') {
 							if (report.frameWidth > 0) {
-
 								if (report.frameWidth <= 800) {
 									G_VideoQ = "0";
-
+									$("#video_max").removeClass("fa-star");
+									$("#video_max").removeClass("fa-star-half-o");
+									$("#video_max").addClass("fa-star-o");
 								} else if (report.frameWidth <= 1400) {
 									G_VideoQ = "1";
-
+									$("#video_max").removeClass("fa-star");
+									$("#video_max").removeClass("fa-star-o");
+									$("#video_max").addClass("fa-star-half-o");
 								} else if (report.frameWidth > 1400) {
 									G_VideoQ = "2";
-
+									$("#video_max").removeClass("fa-star-half-o");
+									$("#video_max").removeClass("fa-star-o");
+									$("#video_max").addClass("fa-star");
 								}
-
+								layui.layer.close(GMsgWait);
+								GMsgWait = 0;
 							}
+							if (RtcInfoStats.packetsReceived != 0 && RtcInfoStats.packetsReceived != report
+								.packetsReceived) {
+								//(parseInt(1.4 * 100) / 100).toFixed(2);
+								var loss = parseInt((report.packetsLost - RtcInfoStats.packetsLost) * 100 / (
+									report.packetsReceived - RtcInfoStats.packetsReceived)).toFixed(0);
+								var tip = "0";
+								if (loss < 10)
+									tip = "丢包率:0" + loss + "%";
+								else
+									tip = "丢包率:" + loss + "%";
+								console.log("loss:" + tip);
 
-
+								document.getElementById("LossRate").innerText = tip;
+							}
+							RtcInfoStats.packetsLost = report.packetsLost
+							RtcInfoStats.packetsReceived = report.packetsReceived;
 						} else if (report.type == 'track' && report.kind == 'video') {
 							if (report.frameWidth > 0) {
-
 								if (report.frameWidth <= 800) {
 									G_VideoQ = "0";
-
+									$("#video_max").removeClass("fa-star");
+									$("#video_max").removeClass("fa-star-half-o");
+									$("#video_max").addClass("fa-star-o");
 								} else if (report.frameWidth <= 1400) {
 									G_VideoQ = "1";
-
+									$("#video_max").removeClass("fa-star");
+									$("#video_max").removeClass("fa-star-o");
+									$("#video_max").addClass("fa-star-half-o");
 								} else if (report.frameWidth > 1400) {
 									G_VideoQ = "2";
-
+									$("#video_max").removeClass("fa-star-half-o");
+									$("#video_max").removeClass("fa-star-o");
+									$("#video_max").addClass("fa-star");
 								}
-
+								layui.layer.close(GMsgWait);
+								GMsgWait = 0;
 							}
 						}
 					});
@@ -402,11 +592,7 @@
 			}
 
 			function OnLivePlay() {
-
-				//LossRate.style.display="flex";
 				theirs.play();
-
-
 				//isDevSupAudio(strSeries)
 				reconnect();
 				//OnStartAudio(1);
@@ -414,17 +600,93 @@
 				theirs.play();
 			}
 
+			var nAf = 0;
+			var nPtz = false;
+			if (G_Series.length > 5) {
+				nAf = GetDevSupAf(G_Series);
+				nPtz = isSupPtzCtl(G_Series);
+			}
+
+			function OnDisablePtz() {
+				$("#i_ptz_top").removeClass("i_ptz_color");
+				$("#i_ptz_top").addClass("i_disable");
+				$("#i_ptz_top").removeAttr("onclick");
+
+				$("#i_ptz_bottom").removeClass("i_ptz_color");
+				$("#i_ptz_bottom").addClass("i_disable");
+				$("#i_ptz_bottom").removeAttr("onclick");
+
+				$("#i_ptz_left").removeClass("i_ptz_color");
+				$("#i_ptz_left").addClass("i_disable");
+				$("#i_ptz_left").removeAttr("onclick");
+
+				$("#i_ptz_right").removeClass("i_ptz_color");
+				$("#i_ptz_right").addClass("i_disable");
+				$("#i_ptz_right").removeAttr("onclick");
+			}
+
+			function OnDisZoom() {
+				$("#i_ZoomOut").removeClass("zoom-info");
+				$("#i_ZoomOut").addClass("zoom-disable");
+				$("#i_ZoomOut").removeAttr("onclick");
+
+				$("#i_ZoomIn").removeClass("zoom-info");
+				$("#i_ZoomIn").addClass("zoom-disable");
+				$("#i_ZoomIn").removeAttr("onclick");
+			}
+
+			function OnDisAudio() {
+				$("#audio_loudspeaker").removeClass("i_gray");
+				$("#audio_loudspeaker").addClass("i_disable");
+				$("#audio_loudspeaker").removeAttr("onclick");
+
+				$("#audio_microphone").removeClass("i_gray");
+				$("#audio_microphone").addClass("i_disable");
+				$("#audio_microphone").removeAttr("onclick");
+			}
+
+
+
+			function OnChangeVideoQ() {
+				layui.form.val('forVideoQ', {
+					Video_QQ: G_VideoQ
+				});
+				var index = layer.open({
+					type: 1,
+					title: "视频质量设置",
+					btn: ['确认'],
+					content: $("#Id_setVideoQ"),
+					end: function() {
+						//do something
+						var data = layui.form.val('forVideoQ');
+						//layer.close(index); //如果设定了yes回调，需进行手工关闭
+						if (G_VideoQ != data.Video_QQ) {
+							SetVideoQuali(
+								parseInt(data.Video_QQ),
+								G_DevId, G_AuthId, G_AuthCode
+							);
+						}
+					}
+				});
+			}
 
 			function CallIce(status, tip) {
 				if (status == 1) {
 					OnLivePlay();
-
 				} else {
-
+					GMsgWait = layui.layer.msg(tip, {
+						time: 0,
+						icon: 2,
+						shade: 0.01
+					});
 				}
 			}
 
-
+			GMsgWait = layui.layer.msg('拼命加载中', {
+				time: 0,
+				icon: 16,
+				shade: 0.01
+			});
 
 			let ran = navigator.userAgent
 			let isAndroid = ran.indexOf('Android') > -1 || ran.indexOf('Linux') > -1
@@ -438,11 +700,43 @@
 			}
 
 			$(document).ready(function() {
-				GetDevTurnAuth(G_AuthId, G_AuthCode, G_DevId, CallIce);
+				if (G_Series.length < 5) {
+					OnDisablePtz();
+					OnDisZoom();
+					OnDisAudio();
+				}
 
+				if (isDevSupAudio(G_Series) < 1) {
+					OnDisAudio();
+				}
+				if (nAf < 1) {
+					OnDisZoom();
+				}
+
+				if (nPtz == false) {
+					OnDisablePtz();
+				}
+				GetDevTurnAuth(G_AuthId, G_AuthCode, G_DevId, CallIce);
 			});
 		</script>
 
 
 	</body>
+
+	<div id="Id_setVideoQ" style="display:none; padding-left:26px; padding-top:20px;">
+		<form class="layui-form" action="" lay-filter="forVideoQ">
+			<div class="layui-form-item">
+				<input type="radio" name="Video_QQ" value="2" title="超清(1920*1080)">
+			</div>
+			<div class="layui-form-item">
+				<input type="radio" name="Video_QQ" value="1" title="高清(1280*720)">
+			</div>
+			<div class="layui-form-item">
+				<input type="radio" name="Video_QQ" value="0" title="流畅(640*480)">
+			</div>
+
+	</div>
+	</form>
+	<div>
+
 </html>

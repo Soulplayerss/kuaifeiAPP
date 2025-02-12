@@ -1,6 +1,7 @@
 <template>
 	<view class="container">
-		<Camera />
+		<!-- <Camera /> -->
+		<web-view class="webview" src="/static/webRTC/onminirtc.html"></web-view>
 		<view class="content">
 			<view class="topInfo">
 				<view class="parachute"
@@ -128,7 +129,7 @@
 		socketUrl
 	} from '@/utils/request';
 	import XlSliderVerify from '@/components/common/XlSliderVerify.vue'
-	import Camera from '@/components/common/Camera.vue'
+	// import Camera from '@/components/common/Camera.vue'
 	export default {
 		props: {
 			carInfo: {
@@ -228,8 +229,8 @@
 
 		},
 		components: {
-			XlSliderVerify,
-			Camera
+			XlSliderVerify
+			// Camera
 		},
 		onUnload() {
 			this.closeWebSocket();
@@ -274,6 +275,19 @@
 				uni.navigateTo({
 					url: '/pages/car/car'
 				});
+			},
+			async endCar(){
+				try {
+					const response = await request(`/app/carInfo/endCar/${this.macAddress}`, 'GET')
+					if (response.code == 200) {
+						this.back()
+					}
+				} catch (error) {
+					uni.showToast({
+						title: '结束失败',
+						icon: 'none',
+					});
+				}
 			},
 			verifySuccess() {
 				this.sendMessage(JSON.stringify({
@@ -1175,13 +1189,19 @@
 		height: 100vh;
 		width: 90vw;
 		touch-action: none;
-
+		position: relative;
+		overflow-y: auto;
+		
+		.webview{
+			width: 100vw;
+		}
 		.content {
 			position: fixed;
 			top: 0;
 			left: 0;
-			z-index: 10;
+			z-index: 2;
 			width: 90vw;
+			height: 100vh;
 		}
 
 		.topInfo {

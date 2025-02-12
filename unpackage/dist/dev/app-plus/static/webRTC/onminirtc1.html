@@ -394,14 +394,14 @@
 						video: false
 					})
 					.then(function(stream) {
-						GMsgWait = layui.layer.msg('获得麦克风权限', {
+						GMsgWait = layui.layer.msg('获得麦克风权限成功', {
 							time: 0,
 							icon: 16,
 							shade: 0.01
 						});
 					})
 					.catch(function(error) {
-						GMsgWait = layui.layer.msg('获取麦克风失败', {
+						GMsgWait = layui.layer.msg('获取麦克风权限失败', {
 							time: 0,
 							icon: 16,
 							shade: 0.01

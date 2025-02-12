@@ -135,6 +135,9 @@
 				}
 			})
 		},
+		onShow() {
+			this.loadData()
+		},
 		methods: {
 			navigateTo(url) {
 				clearInterval(this.pollingTime)
@@ -143,19 +146,30 @@
 				})
 			},
 			checkStatus(carStatus, macAddress) {
-				if (carStatus != 1) {
-					return
-				} else {
+				if (carStatus == 1) {
 					this.openDriving(macAddress)
+				} else if (carStatus == 2) {
+					this.closeDriving(macAddress)
+				} else {
+					return
 				}
 			},
 			async openDriving(macAddress) {
 				try {
 					const response = await request(`/app/carInfo/onlineCar/${macAddress}`, 'GET')
-
 				} catch (error) {
 					uni.showToast({
 						title: '开放失败',
+						icon: 'none',
+					});
+				}
+			},
+			async closeDriving(macAddress) {
+				try {
+					const response = await request(`/app/carInfo/offlineCar/${macAddress}`, 'GET')
+				} catch (error) {
+					uni.showToast({
+						title: '关闭失败',
 						icon: 'none',
 					});
 				}
@@ -270,7 +284,6 @@
 			}
 		},
 		mounted() {
-			this.loadData();
 		},
 		onHide() {
 			if (this.dataList.length) {

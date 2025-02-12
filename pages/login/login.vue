@@ -121,7 +121,7 @@
 			},
 			toRetrieve() {
 				uni.navigateTo({
-					url: '/pages/forgetPassword/forgetPassword',
+					url: '/pages/forgetPassword/forgetPassword?page=login',
 				})
 			},
 			checkboxChange(e) {

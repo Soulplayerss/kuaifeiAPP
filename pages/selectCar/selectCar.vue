@@ -25,10 +25,9 @@
 								编号：{{item.carNo}}
 							</view>
 							<view class="btns">
-								<view class="btn operate"
-									@click="navigateTo(`/pages/drive/drive?macAddress=${item.macAddress}&carId=${item.carId}`)"
+								<view class="btn operate" @click="clickCar(item)" v-show="item.carStatus != 0"
 									:style="{backgroundColor:item.carStatus === 3 ? '#eea618' : '#0055ff'}">
-									<span>{{item.isDrive === 3 ? '围观' : item.isDrive === 2 ? '驾驶' : ''}}</span>
+									<span>{{item.carStatus == 3 ? '围观' : item.carStatus == 2 ? '驾驶' : ''}}</span>
 								</view>
 								<view class="btn watch">
 									规则
@@ -61,8 +60,7 @@
 				</view>
 				<!-- 加载更多提示 -->
 				<view v-if="loading" class="loading-more">正在加载...</view>
-				<u-loadmore v-show="hittingBottom" loadmoreText="没有更多数据" color="#1CD29B" lineColor="#1CD29B" dashed
-					line />
+				<u-loadmore v-show="hittingBottom" loadmoreText="没有更多数据" color="#FFF" lineColor="#FFF" dashed line />
 			</scroll-view>
 
 			<NoData v-show="showNoData" />
@@ -121,6 +119,24 @@
 					uni.navigateTo({
 						url: '/pages/mySite/mySite',
 					})
+				}
+			},
+			clickCar(item) {
+				if (item.carStatus == 2) {
+					this.startCar(item)
+				}
+			},
+			async startCar(item) {
+				try {
+					const response = await request(`/app/carInfo/startCar/${item.macAddress}`, 'GET')
+					if (response.code == 200) {
+						this.navigateTo(`/pages/drive/drive?macAddress=${item.macAddress}&carId=${item.carId}`)
+					}
+				} catch (error) {
+					uni.showToast({
+						title: '驾驶失败',
+						icon: 'none',
+					});
 				}
 			},
 			navigateTo(url) {

@@ -160,7 +160,15 @@
 </style> -->
 
 <template>
-  <view>
-    <web-view src="/static/webRTC/onminirtc1.html"></web-view>
-  </view>
+	<view>
+		<web-view src="/static/webRTC/onminirtc.html"></web-view>
+	</view>
 </template>
+
+<script>
+	export default {
+		mounted() {
+
+		}
+	}
+</script>
