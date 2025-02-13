@@ -29,7 +29,7 @@
 			#theirs {
 				width: 100%;
 				height: 100%;
-
+				object-fit:fill;
 			}
 
 			#theirsVideo {
@@ -409,18 +409,15 @@
 								icon: 16,
 								shade: 0.01
 							});
-							console.log('用户拒绝了麦克风权限');
 						} else if (error.name === 'NotFoundError') {
 							GMsgWait = layui.layer.msg('没有找到麦克风设备', {
 								time: 0,
 								icon: 16,
 								shade: 0.01
 							});
-							console.log('没有找到麦克风设备');
 						} else {
-							console.log('发生了其他错误:', error);
-							GMsgWait = layui.layer.msg('发生了其他错误', {
-								time: 0,
+							GMsgWait = layui.layer.msg('请先打开麦克风权限', {
+								time: 5,
 								icon: 16,
 								shade: 0.01
 							});

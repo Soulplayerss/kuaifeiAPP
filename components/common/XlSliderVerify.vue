@@ -1,10 +1,10 @@
 <template>
-	<view class="verify" style="overflow: hidden;">
-		<view class="content" :style="{ left: left + 'px' }">
-			<view class="round" @touchstart="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd">
-			</view>
-		</view>
-	</view>
+	<cover-view class="verify" style="overflow: hidden;">
+		<cover-view class="content" :style="{ left: left + 'px' }">
+			<cover-view class="round" @touchstart="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd">
+			</cover-view>
+		</cover-view>
+	</cover-view>
 </template>
 
 <script>

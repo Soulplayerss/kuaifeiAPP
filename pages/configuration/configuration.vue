@@ -154,6 +154,7 @@
 					}
 				}
 			},
+			
 			async getCarInfo() {
 				try {
 					const response = await request(`/app/carInfo/getInfoByCarId/${this.carId}`, 'GET')

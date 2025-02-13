@@ -66,6 +66,7 @@ function SetDevTurnAuth(turnurl, icename, pass) {
 }
 
 
+var returnDialogueId = 0
 function OpenDevRtcVideo(strauthId, strauthCode, strdevId, dataType, VideoId, callback) {
 	// alert("xx");
 	var nDialogueId = 0;
@@ -207,6 +208,8 @@ function OpenDevRtcVideo(strauthId, strauthCode, strdevId, dataType, VideoId, ca
 					var msg = data.data;
 					if (msg.status == 200) {
 						nDialogueId = msg.DialogueId;
+						returnDialogueId = msg.DialogueId;
+						console.log('返回的DialogueId：', msg.DialogueId)
 						var jsonObj = {
 							type: "offer",
 							sdp: msg.ipcsdp
@@ -322,6 +325,7 @@ function OpenDevRtcVideo(strauthId, strauthCode, strdevId, dataType, VideoId, ca
 			}
 		});
 	}
+
 
 	//设置应答，将sdp 给设备
 	function createAnswerAndSendMessage(answer) {

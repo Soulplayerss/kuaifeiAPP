@@ -104,7 +104,7 @@
 						},
 						fail: (err) => {
 							uni.showToast({
-								title: '请求失败',
+								title: '网络不佳，请切换网络',
 								type: 'error',
 								icon: 'error',
 							});

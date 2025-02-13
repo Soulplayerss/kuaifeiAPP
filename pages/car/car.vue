@@ -157,6 +157,8 @@
 			async openDriving(macAddress) {
 				try {
 					const response = await request(`/app/carInfo/onlineCar/${macAddress}`, 'GET')
+					this.pageNum = 1;
+					this.loadData()
 				} catch (error) {
 					uni.showToast({
 						title: '开放失败',
@@ -167,6 +169,8 @@
 			async closeDriving(macAddress) {
 				try {
 					const response = await request(`/app/carInfo/offlineCar/${macAddress}`, 'GET')
+					this.pageNum = 1;
+					this.loadData()
 				} catch (error) {
 					uni.showToast({
 						title: '关闭失败',

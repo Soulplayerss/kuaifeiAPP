@@ -2,125 +2,129 @@
 	<view class="container">
 		<!-- <Camera /> -->
 		<web-view class="webview" src="/static/webRTC/onminirtc.html"></web-view>
-		<view class="content">
-			<view class="topInfo">
-				<view class="parachute"
+		<cover-view class="content">
+			<cover-view class="verifyBox" v-show="showVerify">
+				<u-icon name="play-left-fill" :size="20" color="#FFF"></u-icon>
+				<cover-view class="verifyContent">
+					<cover-view class="flex justify-between title">
+						释放降落伞
+						<u-icon name="close" :size="20" @click="showVerify = false"></u-icon>
+					</cover-view>
+					<XlSliderVerify @success="verifySuccess" v-show="isSocket" />
+				</cover-view>
+			</cover-view>
+			<cover-view class="topInfo">
+				<cover-view class="parachute"
 					style="background-color: #FFF;width: 32px;padding: 6px;position: relative;margin-left: 16px;">
-					<image src="../../assets/images/parachute.png" mode="" style="width: 32px;height: 32px;"
-						@click="showVerify = !showVerify"></image>
-					<view class="verifyBox" v-show="showVerify">
-						<u-icon name="play-left-fill" :size="20" color="#FFF"></u-icon>
-						<view class="verifyContent">
-							<view class="flex justify-between title">
-								释放降落伞
-								<u-icon name="close" :size="20" @click="showVerify = false"></u-icon>
-							</view>
-							<XlSliderVerify @success="verifySuccess" v-show="isSocket" />
-						</view>
-					</view>
-				</view>
+					<cover-image src="../../assets/images/parachute.png" mode="" style="width: 32px;height: 32px;"
+						@click="showVerify = !showVerify"></cover-image>
 
-				<view class="_item">
-					<span>电池电压：{{socket503Data.voltage_battery}} V</span>
-					<span>电池电流：{{socket503Data.current_battery}} A</span>
-					<span>电池电量：{{socket503Data.battery_remaining}}</span>
-					<span>信号强度：{{socket501Data.myCsq}}</span>
-				</view>
+				</cover-view>
 
-				<view class="back" @click="back">
-					<image src="../../assets/images/over.png" mode="" style="width: 30px;height: 30px;"></image>
-				</view>
-			</view>
-			<view class="centerInfo">
-				<view class="_item" style="width: 30%;">
-					<span>纬度：{{socket502Data.lat}}</span>
-					<span>经度：{{socket502Data.lon}}</span>
-					<span>绝对高度：{{socket502Data.alt}}</span>
-					<span>相对高度：{{socket502Data.relative_alt}}</span>
-					<span>X速度：{{socket502Data.vx}}</span>
-					<span>Y速度：{{socket502Data.vy}}</span>
-					<span>Z速度：{{socket502Data.vz}}</span>
-					<span>航向角：{{socket502Data.hdg}}</span>
-				</view>
-				<view class="_item" style="width: 65%;">
-					<span>滚转角：{{socket504Data.roll}} rad</span>
-					<span>俯仰角：{{socket504Data.pitch}} rad</span>
-					<span>偏航角：{{socket504Data.yaw}} rad</span>
-					<span>滚转角速度：{{socket504Data.rollspeed}} rad/s</span>
-					<span>俯仰角速度：{{socket504Data.pitchspeed}} rad/s</span>
-					<span>偏航角速度：{{socket504Data.yawspeed}} rad/s</span>
-				</view>
-			</view>
-			<!-- <view class="slider" v-show="carInfo.appCarChannelList && carInfo.appCarChannelList.length> 0">
-			<view class="sliderItem" v-for="(item,index) in carInfo.appCarChannelList" :key="item.channelNum"
+				<cover-view class="_item">
+					<cover-view>电池电压：{{socket503Data.voltage_battery}} V</cover-view>
+					<cover-view>电池电流：{{socket503Data.current_battery}} A</cover-view>
+					<cover-view>电池电量：{{socket503Data.battery_remaining}}</cover-view>
+					<cover-view>信号强度：{{socket501Data.myCsq}}</cover-view>
+				</cover-view>
+
+				<cover-image src="../../assets/images/over.png" mode="" style="width: 30px;height: 30px;"
+					@click="back"></cover-image>
+			</cover-view>
+			<cover-view class="centerInfo">
+				<cover-view class="_item" style="width: 30%;">
+					<cover-view>纬度：{{socket502Data.lat}}</cover-view>
+					<cover-view>经度：{{socket502Data.lon}}</cover-view>
+					<cover-view>绝对高度：{{socket502Data.alt}}</cover-view>
+					<cover-view>相对高度：{{socket502Data.relative_alt}}</cover-view>
+					<cover-view>X速度：{{socket502Data.vx}}</cover-view>
+					<cover-view>Y速度：{{socket502Data.vy}}</cover-view>
+					<cover-view>Z速度：{{socket502Data.vz}}</cover-view>
+					<cover-view>航向角：{{socket502Data.hdg}}</cover-view>
+				</cover-view>
+				<cover-view class="_item" style="width: 65%;">
+					<cover-view>滚转角：{{socket504Data.roll}} rad</cover-view>
+					<cover-view>俯仰角：{{socket504Data.pitch}} rad</cover-view>
+					<cover-view>偏航角：{{socket504Data.yaw}} rad</cover-view>
+					<cover-view>滚转角速度：{{socket504Data.rollspeed}} rad/s</cover-view>
+					<cover-view>俯仰角速度：{{socket504Data.pitchspeed}} rad/s</cover-view>
+					<cover-view>偏航角速度：{{socket504Data.yawspeed}} rad/s</cover-view>
+				</cover-view>
+			</cover-view>
+			<!-- <cover-view class="slider" v-show="carInfo.appCarChannelList && carInfo.appCarChannelList.length> 0">
+			<cover-view class="sliderItem" v-for="(item,index) in carInfo.appCarChannelList" :key="item.channelNum"
 				v-show="index <= 5">
 				<span>{{item.channelName}}</span>
 				<span style="display: inline-block;width: 35px;">{{item.minValue}}</span>
-				<view class="sliderBox" v-if="sliderLeftList.length >=  carInfo.appCarChannelList.length">
-					<view class="leftBox" :style="{ left: sliderLeftList[index].x + 'px'}"
+				<cover-view class="sliderBox" v-if="sliderLeftList.length >=  carInfo.appCarChannelList.length">
+					<cover-view class="leftBox" :style="{ left: sliderLeftList[index].x + 'px'}"
 						@touchstart="onSliderLeftTouchStart(index,$event)"
 						@touchmove="onSliderLeftTouchMove(index,$event)" @touchend="onSliderLeftTouchEnd(index,$event)">
-					</view>
-					<view class="box1"></view>
-					<view class="rightBox" :style="{ left: sliderRightList[index].x + 'px'}"
+					</cover-view>
+					<cover-view class="box1"></cover-view>
+					<cover-view class="rightBox" :style="{ left: sliderRightList[index].x + 'px'}"
 						@touchstart="onSliderRightTouchStart(index,$event)"
 						@touchmove="onSliderRightTouchMove(index,$event)"
 						@touchend="onSliderRightTouchEnd(index,$event)">
-					</view>
-					<view class="box2" :id="`slider${index + 1}`"
+					</cover-view>
+					<cover-view class="box2" :id="`slider${index + 1}`"
 						:style="{left:sliderLeftList[index].box2Left + 'px', width:sliderLeftList[index].box2Width + 'px'}">
-						<view class="dire"></view>
-					</view>
-				</view>
+						<cover-view class="dire"></cover-view>
+					</cover-view>
+				</cover-view>
 				<span style="display: inline-block;width: 35px;">{{item.maxValue}}</span>
-			</view>
-		</view> -->
+			</cover-view>
+		</cover-view> -->
 
-			<view class="operateBox" v-show="isSocket">
-				<view class="parent">
-					<view class="draggable" id="motor" :style="{ left: leftHandle.x + 'px', top: leftHandle.y + 'px' }"
+			<cover-view class="operateBox">
+				<cover-view class="parent">
+					<cover-image src="../../assets/images/remote-sensing.png" mode=""
+						style="width: 100%;height: 100%;position: absolute;"></cover-image>
+					<cover-image src="../../assets/images/remote-sensing.png" id="motor"
+						:style="{ left: leftHandle.x + 'px', top: leftHandle.y + 'px' }"
 						@touchstart="onTouchStart('leftHandle', $event)" @touchmove="onTouchMove('leftHandle', $event)"
-						@touchend="onTouchEnd('leftHandle', $event)" @touchcancel="onTouchCancel('leftHandle', $event)">
-					</view>
-				</view>
-				<view class="actionButtonBox">
-					<view class="actionButton" :class="[fiveActive == 'up' ? 'activeFiveButton' : '']"
-						@click="sendFiveMessage(5, 'up')">
-						<image src="../../assets/images/up.png" mode="" style="width: 36px;height: 36px;"></image>
-					</view>
-					<view class="actionButton" :class="[fiveActive == 'center' ? 'activeFiveButton' : '']"
-						@click="sendFiveMessage(0, 'center')">
-						<image src="../../assets/images/center.png" mode="" style="width: 36px;height: 36px;"></image>
-					</view>
-					<view class="actionButton" :class="[fiveActive == 'down' ? 'activeFiveButton' : '']"
-						@click="sendFiveMessage(-5, 'down')">
-						<image src="../../assets/images/down.png" mode="" style="width: 36px;height: 36px;"></image>
-					</view>
-				</view>
-				<view class="actionButtonBox">
-					<view class="actionButton" :class="[sixActive == 'up' ? 'activeFiveButton' : '']"
-						@click="sendSixMessage(5, 'up')">
-						<image src="../../assets/images/up.png" mode="" style="width: 36px;height: 36px;"></image>
-					</view>
-					<view class="actionButton" :class="[sixActive == 'center' ? 'activeFiveButton' : '']"
-						@click="sendSixMessage(0, 'center')">
-						<image src="../../assets/images/center.png" mode="" style="width: 36px;height: 36px;"></image>
-					</view>
-					<view class="actionButton" :class="[sixActive == 'down' ? 'activeFiveButton' : '']"
-						@click="sendSixMessage(-5, 'down')">
-						<image src="../../assets/images/down.png" mode="" style="width: 36px;height: 36px;"></image>
-					</view>
-				</view>
-				<view class="parent">
-					<view class="draggable" id="rudder"
+						@touchend="onTouchEnd('leftHandle', $event)" @touchcancel="onTouchCancel('leftHandle', $event)"
+						mode="" class="draggable"></cover-image>
+				</cover-view>
+				<cover-view class="actionButtonBox">
+					<cover-view class="actionButton" :class="[fiveActive == 'up' ? 'activeFiveButton' : '']">
+						<cover-image src="../../assets/images/up.png" mode="" @click="sendFiveMessage(5, 'up')"
+							style="width: 36px;height: 36px;"></cover-image>
+					</cover-view>
+					<cover-view class="actionButton" :class="[fiveActive == 'center' ? 'activeFiveButton' : '']">
+						<cover-image src="../../assets/images/center.png" mode="" @click="sendFiveMessage(0, 'center')"
+							style="width: 36px;height: 36px;"></cover-image>
+					</cover-view>
+					<cover-view class="actionButton" :class="[fiveActive == 'down' ? 'activeFiveButton' : '']">
+						<cover-image src="../../assets/images/down.png" mode="" @click="sendFiveMessage(-5, 'down')"
+							style="width: 36px;height: 36px;"></cover-image>
+					</cover-view>
+				</cover-view>
+				<cover-view class="actionButtonBox">
+					<cover-view class="actionButton" :class="[sixActive == 'up' ? 'activeFiveButton' : '']">
+						<cover-image src="../../assets/images/up.png" mode="" @click="sendSixMessage(5, 'up')"
+							style="width: 36px;height: 36px;"></cover-image>
+					</cover-view>
+					<cover-view class="actionButton" :class="[sixActive == 'center' ? 'activeFiveButton' : '']">
+						<cover-image src="../../assets/images/center.png" mode="" @click="sendSixMessage(0, 'center')"
+							style="width: 36px;height: 36px;"></cover-image>
+					</cover-view>
+					<cover-view class="actionButton" :class="[sixActive == 'down' ? 'activeFiveButton' : '']">
+						<cover-image src="../../assets/images/down.png" mode="" @click="sendSixMessage(-5, 'down')"
+							style="width: 36px;height: 36px;"></cover-image>
+					</cover-view>
+				</cover-view>
+				<cover-view class="parent">
+					<cover-image src="../../assets/images/remote-sensing.png" mode=""
+						style="width: 100%;height: 100%;position: absolute;"></cover-image>
+					<cover-image class="draggable" id="rudder" src="../../assets/images/remote-sensing.png" mode=""
 						:style="{ left: rightHandle.x + 'px', top: rightHandle.y + 'px' }"
 						@touchstart="onTouchStart('rightHandle', $event)"
 						@touchmove="onTouchMove('rightHandle', $event)" @touchend="onTouchEnd('rightHandle', $event)"
-						@touchcancel="onTouchCancel('rightHandle', $event)">
-					</view>
-				</view>
-			</view>
-		</view>
+						@touchcancel="onTouchCancel('rightHandle', $event)"></cover-image>
+				</cover-view>
+			</cover-view>
+		</cover-view>
 	</view>
 </template>
 
@@ -276,7 +280,7 @@
 					url: '/pages/car/car'
 				});
 			},
-			async endCar(){
+			async endCar() {
 				try {
 					const response = await request(`/app/carInfo/endCar/${this.macAddress}`, 'GET')
 					if (response.code == 200) {
@@ -1020,8 +1024,8 @@
 				this.socket.onOpen(() => {
 					console.log('WebSocket已打开');
 					this.isSocket = true
-					// this.sendFiveMessage(0, 'center')
-					// this.sendSixMessage(0, 'center')
+					this.sendFiveMessage(0, 'center')
+					this.sendSixMessage(0, 'center')
 					// this.startHeartbeat(); // 开始心跳机制
 				});
 
@@ -1190,25 +1194,46 @@
 		width: 90vw;
 		touch-action: none;
 		position: relative;
-		overflow-y: auto;
-		
-		.webview{
+
+		.webview {
 			width: 100vw;
 		}
+
 		.content {
 			position: fixed;
 			top: 0;
 			left: 0;
-			z-index: 2;
+			z-index: 99999999999999999;
 			width: 90vw;
 			height: 100vh;
+		}
+
+		.verifyBox {
+			color: #000;
+			position: absolute;
+			z-index: 999999999999999999;
+			left: 85px;
+			top: 20px;
+			display: flex;
+			align-items: center;
+
+			.verifyContent {
+				padding: 16px;
+				background-color: #FFF;
+				margin-left: -5px;
+
+				.title {
+					margin-bottom: 16px;
+				}
+
+			}
 		}
 
 		.topInfo {
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
-			width: 100vw;
+			width: 90vw;
 			box-sizing: border-box;
 			padding: 32px 16px;
 			font-size: 15px;
@@ -1221,25 +1246,7 @@
 				gap: 20px;
 			}
 
-			.verifyBox {
-				color: #000;
-				position: absolute;
-				left: 56px;
-				top: -50%;
-				display: flex;
-				align-items: center;
 
-				.verifyContent {
-					padding: 16px;
-					background-color: #FFF;
-					margin-left: -5px;
-
-					.title {
-						margin-bottom: 16px;
-					}
-
-				}
-			}
 		}
 
 
@@ -1247,7 +1254,7 @@
 		.centerInfo {
 			display: flex;
 			justify-content: space-between;
-			width: 100%;
+			width: 90%;
 			box-sizing: border-box;
 			padding: 16px;
 			font-size: 13px;
@@ -1332,12 +1339,6 @@
 		}
 	}
 
-
-	.back {
-		width: 30px;
-		height: 30px;
-	}
-
 	.operateBox {
 		position: fixed;
 		bottom: 0;
@@ -1380,7 +1381,6 @@
 			width: 150px;
 			height: 150px;
 			border-radius: 50%;
-			background: url('../../assets/images/remote-sensing.png') no-repeat;
 			background-size: 100% 100%;
 
 			/* 防止子元素溢出 */
@@ -1389,7 +1389,6 @@
 				width: 50px;
 				height: 50px;
 				border-radius: 50%;
-				background: url('../../assets/images/remote-sensing.png') no-repeat;
 				background-size: 100% 100%;
 				/* 防止选中文字 */
 				touch-action: none;

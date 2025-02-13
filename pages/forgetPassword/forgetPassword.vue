@@ -35,7 +35,9 @@
 				</view>
 			</view>
 		</view>
-		<view class="forgetPassword"></view>
+		<view class="forgetPassword" @click="toLogin">
+			去登陆
+		</view>
 		<u-button type="primary" shape="circle" text="确认重置" class="btn" style="color: #30313D;"
 			color="linear-gradient(to bottom, rgb(255,241,204), rgb(255, 227, 157))" @click="register"></u-button>
 	</view>

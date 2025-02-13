@@ -1,13 +1,15 @@
 <template>
 	<view class="drive">
 		<DualChannel :carInfo="carInfo" :macAddress="macAddress" :carId="carId" v-if="showDualChannel" />
-		<FourChannel :carInfo="carInfo" :macAddress="macAddress" :carId="carId" @back="back" v-if="showFourChannel" />
+		<MultiChannel :carInfo="carInfo" :macAddress="macAddress" :carId="carId" @back="back" v-if="showFourChannel" />
+		<!-- <FourChannel :carInfo="carInfo" :macAddress="macAddress" :carId="carId" @back="back" v-if="showFourChannel" /> -->
 	</view>
 </template>
 
 <script>
 	import DualChannel from '@/components/common/DualChannel.vue'
 	import FourChannel from '@/components/common/FourChannel.vue'
+	import MultiChannel from '@/components/common/MultiChannel.nvue'
 	import request from '@/utils/request';
 	export default {
 		data() {
@@ -21,7 +23,8 @@
 		},
 		components: {
 			DualChannel,
-			FourChannel
+			FourChannel,
+			MultiChannel
 		},
 		onShow() {
 			// 设置横屏
