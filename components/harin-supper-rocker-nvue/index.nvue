@@ -1,0 +1,227 @@
+<template>
+	<view class="movable">
+		<view class="movableArea"
+			:style="{ '--outerW': outerW + 'px' , width:  outerW + 'px' , height:  outerW + 'px' ,borderRadius:  outerW + 'px'}">
+		</view>
+		<view class="movableView" @touchstart.prevent="onTouchstart($event)" @touchmove.prevent="onTouchmove($event)"
+			@touchend="onTouchend" @touchcancel="onTouchend" :style="{ 
+				'left': left + 'px', 
+				'top': top + 'px', 
+				'width': innerW + 'px', 
+				'height': innerW + 'px', 
+				'border-radius': innerW + 'px'
+				 }">
+		</view>
+	</view>
+</template>
+
+<script>
+	export default {
+		props: {
+			innerRadius: {
+				type: Number,
+				default: 115
+			},
+			outerRadius: {
+				type: Number,
+				default: 230
+			},
+			id: {
+				type: String,
+				default: 'motor'
+			}
+		},
+		data() {
+			return {
+				innerW: 0, // 内圈半径
+				outerW: 0, // 外圈半径
+				margin: 0, // 内圈移动到外圈中心点
+				left: 0,
+				top: 0,
+				startx: 0, // 按下时的位置
+				starty: 0, // 按下时的位置
+				compareWidth: 0, // 移动的半径边距
+				touchNum: 0, // 点击次数
+				moveTimer: null,
+				clickTimer: null,
+			}
+		},
+		mounted() {
+			this.innerW = this.innerRadius
+			this.outerW = this.outerRadius
+			// 内圈初始化移动到外圈中心点
+			this.margin = this.outerW / 2 - this.innerW / 2
+			// 内圈移动到外圈边距触发事件的边界
+			this.compareWidth = this.outerW / 2 - this.innerW / 2 + 10
+			this.left = this.margin;
+			this.top = this.margin;
+		},
+		methods: {
+			changeRadius(i, o) {
+				this.innerW = i
+				this.outerW = o
+			},
+			onTouchstart(e) {
+				console.log('e', e);
+				let temp_x = e.touches[0].clientX;
+				let temp_y = e.touches[0].clientY;
+
+				// #ifdef APP
+				temp_x = e.touches[0].screenX;
+				temp_y = e.touches[0].screenY;
+				// #endif
+
+
+				this.startx = temp_x;
+				this.starty = temp_y;
+
+				this.touchNum++
+				this.clickTimer = setTimeout(() => {
+					clearTimeout(this.clickTimer)
+					this.clickTimer = null
+					if (this.touchNum == 1) {
+						console.log('单击')
+					}
+					if (this.touchNum >= 2) {
+						console.log('双击')
+					}
+					this.touchNum = 0
+				}, 250)
+			},
+			onTouchend() {
+				// console.log('松开')
+				this.x = 0
+				this.y = 0
+				this.left = this.margin
+				this.top = this.margin
+				clearTimeout(this.moveTimer)
+				this.moveTimer = null
+				this.$emit('stopMoveRocker',this.id);
+			},
+			onTouchmove(e) {
+				if (this.moveTimer) return
+
+				let temp_x = e.touches[0].clientX;
+				let temp_y = e.touches[0].clientY;
+
+				// #ifdef APP
+				temp_x = e.touches[0].screenX;
+				temp_y = e.touches[0].screenY;
+				// #endif
+
+				let templeft = (temp_x - this.startx) * 1;
+				let temptop = (temp_y - this.starty) * 1;
+
+
+				let powV = Math.sqrt(Math.pow(templeft, 2) + Math.pow(temptop, 2))
+
+				let angle = Math.atan(Math.abs(templeft) / Math.abs(temptop));
+				let rad = (180 * angle) / Math.PI;
+				let cx = 0;
+				let cy = 0;
+				let r = this.compareWidth;
+
+				let speedSymbol = 1;
+				let omegaSymbol = 1;
+				//第一象限(右上)
+				if (this.startx < temp_x && this.starty > temp_y) {
+					cx = Math.cos(angle) * -r;
+					cy = Math.sin(angle) * r;
+					omegaSymbol = -1;
+				}
+				//第三象限(左下)
+				if (this.startx > temp_x && this.starty < temp_y) {
+					cx = Math.cos(angle) * r;
+					cy = Math.sin(angle) * -r;
+					speedSymbol = -1;
+				}
+				//第四象限(右下)
+				if (this.startx < temp_x && this.starty < temp_y) {
+					cx = Math.cos(angle) * r;
+					cy = Math.sin(angle) * r;
+					omegaSymbol = -1;
+					speedSymbol = -1;
+				}
+				//第二象限(左上)
+				if (this.startx >= temp_x && this.starty >= temp_y) {
+					cx = Math.cos(angle) * -r;
+					cy = Math.sin(angle) * -r;
+				}
+				if (powV >= this.compareWidth) {
+					templeft = r / powV * templeft;
+					temptop = r / powV * temptop;
+				}
+
+				const omega = omegaSymbol * rad;
+				const speed = speedSymbol * Math.sqrt(templeft * templeft + temptop * temptop);
+				// console.log('角速度', omegaSymbol * rad);
+				// console.log('线速度', speedSymbol * Math.sqrt(templeft * templeft + temptop * temptop));
+
+				this.left = templeft + this.margin
+				this.top = temptop + this.margin
+				this.$emit('moveRocker', this.left, this.top,this.id)
+				// console.log(this.left, this.top)
+
+				// 节流
+				this.moveTimer = setTimeout(() => {
+					clearTimeout(this.moveTimer)
+					this.moveTimer = null
+				}, 50)
+			}
+		}
+	}
+</script>
+
+<style>
+	.movable {
+		position: relative;
+		width: var(--outerW);
+		height: var(--outerW);
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.movableArea {
+		position: relative;
+		top: -1px;
+		left: -1px;
+		z-index: 100;
+		padding: 20px;
+		width: var(--outerW);
+		height: var(--outerW);
+		border-radius: var(--outerW);
+		background-color: rgba(153, 153, 153, 0.2);
+		overflow: hidden;
+		/* border: 2px solid #cccccc; */
+		box-sizing: border-box;
+		filter: blur(3px);
+	}
+
+	.movableArea::after {
+		content: '';
+		position: absolute;
+		top: -1px;
+		left: -1px;
+		z-index: 100;
+		width: var(--outerW);
+		height: var(--outerW);
+		border-radius: var(--outerW);
+		background-color: rgba(153, 153, 153, 0.2);
+		overflow: hidden;
+		/* border: 2px solid #cccccc; */
+		box-sizing: border-box;
+		filter: blur(3px);
+	}
+
+	.movableView {
+		position: absolute;
+		z-index: 101;
+		top: 0;
+		left: 0;
+		background-color: #999999;
+		border: 1px solid #cccccc;
+		/* box-shadow: 0 0 10px 10px #666666; */
+		filter: blur(1px);
+	}
+</style>

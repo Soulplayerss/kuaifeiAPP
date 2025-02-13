@@ -26,7 +26,7 @@
 							</view>
 							<view class="btns">
 								<view class="btn"
-									@click="navigateTo(`/pages/drive/drive?macAddress=${item.macAddress}&carId=${item.carId}`)">
+									@click="navigateTo(`/pages/testDevice/testDevice?macAddress=${item.macAddress}&carId=${item.carId}`)">
 									<span>驾驶</span>
 								</view>
 								<view class="btn" v-show="item.carStatus != 0"

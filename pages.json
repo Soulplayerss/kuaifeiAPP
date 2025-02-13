@@ -4,16 +4,16 @@
 	},
 	"pages": [
 		{
-			"path": "pages/login/login",
-			"style": {
-				"navigationStyle": "custom"
-			}
-		},
-		{
 			"path": "pages/car/car",
 			"style": {
 				"navigationStyle": "custom",
 				"keepAlive": true
+			}
+		},
+		{
+			"path": "pages/login/login",
+			"style": {
+				"navigationStyle": "custom"
 			}
 		},
 		{
@@ -166,6 +166,13 @@
 		},
 		{
 			"path" : "pages/photoAlbum/photoAlbum",
+			"style" : 
+			{
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/testDevice/testDevice",
 			"style" : 
 			{
 				"navigationStyle": "custom"

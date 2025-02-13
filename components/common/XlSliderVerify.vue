@@ -1,10 +1,10 @@
 <template>
-	<cover-view class="verify" style="overflow: hidden;">
-		<cover-view class="content" :style="{ left: left + 'px' }">
-			<cover-view class="round" @touchstart="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd">
-			</cover-view>
-		</cover-view>
-	</cover-view>
+	<view class="verify" style="overflow: hidden;">
+		<view class="content" :style="{ left: left + 'px' }">
+			<view class="round" @touchstart.prevent="onTouchStart($event)" @touchmove.prevent="onTouchMove($event)" @touchend="onTouchEnd">
+			</view>
+		</view>
+	</view>
 </template>
 
 <script>
@@ -13,6 +13,7 @@
 
 		},
 		data() {
+			
 			return {
 				left: -160,
 				startX: 0,
@@ -27,6 +28,7 @@
 		methods: {
 			// 触摸开始时，记录起始位置
 			onTouchStart(event) {
+				console.log('开始触摸')
 				if (!this.isSend) {
 					this.isDragging = true;
 				}
@@ -34,8 +36,10 @@
 			},
 			// 触摸移动时，更新元素的位置
 			onTouchMove(event) {
+				console.log( event.touches[0].clientX)
 				if (this.isDragging) {
 					const newX = event.touches[0].clientX - this.startX
+					console.log('开始移动：',newX)
 					if (newX >= 0) {
 						if (!this.isSend) {
 							this.$emit("success")
@@ -70,17 +74,18 @@
 		border-radius: 20px;
 		background-color: #b9ffff;
 		position: relative;
+		overflow: hidden;
 
 		.content {
-			width: 100%;
-			height: 100%;
+			width: 200px;
+			height: 40px;
 			position: absolute;
 			background-color: #37eb00;
 			border-radius: 20px;
-			display: flex;
-			justify-content: end;
 
 			.round {
+				position: absolute;
+				right: 0;
 				width: 40px;
 				height: 40px;
 				border-radius: 20px;

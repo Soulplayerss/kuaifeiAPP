@@ -61,6 +61,9 @@
 		components: {
 			Protocol
 		},
+		mounted() {
+			plus.screen.lockOrientation('portrait-primary')
+		},
 		methods: {
 			...mapActions(['fetchEmun']),
 			login() {
@@ -158,6 +161,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
+		overflow-y: auto;
 
 		.logo {
 			width: 105px;
