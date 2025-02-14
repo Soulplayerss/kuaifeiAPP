@@ -1,7 +1,7 @@
 <template>
 	<view class="testDevice"
-		:style="{ width:  viewportWidth ? viewportWidth + 'px' : '100%' , height:  viewportHeight ? viewportHeight + 'px' : '100%', fontSize: 15 + 'px'}">
-		<!-- <web-view src=" /static/webRTC/onminirtc.html" style="width: 100%;height: 100%"></web-view> -->
+		:style="{ width:  viewportWidth ? viewportWidth + 'px' : '100%' , height:  viewportHeight ? viewportHeight + 'px' : '100%', fontSize: 15 + 'px', color: '#FFF'}">
+		<web-view src="/static/webRTC/onminirtc.html" :style="{ width:  viewportWidth ? viewportWidth + 'px' : '100%' , height:  viewportHeight ? viewportHeight + 'px' : '100%'}"></web-view>
 		<view class="body"
 			:style="{ width:  viewportWidth ? viewportWidth * 0.9 + 'px' : '90%' , height:  viewportHeight ? viewportHeight + 'px' : '100%'}">
 			<cover-view class="verifyBox" v-if="showVerify">
