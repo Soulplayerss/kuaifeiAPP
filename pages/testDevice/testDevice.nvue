@@ -1,16 +1,18 @@
 <template>
 	<view class="testDevice"
 		:style="{ width:  viewportWidth ? viewportWidth + 'px' : '100%' , height:  viewportHeight ? viewportHeight + 'px' : '100%', fontSize: 15 + 'px', color: '#FFF'}">
-		<web-view src="/static/webRTC/onminirtc.html" :style="{ width:  viewportWidth ? viewportWidth + 'px' : '100%' , height:  viewportHeight ? viewportHeight + 'px' : '100%'}"></web-view>
+		<web-view :src="webViewSrc" ref="webView"
+			:style="{ width:  viewportWidth ? viewportWidth + 'px' : '100%' , height:  viewportHeight ? viewportHeight + 'px' : '100%'}"
+			@message="onMessageReceived"></web-view>
 		<view class="body"
 			:style="{ width:  viewportWidth ? viewportWidth * 0.9 + 'px' : '90%' , height:  viewportHeight ? viewportHeight + 'px' : '100%'}">
-			<cover-view class="verifyBox" v-if="showVerify">
+			<view class="verifyBox" v-if="showVerify">
 				<u-icon name="play-left-fill" :size="20" color="#FFF"></u-icon>
-				<cover-view class="verifyContent">
-					<cover-view class="flex justify-between title">
+				<view class="verifyContent">
+					<view class="flex justify-between title">
 						释放降落伞
 						<u-icon name="close" :size="20" @click="showVerify = false"></u-icon>
-					</cover-view>
+					</view>
 					<view class="verify" style="overflow: hidden;">
 						<view class="content" :style="{ left: left + 'px' }">
 							<view class="round" @touchstart.prevent="onTouchStart($event)"
@@ -18,8 +20,8 @@
 							</view>
 						</view>
 					</view>
-				</cover-view>
-			</cover-view>
+				</view>
+			</view>
 			<view class="topInfo" :style="{ width:  viewportWidth ? viewportWidth * 0.9 + 'px' : '100%'}">
 				<view class="parachute"
 					style="background-color: #FFF;padding: 6px;position: relative;margin-left: 16px;"
@@ -27,18 +29,21 @@
 					<image src="@/static/parachute.png" mode="" style="width: 32px;height: 32px;"></image>
 
 				</view>
-
 				<view class="_item" style="color: #FFF;">
-					<view>电池电压：{{socket503Data.voltage_battery}} V</view>
-					<view>电池电流：{{socket503Data.current_battery}} A</view>
-					<view>电池电量：{{socket503Data.battery_remaining}}</view>
-					<view>信号强度：{{socket501Data.myCsq}}</view>
+					<view>电压：{{socket503Data.voltage_battery}} V</view>
+					<view>电流：{{socket503Data.current_battery}} A</view>
+					<view>电量：{{socket503Data.battery_remaining}}</view>
+					<view>信号：{{socket501Data.myCsq}}</view>
+					<image src="@/static/over.png" mode="" style="width: 30px;height: 30px;" @click="back">
+					</image>
+					<image src="@/static/list.png" mode="" style="width: 30px;height: 30px;" @click="show = true">
+					</image>
 				</view>
 
-				<image src="@/static/over.png" mode="" style="width: 30px;height: 30px;" @click="back">
-				</image>
 			</view>
-			<view class="rockerBtns" :style="{ width:  viewportWidth ? viewportWidth * 0.9 + 'px' : '100%'}">
+
+			<view class="rockerBtns" :style="{ width:  viewportWidth ? viewportWidth * 0.9 + 'px' : '100%'}"
+				v-if="isSocket">
 				<rocker ref="rockerRef" style="position: relative;" :innerRadius='innerRadius'
 					:outerRadius="outerRadius" id="motor" @moveRocker="moveRocker" @stopMoveRocker="stopMoveRocker">
 				</rocker>
@@ -47,7 +52,7 @@
 						<image src="@/static/up.png" mode="" @click="sendFiveMessage(5, 'up')"
 							style="width: 36px;height: 36px;"></image>
 					</view>
-					<view class="actionButton" :class="[fiveActive == 'center' ? 'activeFiveButton' : '']">
+					<view class="actionButton borderBox" :class="[fiveActive == 'center' ? 'activeFiveButton' : '']">
 						<image src="@/static/center.png" mode="" @click="sendFiveMessage(0, 'center')"
 							style="width: 36px;height: 36px;"></image>
 					</view>
@@ -61,7 +66,7 @@
 						<image src="@/static/up.png" mode="" @click="sendSixMessage(5, 'up')"
 							style="width: 36px;height: 36px;"></image>
 					</view>
-					<view class="actionButton" :class="[sixActive == 'center' ? 'activeFiveButton' : '']">
+					<view class="actionButton borderBox" :class="[sixActive == 'center' ? 'activeFiveButton' : '']">
 						<image src="@/static/center.png" mode="" @click="sendSixMessage(0, 'center')"
 							style="width: 36px;height: 36px;"></image>
 					</view>
@@ -75,6 +80,45 @@
 				</rocker>
 			</view>
 		</view>
+
+		<u-popup :show="show" mode="top" @close="close" @open="open">
+			<view class="centerInfo">
+				<view class="_item">
+					<view>纬度：{{socket502Data.lat}}</view>
+					<view>经度：{{socket502Data.lon}}</view>
+					<view>绝对高度：{{socket502Data.alt}}</view>
+					<view>相对高度：{{socket502Data.relative_alt}}</view>
+					<view>X速度：{{socket502Data.vx}}</view>
+					<view>Y速度：{{socket502Data.vy}}</view>
+					<view>Z速度：{{socket502Data.vz}}</view>
+					<view>航向角：{{socket502Data.hdg}}</view>
+					<view>滚转角：{{socket504Data.roll}} rad</view>
+					<view>俯仰角：{{socket504Data.pitch}} rad</view>
+					<view>偏航角：{{socket504Data.yaw}} rad</view>
+					<view>滚转角速度：{{socket504Data.rollspeed}} rad/s</view>
+					<view>俯仰角速度：{{socket504Data.pitchspeed}} rad/s</view>
+					<view>偏航角速度：{{socket504Data.yawspeed}} rad/s</view>
+				</view>
+				<view class="_item">
+					<view>电机0转速：{{socket507Data.RPM0}}</view>
+					<view>电机1转速：{{socket507Data.RPM1}}</view>
+					<view>电机2转速：{{socket507Data.RPM2}}</view>
+					<view>电机3转速：{{socket507Data.RPM3}}</view>
+				</view>
+				<view class="_item">
+					<view>电机0电压：{{socket507Data.V0}}</view>
+					<view>电机1电压：{{socket507Data.V1}}</view>
+					<view>电机2电压：{{socket507Data.V2}}</view>
+					<view>电机3电压：{{socket507Data.V3}}</view>
+				</view>
+				<view class="_item">
+					<view>电机0电流：{{socket507Data.I0}}</view>
+					<view>电机1电流：{{socket507Data.I1}}</view>
+					<view>电机2电流：{{socket507Data.I2}}</view>
+					<view>电机3电流：{{socket507Data.I3}}</view>
+				</view>
+			</view>
+		</u-popup>
 	</view>
 </template>
 
@@ -92,6 +136,8 @@
 		},
 		data() {
 			return {
+				webViewSrc: '',
+				show: false,
 				innerRadius: 50,
 				outerRadius: 150,
 				rockerRef: null,
@@ -127,6 +173,7 @@
 				socket502Data: {},
 				socket503Data: {},
 				socket504Data: {},
+				socket507Data: {},
 				logList: [],
 				sliderLeftList: [{
 					x: 0,
@@ -187,8 +234,16 @@
 		mounted() {
 			this.isBack = false
 			this.getCarInfo()
+			this.getCarCameraInfo()
 		},
 		methods: {
+			open() {
+				// console.log('open');
+			},
+			close() {
+				this.show = false
+				// console.log('close');
+			},
 			back() {
 				this.$emit('back')
 				this.clearHeartbeat(); // 清理心跳和重连
@@ -200,6 +255,23 @@
 				uni.navigateTo({
 					url: '/pages/car/car'
 				});
+			},
+			onMessageReceived(event) {
+				console.log('收到HTML消息:', event);
+			},
+			async getCarCameraInfo() {
+				try {
+					const response = await request(`/app/camera/getInfoByCarId/${this.carId}`, 'GET')
+					if (response.code == 200) {
+						this.webViewSrc =
+							`/static/webRTC/onminirtc.html?devId=${response.data.devId}&series=${response.data.series}&authId=${response.data.authId}&authCode=${response.data.authCode}`
+					}
+				} catch (error) {
+					uni.showToast({
+						title: '加载失败',
+						icon: 'none',
+					});
+				}
 			},
 			async getCarInfo() {
 				try {
@@ -900,8 +972,8 @@
 				this.socket.onOpen(() => {
 					console.log('WebSocket已打开');
 					this.isSocket = true
-					// this.sendFiveMessage(0, 'center')
-					// this.sendSixMessage(0, 'center')
+					this.sendFiveMessage(0, 'center')
+					this.sendSixMessage(0, 'center')
 					// this.startHeartbeat(); // 开始心跳机制
 				});
 
@@ -922,6 +994,8 @@
 							this.socket503Data = data.data
 						} else if (data.data && data.data.bizCode == 504) {
 							this.socket504Data = data.data
+						} else if (data.data && data.data.bizCode == 507) {
+							this.socket507Data = data.data
 						}
 					}
 				});
@@ -1078,7 +1152,8 @@
 	.rockerBtns {
 		position: absolute;
 		bottom: 0;
-		padding: 24px 0 24px 24px;
+		padding: 24px 0 24px 50px;
+		box-sizing: border-box;
 		display: flex;
 		flex-direction: row;
 		justify-content: space-between;
@@ -1088,7 +1163,6 @@
 			height: auto;
 			display: flex;
 			flex-direction: column;
-			gap: 1px;
 			background-color: #000;
 			border-radius: 6px;
 			overflow: hidden;
@@ -1096,11 +1170,14 @@
 			.actionButton {
 				flex: 1;
 				width: 60px;
-				margin-top: 1px;
 				background-color: #FFF;
 				display: flex;
 				justify-content: center;
 				align-items: center;
+			}
+
+			.borderBox {
+				margin: 1px 0;
 			}
 
 			.activeFiveButton,
@@ -1160,8 +1237,6 @@
 	}
 
 	.topInfo {
-		position: absolute;
-		z-index: 9;
 		display: flex;
 		flex-direction: row;
 		justify-content: space-between;
@@ -1169,15 +1244,30 @@
 		width: 100%;
 		box-sizing: border-box;
 		padding: 32px 16px;
-		font-size: 15px;
 		color: #FFF;
 
 		._item {
+			gap: 20px;
 			flex: 1;
+			font-size: 15px !important;
 			display: flex;
 			flex-direction: row;
-			justify-content: center;
-			gap: 20px;
+			justify-content: flex-end;
+			align-items: center;
+		}
+	}
+
+	.centerInfo {
+		padding: 24px;
+		font-size: 13px;
+		color: #000;
+
+		._item {
+			display: flex;
+			flex-direction: row;
+			align-items: start;
+			flex-wrap: wrap;
+			gap: 8px;
 		}
 	}
 </style>

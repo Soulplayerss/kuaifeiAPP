@@ -21979,7 +21979,7 @@ var render = function () {
                                         { attrs: { _i: "12-" + $30 } },
                                         [
                                           _vm._v(
-                                            "车辆编号：" +
+                                            "车辆名称：" +
                                               _vm._$g("12-" + $30, "t0-0")
                                           ),
                                         ]
@@ -21988,23 +21988,13 @@ var render = function () {
                                         "uni-view",
                                         { attrs: { _i: "13-" + $30 } },
                                         [
-                                          _vm._v(
-                                            "车辆名称：" +
-                                              _vm._$g("13-" + $30, "t0-0")
-                                          ),
-                                        ]
-                                      ),
-                                      _c(
-                                        "uni-view",
-                                        { attrs: { _i: "14-" + $30 } },
-                                        [
                                           _c(
                                             "span",
-                                            { attrs: { _i: "15-" + $30 } },
+                                            { attrs: { _i: "14-" + $30 } },
                                             [
                                               _vm._v(
                                                 "开始时间：" +
-                                                  _vm._$g("15-" + $30, "t0-0")
+                                                  _vm._$g("14-" + $30, "t0-0")
                                               ),
                                             ]
                                           ),
@@ -22013,15 +22003,15 @@ var render = function () {
                                       ),
                                       _c(
                                         "uni-view",
-                                        { attrs: { _i: "16-" + $30 } },
+                                        { attrs: { _i: "15-" + $30 } },
                                         [
                                           _c(
                                             "span",
-                                            { attrs: { _i: "17-" + $30 } },
+                                            { attrs: { _i: "16-" + $30 } },
                                             [
                                               _vm._v(
                                                 "结束时间：" +
-                                                  _vm._$g("17-" + $30, "t0-0")
+                                                  _vm._$g("16-" + $30, "t0-0")
                                               ),
                                             ]
                                           ),
@@ -22036,12 +22026,12 @@ var render = function () {
                               )
                             }
                           ),
-                          _vm._$g(18, "i")
+                          _vm._$g(17, "i")
                             ? _c(
                                 "uni-view",
                                 {
-                                  staticClass: _vm._$g(18, "sc"),
-                                  attrs: { _i: 18 },
+                                  staticClass: _vm._$g(17, "sc"),
+                                  attrs: { _i: 17 },
                                 },
                                 [_vm._v("正在加载...")]
                               )
@@ -22051,11 +22041,11 @@ var render = function () {
                               {
                                 name: "show",
                                 rawName: "v-show",
-                                value: _vm._$g(19, "v-show"),
-                                expression: "_$g(19,'v-show')",
+                                value: _vm._$g(18, "v-show"),
+                                expression: "_$g(18,'v-show')",
                               },
                             ],
-                            attrs: { _i: 19 },
+                            attrs: { _i: 18 },
                           }),
                         ],
                         2
@@ -22066,11 +22056,11 @@ var render = function () {
                       {
                         name: "show",
                         rawName: "v-show",
-                        value: _vm._$g(20, "v-show"),
-                        expression: "_$g(20,'v-show')",
+                        value: _vm._$g(19, "v-show"),
+                        expression: "_$g(19,'v-show')",
                       },
                     ],
-                    attrs: { _i: 20 },
+                    attrs: { _i: 19 },
                   }),
                 ],
                 1

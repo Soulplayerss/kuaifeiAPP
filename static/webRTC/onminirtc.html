@@ -29,7 +29,7 @@
 			#theirs {
 				width: 100%;
 				height: 100%;
-				object-fit:fill;
+				object-fit: fill;
 			}
 
 			#theirsVideo {
@@ -273,8 +273,8 @@
 					<i id="audio_loudspeaker" class="fa fa-volume-up i_gray ipadd" onclick="clonsStartAudio()"
 						style="display: none;"></i>
 					<i id="audio_microphone" onclick="OnStartAudio(1)" class="fa fa-microphone i_gray ipadd"></i>
-					<i id="video_max" onclick="OnChangeVideoQ()" class="fa i_gray fa-star"></i>
-					<!-- <img src="./photograph.png" onclick="openphoto()" style="width: 32px;height: 32px;" alt="" /> -->
+					<!-- <i id="video_max" onclick="OnChangeVideoQ()" class="fa i_gray fa-star"></i> -->
+					<img src="./photograph.png" onclick="openphoto()" style="width: 32px;height: 32px;" alt="" />
 				</div>
 				<div id="LossRate" style="color: #FFF;">
 					丢包率:00%
@@ -287,10 +287,17 @@
 		<script src="layui/layui.js" charset="utf-8"></script>
 		<script src="wxRtcSdk.js" charset="utf-8"></script>
 		<script>
-			var G_DevId = "ch2000037100"
-			var G_AuthId = 523;
-			var G_AuthCode = "abad26b05a058115d9645afa6a760b26";
-			var G_Series = "icm0f1000a02a07";
+			var G_DevId = ""
+			var G_Series = "";
+			// var G_DevId = "ch2000037100"
+			// var G_Series = "icm0f1000a02a07";
+			var G_AuthId = 0;
+			var G_AuthCode = "";
+			const params = new URLSearchParams(window.location.search);
+			G_DevId = params.get('devId')
+			G_Series = params.get('series')
+			G_AuthId = params.get('authId')
+			G_AuthCode = params.get('authCode')
 			var GMsgWait = 0;
 			var G_VideoQ = "1";
 			var RtcVideoInfo = null;
@@ -386,7 +393,7 @@
 				nTimer = setInterval("GetRtcGetStats()", 1000);
 				$('.VideoContainer').css('display', 'block')
 			}
-			
+
 			//开始音频
 			function OnStartAudio(audiotype) {
 				navigator.mediaDevices.getUserMedia({
@@ -442,7 +449,7 @@
 				nStartAudio = 0
 				CloseRtcDialogue(G_AuthId, G_AuthCode, G_DevId)
 			}
-			
+
 			//关闭设备播放语音
 			function CloseRtcDialogue(strauthId, strauthCode, strdevId) {
 				var jsondata = {
@@ -462,7 +469,7 @@
 					dataType: "json",
 					success: function(data) {
 						console.log(data);
-						if(data.code == 200){
+						if (data.code == 200) {
 							GMsgWait = layui.layer.msg('已关闭音频', {
 								time: 0,
 								icon: 16,
@@ -497,6 +504,14 @@
 					// 创建一个指向该Blob对象的URL
 					const url = URL.createObjectURL(blob);
 					console.log(url)
+
+					function sendMessageToUniapp() {
+						if (window.parent) {
+							window.parent.postMessage({
+								file: blob,
+							});
+						}
+					}
 					// 将URL设置为img元素的src属性
 					// const imgElement = document.getElementById('img_src');
 					// imgElement.src = url;
@@ -504,7 +519,7 @@
 					// imgElement.onload = function() {
 					// 	URL.revokeObjectURL(this.src);
 					// };
-					downloadImage(url)
+					// downloadImage(url)
 				} catch (error) {
 					console.error('There was a problem fetching the image:', error);
 					// 可以在这里显示一个错误消息给用户
@@ -658,6 +673,7 @@
 						var data = layui.form.val('forVideoQ');
 						//layer.close(index); //如果设定了yes回调，需进行手工关闭
 						if (G_VideoQ != data.Video_QQ) {
+							console.log(data.Video_QQ)
 							SetVideoQuali(
 								parseInt(data.Video_QQ),
 								G_DevId, G_AuthId, G_AuthCode

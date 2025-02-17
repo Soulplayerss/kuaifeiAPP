@@ -52,29 +52,30 @@
 				</cover-view>
 			</cover-view>
 			<!-- <cover-view class="slider" v-show="carInfo.appCarChannelList && carInfo.appCarChannelList.length> 0">
-			<cover-view class="sliderItem" v-for="(item,index) in carInfo.appCarChannelList" :key="item.channelNum"
-				v-show="index <= 5">
-				<span>{{item.channelName}}</span>
-				<span style="display: inline-block;width: 35px;">{{item.minValue}}</span>
-				<cover-view class="sliderBox" v-if="sliderLeftList.length >=  carInfo.appCarChannelList.length">
-					<cover-view class="leftBox" :style="{ left: sliderLeftList[index].x + 'px'}"
-						@touchstart="onSliderLeftTouchStart(index,$event)"
-						@touchmove="onSliderLeftTouchMove(index,$event)" @touchend="onSliderLeftTouchEnd(index,$event)">
+				<cover-view class="sliderItem" v-for="(item,index) in carInfo.appCarChannelList" :key="item.channelNum"
+					v-show="index <= 5">
+					<span>{{item.channelName}}</span>
+					<span style="display: inline-block;width: 35px;">{{item.minValue}}</span>
+					<cover-view class="sliderBox" v-if="sliderLeftList.length >=  carInfo.appCarChannelList.length">
+						<cover-view class="leftBox" :style="{ left: sliderLeftList[index].x + 'px'}"
+							@touchstart="onSliderLeftTouchStart(index,$event)"
+							@touchmove="onSliderLeftTouchMove(index,$event)"
+							@touchend="onSliderLeftTouchEnd(index,$event)">
+						</cover-view>
+						<cover-view class="box1"></cover-view>
+						<cover-view class="rightBox" :style="{ left: sliderRightList[index].x + 'px'}"
+							@touchstart="onSliderRightTouchStart(index,$event)"
+							@touchmove="onSliderRightTouchMove(index,$event)"
+							@touchend="onSliderRightTouchEnd(index,$event)">
+						</cover-view>
+						<cover-view class="box2" :id="`slider${index + 1}`"
+							:style="{left:sliderLeftList[index].box2Left + 'px', width:sliderLeftList[index].box2Width + 'px'}">
+							<cover-view class="dire"></cover-view>
+						</cover-view>
 					</cover-view>
-					<cover-view class="box1"></cover-view>
-					<cover-view class="rightBox" :style="{ left: sliderRightList[index].x + 'px'}"
-						@touchstart="onSliderRightTouchStart(index,$event)"
-						@touchmove="onSliderRightTouchMove(index,$event)"
-						@touchend="onSliderRightTouchEnd(index,$event)">
-					</cover-view>
-					<cover-view class="box2" :id="`slider${index + 1}`"
-						:style="{left:sliderLeftList[index].box2Left + 'px', width:sliderLeftList[index].box2Width + 'px'}">
-						<cover-view class="dire"></cover-view>
-					</cover-view>
+					<span style="display: inline-block;width: 35px;">{{item.maxValue}}</span>
 				</cover-view>
-				<span style="display: inline-block;width: 35px;">{{item.maxValue}}</span>
-			</cover-view>
-		</cover-view> -->
+			</cover-view> -->
 
 			<cover-view class="operateBox">
 				<cover-view class="parent">

@@ -273,7 +273,7 @@
 					<i id="audio_loudspeaker" class="fa fa-volume-up i_gray ipadd" onclick="clonsStartAudio()"
 						style="display: none;"></i>
 					<i id="audio_microphone" onclick="OnStartAudio(1)" class="fa fa-microphone i_gray ipadd"></i>
-					<i id="video_max" onclick="OnChangeVideoQ()" class="fa i_gray fa-star"></i>
+					<!-- <i id="video_max" onclick="OnChangeVideoQ()" class="fa i_gray fa-star"></i> -->
 					<!-- <img src="./photograph.png" onclick="openphoto()" style="width: 32px;height: 32px;" alt="" /> -->
 				</div>
 				<div id="LossRate" style="color: #FFF;">
@@ -658,6 +658,7 @@
 						var data = layui.form.val('forVideoQ');
 						//layer.close(index); //如果设定了yes回调，需进行手工关闭
 						if (G_VideoQ != data.Video_QQ) {
+							console.log(data.Video_QQ)
 							SetVideoQuali(
 								parseInt(data.Video_QQ),
 								G_DevId, G_AuthId, G_AuthCode

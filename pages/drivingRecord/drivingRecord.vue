@@ -17,11 +17,11 @@
 							</view>
 							<view class="rightInfo">
 								<view>
-									记录编号：{{item.codeOrder}}
+									记录编号：{{item.driveNo}}
 								</view>
-								<view>
-									车辆编号：{{item.codeCar}}
-								</view>
+								<!-- <view>
+									车辆编号：{{item.driveNo}}
+								</view> -->
 								<view>
 									车辆名称：{{item.carName}}
 								</view>
