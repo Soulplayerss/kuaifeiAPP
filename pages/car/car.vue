@@ -48,7 +48,7 @@
 								mode=""></image>
 							<image src="../../assets/images/signal3.png" v-show="item.myCsq > 16 && item.myCsq <= 24 "
 								mode=""></image>
-							<image src="../../assets/images/signal4.png" v-show="item.myCsq > 24 && item.myCsq <=32 "
+							<image src="../../assets/images/signal4.png" v-show="item.myCsq > 24"
 								mode=""></image>
 							<span>状态：<span :style="{color: item.carStatus == 0 ? '#dd0000' : '#00d400'}">
 									{{item.carStatus == 0 ? '离线' : item.carStatus == 1 ? '在线': item.carStatus == 2 ? '开放驾驶': '驾驶中'}}</span></span>

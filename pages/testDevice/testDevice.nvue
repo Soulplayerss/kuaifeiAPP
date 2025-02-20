@@ -21,22 +21,74 @@
 					</view>
 				</view>
 			</view>
+			<view class="sixPosition" v-if="showSix">
+				<view class="valueBox" :style="sixPositionStyle">
+					<view class="_box" @touchstart.prevent="onSixTouchStart($event)"
+						@touchmove.prevent="onSixTouchMove($event)" @touchend="onSixTouchEnd"></view>
+				</view>
+			</view>
 			<view class="topInfo" :style="{ width:  viewportWidth ? viewportWidth * 0.9 + 'px' : '100%'}">
-				<view class="parachute"
-					style="background-color: #FFF;padding: 6px;position: relative;margin-left: 16px;"
-					@click="showVerify = !showVerify">
-					<image src="@/static/parachute.png" mode="" style="width: 32px;height: 32px;"></image>
-
+				<view class="leftInfo">
+					<view class="">
+						<image src="@/static/over.png" mode="" style="width: 30px;height: 30px;" @click="openEnd">
+						</image>
+					</view>
+					<view class="parachute"
+						style="background-color: #FFF;padding: 6px;position: relative;margin-top: 8px;border-radius: 4px;"
+						@click="showVerify = !showVerify">
+						<image src="@/static/parachute.png" mode="" style="width: 24px;height: 24px;"></image>
+					</view>
+					<view class="parachute"
+						style="background-color: #FFF;padding: 6px;position: relative;margin-top: 8px;border-radius: 4px;">
+						<image src="@/static/fanhang.png" mode="" style="width: 24px;height: 24px;"></image>
+					</view>
+					<view class="parachute"
+						style="background-color: #FFF;padding: 6px;position: relative;margin-top: 8px;border-radius: 4px;"
+						@longpress="handleLongPress" @touchend="handleLongPressEnd" @touchcancel="handleLongPressEnd">
+						<image src="@/static/xuanzhuan.png" mode="" :style="xuanzhuanStyle"></image>
+					</view>
 				</view>
 				<view class="_item" style="color: #FFF;">
-					<view>电压：{{socket503Data.voltage_battery}} V</view>
-					<view>电流：{{socket503Data.current_battery}} A</view>
-					<view>电量：{{socket503Data.battery_remaining}}</view>
-					<view>信号：{{socket501Data.myCsq}}</view>
-					<image src="@/static/over.png" mode="" style="width: 30px;height: 30px;" @click="openEnd">
-					</image>
-					<image src="@/static/list.png" mode="" style="width: 30px;height: 30px;" @click="show = true">
-					</image>
+					<view class="">
+
+					</view>
+					<image src="@/static/logo.png" mode="" class="kuaifeilogo" />
+					<view class="right">
+						<view class="flex" style="margin-right: 12px;">
+							<image src="@/static/workSend.png" mode=""
+								style="width: 20px;height: 20px;margin-right: 4px;" />
+							<span style="color: #FFF;">6</span>
+						</view>
+						<view class="hd" style="margin-right: 16px;">
+							HD
+						</view>
+						<view class="flex items-center" style="margin-right: 16px;">
+							<image src="/static/signal1.png" v-if="socket501Data.myCsq == '-'" mode=""
+								class="signalImg">
+							</image>
+							<image src="/static/signal1.png" v-if="socket501Data.myCsq <= 8" mode="" class="signalImg">
+							</image>
+							<image src="/static/signal2.png" v-if="socket501Data.myCsq > 8 && socket501Data.myCsq <=16 "
+								mode="" class="signalImg"></image>
+							<image src="/static/signal3.png"
+								v-if="socket501Data.myCsq > 16 && socket501Data.myCsq <= 24 " mode="" class="signalImg">
+							</image>
+							<image src="/static/signal4.png" v-if="socket501Data.myCsq > 24" mode="" class="signalImg">
+							</image>
+							<span>{{socket501Data.myCsq}}</span>
+						</view>
+						<view class="flex items-center">
+							<image src="/static/dianliang.png" mode="" style="width: 20px;height: 20px;" />
+							<span>{{socket503Data.battery_remaining}}</span>
+						</view>
+						<!-- <view>电压：{{socket503Data.voltage_battery}} V</view>
+						<view>电流：{{socket503Data.current_battery}} A</view>
+						<view>电量：{{socket503Data.battery_remaining}}</view>
+						<view>信号：{{socket501Data.myCsq}}</view> -->
+						<image src="@/static/list.png" mode="" style="width: 30px;height: 30px;" @click="show = true">
+						</image>
+					</view>
+
 				</view>
 
 			</view>
@@ -46,7 +98,11 @@
 				<rocker ref="rockerRef" style="position: relative;" :innerRadius='innerRadius'
 					:outerRadius="outerRadius" id="motor" @moveRocker="moveRocker" @stopMoveRocker="stopMoveRocker">
 				</rocker>
-				<view class="actionButtonBox">
+				<view class="info">
+					<span> H - {{socket502Data.alt}} m</span>
+					<span style="margin-left: 20px;"> VS - {{socket504Data.rollspeed}} rad/s</span>
+				</view>
+				<!-- <view class="actionButtonBox">
 					<view class="actionButton" :class="[fiveActive == 'up' ? 'activeFiveButton' : '']">
 						<image src="@/static/up.png" mode="" @click="sendFiveMessage(5, 'up')"
 							style="width: 36px;height: 36px;"></image>
@@ -73,7 +129,7 @@
 						<image src="@/static/down.png" mode="" @click="sendSixMessage(-5, 'down')"
 							style="width: 36px;height: 36px;"></image>
 					</view>
-				</view>
+				</view> -->
 				<rocker ref="rockerRef" style="position: relative;" :innerRadius='innerRadius'
 					:outerRadius="outerRadius" id="rudder" @moveRocker="moveRocker" @stopMoveRocker="stopMoveRocker">
 				</rocker>
@@ -193,6 +249,16 @@
 		},
 		data() {
 			return {
+				xuanzhuanStyle: {
+					width: '24px',
+					height: '24px',
+					transform: 'rotate(0deg)'
+				},
+				xuanzhuanTimer: null,
+				xuanzhuanTimers: null,
+				sixPositionStyle: {
+					'margin-left': '-160px',
+				},
 				requestUrl: requestUrl,
 				showrStartError: false,
 				showEnd: false,
@@ -231,7 +297,9 @@
 				reconnectAttempts: 0, // 重连次数
 				maxReconnectAttempts: 5, // 最大重连次数
 				isBack: false, // 最大重连次数
-				socket501Data: {},
+				socket501Data: {
+					myCsq: '-'
+				},
 				socket502Data: {},
 				socket503Data: {},
 				socket504Data: {},
@@ -269,13 +337,20 @@
 				left: -160,
 				startX: 0,
 				startY: 0,
+				sixstartX: 0,
+				sixstartY: 0,
 				isDragging: false,
+				isSixDragging: false,
 				isSend: false,
+				isSixSend: false,
 				showWebView: false,
 				authId: '',
 				authCode: '',
 				devId: '',
 				series: '',
+				showSix: false,
+				num: 0,
+				nums: 360
 			}
 		},
 		onLoad(options) {
@@ -333,18 +408,19 @@
 				try {
 					const response = await request(`/app/camera/getInfoByCarId/${this.carId}`, 'GET')
 					if (response.code == 200) {
-						this.authId = response.data.authId
-						this.authCode = response.data.authCode
-						this.devId = response.data.devId
-						this.series = response.data.series
+						this.initWebSocket();
+						// this.authId = response.data.authId
+						// this.authCode = response.data.authCode
+						// this.devId = response.data.devId
+						// this.series = response.data.series
 
-						this.webViewSrc =
-							`/static/webRTC/onminirtc.html?devId=${this.devId}&series=${this.series}&authId=${this.authId}&authCode=${this.authCode}`;
-						this.$nextTick(() => {
-							this.getDeviceStatus(response.data.authId, response.data.authCode, response.data
-								.devId,
-								response.data.series)
-						});
+						// this.webViewSrc =
+						// 	`/static/webRTC/onminirtc.html?devId=${this.devId}&series=${this.series}&authId=${this.authId}&authCode=${this.authCode}`;
+						// this.$nextTick(() => {
+						// 	this.getDeviceStatus(response.data.authId, response.data.authCode, response.data
+						// 		.devId,
+						// 		response.data.series)
+						// });
 
 					}
 				} catch (error) {
@@ -420,7 +496,7 @@
 					const response = await request(`/app/carInfo/startCar/${this.macAddress}`, 'GET')
 					if (response.code == 200) {
 						this.showrEmind = false
-						this.initWebSocket();
+						// this.initWebSocket();
 					} else {
 						this.showrEmind = false
 						this.showrStartError = true
@@ -490,6 +566,37 @@
 					});
 				}
 			},
+
+			// 长按
+			handleLongPress() {
+				this.xuanzhuanStyle.width = '36px'
+				this.xuanzhuanStyle.height = '36px'
+				this.xuanzhuanTimer = setInterval(() => {
+					if (this.num >= 360) {
+						clearInterval(this.xuanzhuanTimer)
+						this.sendMessage(JSON.stringify({
+							bizCode: 602,
+							channelNum: this.getChannelNum(5),
+							duty: this.getDutyValue(5, 5),
+							timestamp: this.getTimestamp(),
+							mac: this.macAddress
+						}))
+						this.showSix = true
+						this.nums = 360
+					} else {
+						this.num += 1
+						this.xuanzhuanStyle.transform = `rotate(${this.num}deg)`
+					}
+				}, 10)
+
+			},
+			handleLongPressEnd() {
+				console.log('长按结束')
+				// uni.showToast({
+				// 	title: '长按结束',
+				// 	icon: 'none',
+				// });
+			},
 			// 触摸开始时，记录起始位置
 			onTouchStart(event) {
 				console.log('开始触摸')
@@ -523,10 +630,76 @@
 				}
 			},
 			// 触摸结束时，停止拖动
-			onTouchEnd() {
-				this.isSend = false
-				this.isDragging = false;
+			onSixTouchEnd() {
+				this.isSixDragging = false;
 				this.left = -160
+			},
+			onSixTouchStart(event) {
+				if (!this.isSixSend) {
+					this.isSixDragging = true;
+				}
+				this.sixstartX = event.touches[0].clientX ? event.touches[0].clientX - this.left : event.touches[0]
+					.screenX -
+					this.left;
+			},
+			// 触摸移动时，更新元素的位置
+			onSixTouchMove(event) {
+				if (this.isSixDragging) {
+					const newX = event.touches[0].clientX ? event.touches[0].clientX - this.sixstartX : event.touches[0]
+						.screenX -
+						this.startX
+					if (newX >= 0) {
+						if (!this.isSixSend) {
+							uni.showToast({
+								title: '操作成功',
+								icon: 'success',
+							});
+							this.sendMessage(JSON.stringify({
+								bizCode: 602,
+								channelNum: this.getChannelNum(6),
+								duty: this.getDutyValue(6, 5),
+								timestamp: this.getTimestamp(),
+								mac: this.macAddress
+							}))
+						}
+						this.sixPositionStyle = {
+							'margin-left': '0px',
+						}
+						this.isSixSend = true
+						setTimeout(() => {
+							this.showSix = false
+							var xuanzhuanTimers = null
+							xuanzhuanTimers = setInterval(() => {
+								if (this.nums <= 0) {
+									clearInterval(xuanzhuanTimers)
+									this.xuanzhuanStyle.width = '24px'
+									this.xuanzhuanStyle.height = '24px'
+									this.sixPositionStyle = {
+										'margin-left': '-160px',
+									}
+									this.num = 0
+									this.isSixSend = false
+								} else {
+									this.nums -= 1
+									this.xuanzhuanStyle.transform = `rotate(${this.nums}deg)`
+								}
+							}, 100)
+						}, 20000)
+					} else if (newX <= -160) {
+						this.sixPositionStyle = {
+							'margin-left': '-160px',
+						}
+					} else {
+						this.sixPositionStyle = {
+							'margin-left': `${newX}px`,
+						}
+					}
+				}
+			},
+			// 触摸结束时，停止拖动
+			onTouchEnd() {
+				this.isSixSend = false
+				this.isSixDragging = false;
 			},
 			verifySuccess() {
 				this.sendMessage(JSON.stringify({
@@ -628,6 +801,15 @@
 			stopMoveRocker(id) {
 				console.log("停止移动了！！")
 				this.sendEndMessage(id)
+			},
+			getValueBetweenChars(str, startChar, endChar) {
+				const startIndex = str.indexOf(startChar);
+				const endIndex = str.indexOf(endChar, startIndex + 1);
+				if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+					return Number(str.substring(startIndex + 1, endIndex))
+				}
+
+				return '-';
 			},
 			sendEndMessage(id) {
 				if (id == 'motor' && this.carInfo) {
@@ -1135,8 +1317,8 @@
 				this.socket.onOpen(() => {
 					console.log('WebSocket已打开');
 					this.isSocket = true
-					this.sendFiveMessage(0, 'center')
-					this.sendSixMessage(0, 'center')
+					// this.sendFiveMessage(0, 'center')
+					// this.sendSixMessage(0, 'center')
 					// this.startHeartbeat(); // 开始心跳机制
 				});
 
@@ -1151,6 +1333,8 @@
 						let data = JSON.parse(event.data)
 						if (data.data && data.data.bizCode == 501) {
 							this.socket501Data = data.data
+							this.socket501Data.myCsq = this.getValueBetweenChars(this.socket501Data.myCsq ||
+								'+signal#10,0', '#', ',')
 						} else if (data.data && data.data.bizCode == 502) {
 							this.socket502Data = data.data
 						} else if (data.data && data.data.bizCode == 503) {
@@ -1359,16 +1543,28 @@
 		width: 100%;
 		height: 100%;
 		z-index: 9;
+
+		.kuaifeilogo {
+			width: 80px;
+			height: 40px;
+			margin-left: -40px;
+		}
 	}
 
 	.rockerBtns {
 		position: absolute;
 		bottom: 0;
-		padding: 24px 0 24px 50px;
+		padding: 0px 0 8px 50px;
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: row;
 		justify-content: space-between;
+		align-items: flex-end;
+
+		.info {
+			display: flex;
+			flex-direction: row;
+		}
 
 		.actionButtonBox {
 
@@ -1403,8 +1599,8 @@
 		color: #000;
 		position: absolute;
 		z-index: 99999999999;
-		left: 85px;
-		top: 20px;
+		left: 65px;
+		top: 30px;
 		display: flex;
 		flex-direction: row;
 		align-items: center;
@@ -1419,6 +1615,35 @@
 				margin-bottom: 16px;
 			}
 
+		}
+	}
+
+	.sixPosition {
+		position: absolute;
+		z-index: 99999999999;
+		left: 75px;
+		top: 156px;
+		width: 200px;
+		height: 40px;
+		border-radius: 4px;
+		overflow: hidden;
+		background-color: #b9ffff;
+
+		.valueBox {
+			width: 200px;
+			height: 40px;
+			border-radius: 4px;
+			background-color: #37eb00;
+			display: flex;
+			flex-direction: row;
+			justify-content: flex-end;
+
+			._box {
+				width: 40px;
+				height: 40px;
+				background-color: #fff;
+				border-radius: 0px 4px 4px 0px;
+			}
 		}
 	}
 
@@ -1452,20 +1677,45 @@
 		display: flex;
 		flex-direction: row;
 		justify-content: space-between;
-		align-items: center;
+		align-items: flex-start;
 		width: 100%;
 		box-sizing: border-box;
-		padding: 32px 16px;
+		padding: 24px 16px;
 		color: #FFF;
 
+		.leftInfo {
+			width: 48px;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+
 		._item {
-			gap: 20px;
 			flex: 1;
+			gap: 20px;
 			font-size: 15px !important;
 			display: flex;
 			flex-direction: row;
-			justify-content: flex-end;
+			justify-content: space-between;
 			align-items: center;
+
+			.right {
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+
+				.hd {
+					border: solid 1px #FFF;
+					color: #FFF;
+					border-radius: 2px;
+					padding: 2px 4;
+				}
+
+				.signalImg {
+					width: 24px;
+					height: 18px;
+				}
+			}
 		}
 	}
 
