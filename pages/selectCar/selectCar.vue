@@ -126,18 +126,8 @@
 					this.startCar(item)
 				}
 			},
-			async startCar(item) {
-				try {
-					const response = await request(`/app/carInfo/startCar/${item.macAddress}`, 'GET')
-					if (response.code == 200) {
-						this.navigateTo(`/pages/drive/drive?macAddress=${item.macAddress}&carId=${item.carId}`)
-					}
-				} catch (error) {
-					uni.showToast({
-						title: '驾驶失败',
-						icon: 'none',
-					});
-				}
+			startCar(item) {
+				this.navigateTo(`/pages/drive/drive?macAddress=${item.macAddress}&carId=${item.carId}`)
 			},
 			navigateTo(url) {
 				clearInterval(this.pollingTime)
@@ -250,24 +240,27 @@
 				margin-bottom: 16px;
 				width: 100%;
 				border-radius: 8px;
+				overflow: hidden;
 				background-color: #FFF;
 				box-sizing: border-box;
-				padding: 16px;
-
+				
 				.carInfo {
 					display: flex;
+					justify-content: center;
 
 					.carImg {
-						width: 140px;
-						height: 120px;
-						margin-right: 20px;
+						width: 100%;
+						height: 32vw;
 					}
 
 					.carDesc {
+						position: absolute;
+						width: 100%;
+						box-sizing: border-box;
+						padding: 16px;
 						display: flex;
 						flex-direction: column;
 						justify-content: space-between;
-						padding: 8px 0;
 
 						.carName {
 							font-size: 16px;
@@ -276,25 +269,29 @@
 
 						.attribution,
 						.code {
+							margin-top: 12px;
 							font-size: 12px;
 						}
 
 						.btns {
 							display: flex;
 							justify-content: space-between;
+							margin: 12px 0;
 
 							.btn {
 								font-size: 14px;
-								height: 26px;
-								line-height: 26px;
-								padding: 0px 16px;
+								height: 36px;
+								line-height: 36px;
+								width: 40%;
 								color: #FFF;
-								border-radius: 13px;
+								text-align: center;
+								border-radius: 18px;
+								background-color: #0055ff;
 							}
 
 							.watch {
-								height: 24px;
-								line-height: 24px;
+								height: 34px;
+								line-height: 34px;
 								background-color: #FFF;
 								border: solid 1px #0055ff;
 								color: #0055ff;
@@ -306,7 +303,7 @@
 				.configuration {
 					display: flex;
 					justify-content: space-between;
-
+					padding: 8px 16px;
 					view {
 						display: flex;
 						align-items: center;

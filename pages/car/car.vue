@@ -62,6 +62,7 @@
 							<span>电压：{{item.carVoltage}}V</span>
 						</view>
 					</view>
+
 				</view>
 				<!-- 加载更多提示 -->
 				<view v-if="loading" class="loading-more">正在加载...</view>
@@ -288,6 +289,7 @@
 			}
 		},
 		mounted() {
+			plus.screen.lockOrientation('portrait-primary')
 		},
 		onHide() {
 			if (this.dataList.length) {
@@ -334,24 +336,27 @@
 				margin-bottom: 16px;
 				width: 100%;
 				border-radius: 8px;
+				overflow: hidden;
 				background-color: #FFF;
 				box-sizing: border-box;
-				padding: 16px;
 
 				.carInfo {
 					display: flex;
+					justify-content: center;
 
 					.carImg {
-						width: 37.33vw;
+						width: 100%;
 						height: 32vw;
-						margin-right: 20px;
 					}
 
 					.carDesc {
+						position: absolute;
+						width: 100%;
+						box-sizing: border-box;
+						padding: 16px;
 						display: flex;
 						flex-direction: column;
 						justify-content: space-between;
-						padding: 8px 0;
 
 						.carName {
 							font-size: 16px;
@@ -360,28 +365,31 @@
 
 						.attribution,
 						.code {
+							margin-top: 12px;
 							font-size: 12px;
 						}
 
 						.btns {
 							display: flex;
-							justify-content: space-between;
-
+							justify-content: flex-start;
+							margin: 12px 0;
 							.btn {
 								font-size: 14px;
-								height: 26px;
-								line-height: 26px;
-								padding: 0px 16px;
+								height: 36px;
+								line-height: 36px;
+								width: 35%;
 								color: #FFF;
-								border-radius: 13px;
+								text-align: center;
+								border-radius: 18px;
 								background-color: #0055ff;
 							}
 
 							.watch {
-								height: 24px;
-								line-height: 24px;
+								height: 34px;
+								line-height: 34px;
 								background-color: #FFF;
 								border: solid 1px #0055ff;
+								margin-left: 24px;
 								color: #0055ff;
 							}
 						}
@@ -391,7 +399,7 @@
 				.configuration {
 					display: flex;
 					justify-content: space-between;
-					padding: 8px 16px 0px;
+					padding: 8px 16px;
 
 					view {
 						display: flex;

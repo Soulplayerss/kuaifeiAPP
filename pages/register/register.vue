@@ -44,8 +44,8 @@
 				</view>
 			</view>
 		</view>
-		<view class="forgetPassword" @click="toLogin">
-			有账号？去登陆
+		<view class="forgetPassword">
+			<span @click="toLogin">有账号？去登陆</span>
 		</view>
 		<view class="">
 			验证码：{{code}}

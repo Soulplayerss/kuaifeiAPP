@@ -1,9 +1,8 @@
 <template>
 	<view class="testDevice"
 		:style="{ width:  viewportWidth ? viewportWidth + 'px' : '100%' , height:  viewportHeight ? viewportHeight + 'px' : '100%', fontSize: 15 + 'px', color: '#FFF'}">
-		<web-view :src="webViewSrc" ref="webView"
-			:style="{ width:  viewportWidth ? viewportWidth + 'px' : '100%' , height:  viewportHeight ? viewportHeight + 'px' : '100%'}"
-			@message="onMessageReceived"></web-view>
+		<web-view :src="webViewSrc" ref="webView" v-if="showWebView"
+			:style="{ width:  viewportWidth ? viewportWidth + 'px' : '100%' , height:  viewportHeight ? viewportHeight + 'px' : '100%'}"></web-view>
 		<view class="body"
 			:style="{ width:  viewportWidth ? viewportWidth * 0.9 + 'px' : '90%' , height:  viewportHeight ? viewportHeight + 'px' : '100%'}">
 			<view class="verifyBox" v-if="showVerify">
@@ -34,7 +33,7 @@
 					<view>电流：{{socket503Data.current_battery}} A</view>
 					<view>电量：{{socket503Data.battery_remaining}}</view>
 					<view>信号：{{socket501Data.myCsq}}</view>
-					<image src="@/static/over.png" mode="" style="width: 30px;height: 30px;" @click="back">
+					<image src="@/static/over.png" mode="" style="width: 30px;height: 30px;" @click="openEnd">
 					</image>
 					<image src="@/static/list.png" mode="" style="width: 30px;height: 30px;" @click="show = true">
 					</image>
@@ -78,6 +77,63 @@
 				<rocker ref="rockerRef" style="position: relative;" :innerRadius='innerRadius'
 					:outerRadius="outerRadius" id="rudder" @moveRocker="moveRocker" @stopMoveRocker="stopMoveRocker">
 				</rocker>
+			</view>
+		</view>
+
+		<view class="emind"
+			:style="{ width:  viewportWidth ? viewportWidth + 'px' : '100%' , height:  viewportHeight ? viewportHeight + 'px' : '100%'}"
+			v-if="showrEmind">
+			<view class="_content">
+
+				<view class="status">
+					{{cameraStatus}}
+				</view>
+				<view class="_btns">
+					<view class="btn cancel" @click="back">
+						取消
+					</view>
+					<view class="btn ok" @click="KeepDriving">
+						驾驶
+					</view>
+				</view>
+			</view>
+		</view>
+
+		<view class="emind"
+			:style="{ width:  viewportWidth ? viewportWidth + 'px' : '100%' , height:  viewportHeight ? viewportHeight + 'px' : '100%'}"
+			v-if="showrStartError">
+			<view class="_content">
+
+				<view class="status">
+					{{msg}}
+				</view>
+				<view class="_btns">
+					<view class="btn cancel" @click="back">
+						返回
+					</view>
+					<view class="btn ok" @click="showrStartError = false">
+						关闭
+					</view>
+				</view>
+			</view>
+		</view>
+
+
+		<view class="emind"
+			:style="{ width:  viewportWidth ? viewportWidth + 'px' : '100%' , height:  viewportHeight ? viewportHeight + 'px' : '100%'}"
+			v-if="showEnd">
+			<view class="_content">
+				<view class="status">
+					是否退出当前驾驶？
+				</view>
+				<view class="_btns">
+					<view class="btn cancel" @click="showEnd = false">
+						取消
+					</view>
+					<view class="btn ok" @click="endCar">
+						退出
+					</view>
+				</view>
 			</view>
 		</view>
 
@@ -127,7 +183,8 @@
 	import XlSliderVerify from '@/components/common/XlSliderVerify.vue'
 	import request from '@/utils/request';
 	import {
-		socketUrl
+		socketUrl,
+		requestUrl
 	} from '@/utils/request';
 	export default {
 		components: {
@@ -136,6 +193,11 @@
 		},
 		data() {
 			return {
+				requestUrl: requestUrl,
+				showrStartError: false,
+				showEnd: false,
+				showrEmind: false,
+				cameraStatus: '当前设备摄像头是否正常？是否继续驾驶？',
 				webViewSrc: '',
 				show: false,
 				innerRadius: 50,
@@ -208,7 +270,12 @@
 				startX: 0,
 				startY: 0,
 				isDragging: false,
-				isSend: false
+				isSend: false,
+				showWebView: false,
+				authId: '',
+				authCode: '',
+				devId: '',
+				series: '',
 			}
 		},
 		onLoad(options) {
@@ -251,24 +318,117 @@
 				if (this.socket) {
 					this.closeWebSocket();
 				}
-				plus.screen.lockOrientation('portrait-primary')
 				uni.navigateTo({
 					url: '/pages/car/car'
 				});
+				plus.screen.lockOrientation('portrait-primary')
 			},
-			onMessageReceived(event) {
-				console.log('收到HTML消息:', event);
+			openEnd() {
+				this.showEnd = true
+			},
+			getmessage(arg) {
+				console.log(arg.detail.data[0].action)
 			},
 			async getCarCameraInfo() {
 				try {
 					const response = await request(`/app/camera/getInfoByCarId/${this.carId}`, 'GET')
 					if (response.code == 200) {
+						this.authId = response.data.authId
+						this.authCode = response.data.authCode
+						this.devId = response.data.devId
+						this.series = response.data.series
+
 						this.webViewSrc =
-							`/static/webRTC/onminirtc.html?devId=${response.data.devId}&series=${response.data.series}&authId=${response.data.authId}&authCode=${response.data.authCode}`
+							`/static/webRTC/onminirtc.html?devId=${this.devId}&series=${this.series}&authId=${this.authId}&authCode=${this.authCode}`;
+						this.$nextTick(() => {
+							this.getDeviceStatus(response.data.authId, response.data.authCode, response.data
+								.devId,
+								response.data.series)
+						});
+
 					}
 				} catch (error) {
 					uni.showToast({
 						title: '加载失败',
+						icon: 'none',
+					});
+				}
+			},
+			getDeviceStatus(authId, authCode, devId, series) {
+				this.authId = authId
+				this.authCode = authCode
+				this.devId = devId
+				this.series = series
+				let jsonData = {
+					AuthId: authId,
+					AuthCode: authCode,
+					DevId: devId
+				}
+				uni.request({
+					url: 'https://rtc.minirtc.com/Iot/Dev/GetDevAuthTurn',
+					method: 'POST',
+					data: JSON.stringify(jsonData),
+					header: {
+						'content-type': 'application/x-www-form-urlencoded; charset=UTF-8'
+					},
+					success: (res) => {
+						var datajson = {
+							AuthId: authId,
+							AuthCode: authCode,
+							DevId: devId,
+							method: "GetRtcSdpOffer",
+							data: {
+								iceurl: res.data.turn,
+								iceuname: res.data.icename,
+								iceupass: res.data.pass,
+								icerealm: "realm",
+								audio: 0,
+							}
+						};
+						uni.request({
+							url: 'https://rtc.minirtc.com/Iot/Dev/OnDevComSet',
+							method: 'POST',
+							data: JSON.stringify(datajson),
+							header: {
+								'content-type': 'application/x-www-form-urlencoded; charset=UTF-8'
+							},
+							success: (res) => {
+								if (res.data.code == 200) {
+									this.showWebView = true
+									setTimeout(() => {
+										this.showrEmind = true
+									}, 5000)
+								} else if (res.data.code == 201) {
+									this.cameraStatus = '摄像头超过最大连接数!是否继续驾驶？'
+									this.showrEmind = true
+								} else {
+									this.cameraStatus = 'on'
+								}
+							},
+							fail: (err) => {
+								console.error('请求失败:', err);
+							}
+						});
+					},
+					fail: (err) => {
+						console.error('请求失败:', err);
+					}
+				});
+			},
+			async KeepDriving() {
+				try {
+					const response = await request(`/app/carInfo/startCar/${this.macAddress}`, 'GET')
+					if (response.code == 200) {
+						this.showrEmind = false
+						this.initWebSocket();
+					} else {
+						this.showrEmind = false
+						this.showrStartError = true
+						this.msg = response.msg
+					}
+				} catch (error) {
+					uni.showToast({
+						title: '驾驶失败',
 						icon: 'none',
 					});
 				}
@@ -280,7 +440,6 @@
 						let data = JSON.parse(JSON.stringify(response.data))
 						this.carInfo = data
 						if (this.carInfo.appCarChannelList.length) {
-							this.initWebSocket();
 							// this.carInfo.appCarChannelList.forEach((item) => {
 							// 	item.defaultMinValue = item.minValue
 							// 	item.defaultMaxValue = item.maxValue
@@ -319,6 +478,10 @@
 					const response = await request(`/app/carInfo/endCar/${this.macAddress}`, 'GET')
 					if (response.code == 200) {
 						this.back()
+					} else {
+						this.showEnd = false
+						this.showrStartError = true
+						this.msg = response.msg
 					}
 				} catch (error) {
 					uni.showToast({
@@ -1138,6 +1301,55 @@
 		width: 100%;
 		height: 100%;
 		background-color: rgba(0, 0, 0, 0.8);
+	}
+
+	.emind {
+		position: fixed;
+		z-index: 999999999;
+		background-color: rgba(0, 0, 0, 0.8);
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		align-items: center;
+
+		._content {
+			width: 370px;
+			height: 170px;
+			overflow-y: auto;
+			background-color: #FFF;
+			border-radius: 8px;
+			color: #000;
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			padding: 24px;
+
+			.status {
+				text-align: center;
+				margin: 16px 0;
+			}
+
+			._btns {
+				display: flex;
+				flex-direction: row;
+				justify-content: center;
+
+				.btn {
+					height: 36px;
+					display: flex;
+					justify-content: center;
+					align-items: center;
+					border-radius: 18px;
+					background-color: aquamarine;
+					width: 100px;
+				}
+
+				.ok {
+					margin-left: 24px;
+					background-color: #eea618;
+				}
+			}
+		}
 	}
 
 	.body {

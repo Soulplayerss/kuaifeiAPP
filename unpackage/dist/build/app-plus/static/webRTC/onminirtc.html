@@ -14,6 +14,8 @@
 		<script src="adapter.min.js" charset="utf-8"></script>
 		<script src="devdef.js" charset="utf-8"></script>
 		<script src="https://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+		<script type="text/javascript" src="https://gitee.com/dcloud/uni-app/raw/dev/dist/uni.webview.1.5.4.js">
+		</script>
 		<style>
 			.VideoContainer {
 				margin: 0px;
@@ -29,7 +31,7 @@
 			#theirs {
 				width: 100%;
 				height: 100%;
-				object-fit:fill;
+				object-fit: fill;
 			}
 
 			#theirsVideo {
@@ -272,9 +274,9 @@
 						alt="" />
 					<i id="audio_loudspeaker" class="fa fa-volume-up i_gray ipadd" onclick="clonsStartAudio()"
 						style="display: none;"></i>
-					<i id="audio_microphone" onclick="OnStartAudio(1)" class="fa fa-microphone i_gray ipadd"></i>
+					<!-- <i id="audio_microphone" onclick="OnStartAudio(1)" class="fa fa-microphone i_gray ipadd"></i> -->
 					<!-- <i id="video_max" onclick="OnChangeVideoQ()" class="fa i_gray fa-star"></i> -->
-					<!-- <img src="./photograph.png" onclick="openphoto()" style="width: 32px;height: 32px;" alt="" /> -->
+					<img src="./photograph.png" onclick="openphoto()" style="width: 32px;height: 32px;" alt="" />
 				</div>
 				<div id="LossRate" style="color: #FFF;">
 					丢包率:00%
@@ -287,10 +289,19 @@
 		<script src="layui/layui.js" charset="utf-8"></script>
 		<script src="wxRtcSdk.js" charset="utf-8"></script>
 		<script>
-			var G_DevId = "ch2000037100"
-			var G_AuthId = 523;
-			var G_AuthCode = "abad26b05a058115d9645afa6a760b26";
-			var G_Series = "icm0f1000a02a07";
+			var G_DevId = ""
+			var G_Series = "";
+			// var G_DevId = "ch2000037100"
+			// var G_Series = "icm0f1000a02a07";
+			var G_AuthId = 0;
+			var G_AuthCode = "";
+			const params = new URLSearchParams(window.location.search);
+			G_DevId = params.get('devId')
+			G_Series = params.get('series')
+			G_AuthId = params.get('authId')
+			G_AuthCode = params.get('authCode')
+			var requestUrl = params.get('requestUrl')
+			console.log(requestUrl)
 			var GMsgWait = 0;
 			var G_VideoQ = "1";
 			var RtcVideoInfo = null;
@@ -355,10 +366,13 @@
 						});
 						setTimeout(reconnect, 35000);
 					} else {
-						GMsgWait = layui.layer.msg('摄像头设备已离线', {
-							time: 0,
-							icon: 2,
-							shade: 0.01
+						document.addEventListener('UniAppJSBridgeReady', function() {
+							// 向应用发送消息
+							uni.postMessage({
+								data: {
+									action: '设备已离线'
+								}
+							});
 						});
 						$('.VideoContainer').css('display', 'none')
 					}
@@ -386,7 +400,7 @@
 				nTimer = setInterval("GetRtcGetStats()", 1000);
 				$('.VideoContainer').css('display', 'block')
 			}
-			
+
 			//开始音频
 			function OnStartAudio(audiotype) {
 				navigator.mediaDevices.getUserMedia({
@@ -417,7 +431,7 @@
 							});
 						} else {
 							GMsgWait = layui.layer.msg('请先打开麦克风权限', {
-								time: 5,
+								time: 5000,
 								icon: 16,
 								shade: 0.01
 							});
@@ -442,7 +456,7 @@
 				nStartAudio = 0
 				CloseRtcDialogue(G_AuthId, G_AuthCode, G_DevId)
 			}
-			
+
 			//关闭设备播放语音
 			function CloseRtcDialogue(strauthId, strauthCode, strdevId) {
 				var jsondata = {
@@ -462,7 +476,7 @@
 					dataType: "json",
 					success: function(data) {
 						console.log(data);
-						if(data.code == 200){
+						if (data.code == 200) {
 							GMsgWait = layui.layer.msg('已关闭音频', {
 								time: 0,
 								icon: 16,
@@ -497,6 +511,7 @@
 					// 创建一个指向该Blob对象的URL
 					const url = URL.createObjectURL(blob);
 					console.log(url)
+
 					// 将URL设置为img元素的src属性
 					// const imgElement = document.getElementById('img_src');
 					// imgElement.src = url;
@@ -504,7 +519,7 @@
 					// imgElement.onload = function() {
 					// 	URL.revokeObjectURL(this.src);
 					// };
-					downloadImage(url)
+					// downloadImage(url)
 				} catch (error) {
 					console.error('There was a problem fetching the image:', error);
 					// 可以在这里显示一个错误消息给用户

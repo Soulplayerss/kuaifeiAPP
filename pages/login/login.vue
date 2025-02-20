@@ -17,8 +17,8 @@
 				</view>
 			</view>
 		</view>
-		<view class="forgetPassword" @click="toRetrieve">
-			忘记密码
+		<view class="forgetPassword">
+			<span @click="toRetrieve">忘记密码?</span>
 		</view>
 		<u-button type="primary" shape="circle" text="登录" class="btn"
 			color="linear-gradient(to bottom, rgb(134, 211, 254), rgb(27, 156, 219))" @click="login"></u-button>
@@ -29,9 +29,11 @@
 				<u-checkbox label="" name="yes"></u-checkbox>
 			</u-checkbox-group>
 			<span style="color:#30313D;">我已阅读并同意</span>
-			<span @click="oprnProtocol">用户协议</span>
+			<span @click="openProtocol">用户协议</span>
 			<span style="color:#30313D;">和</span>
-			<span @click="oprnProtocol">隐私协议</span>
+			<span @click="openProtocol">隐私协议</span>
+			<span style="color:#30313D;">和</span>
+			<span @click="openDroneManagement">无人机管理暂行条例</span>
 		</view>
 
 		<Protocol @clsoeEvent="clsoeEvent" :overlay="showOverlay" />
@@ -131,7 +133,7 @@
 				console.log(e)
 				// this.showOverlay = true
 			},
-			oprnProtocol() {
+			openProtocol() {
 				this.showOverlay = false
 				setTimeout(() => {
 					this.showOverlay = true
@@ -140,6 +142,17 @@
 			clsoeEvent(type) {
 				this.protocolValue = [type]
 
+			},
+			openDroneManagement() {
+				uni.openDocument({
+					filePath: '/static/Drone-Management.pdf',
+					success: function(res) {
+						console.log('打开成功');
+					},
+					fail: function(err) {
+						console.log('打开失败', err);
+					}
+				});
 			}
 		},
 		onReady() {
@@ -198,9 +211,12 @@
 		}
 
 		.protocol {
+			width: 100%;
 			position: fixed;
 			bottom: 40rpx;
 			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
 			align-items: center;
 
 			.u-checkbox__icon-wrap {

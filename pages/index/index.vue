@@ -16,7 +16,7 @@
 			</view>
 		</view>
 		<view class="tabBox">
-			<view class="tab">
+			<!-- <view class="tab">
 				<view class="item" @click="changeTab('car')">
 					<span :class="tabActive=='car' ? 'tabActive' : ''">共享车辆</span>
 					<image src="../../assets/images/tab-car.png" mode=""></image>
@@ -25,25 +25,25 @@
 					<span :class="tabActive=='battery' ? 'tabActive' : ''">电池套餐</span>
 					<image src="../../assets/images/tab-battery.png" mode="" class="battery"></image>
 				</view>
-			</view>
-			<image src="../../assets/images/diveder.png" mode="" class="divider"></image>
-			<view class="content" v-show="tabActive=='car'">
-				<view class="typeItem" v-show="siteData">
+			</view> -->
+			<!-- <image src="../../assets/images/diveder.png" mode="" class="divider"></image> -->
+			<view class="content">
+				<view class="typeItem">
 					<view class="title">
 						<image src="../../assets/images/index-site.png" mode="" class="projectImg"></image>
 						<view class="text">
 							<view class="site">云控工地</view>
 							<span class="desc">多场景多设备，感受物联网带来的工程乐趣</span>
 						</view>
-						<span style="color: #FFF;">刷新</span>
+						<span style="color: #FFF;" @click="loadSiteData(siteType)">刷新</span>
 					</view>
-					<u-scroll-list>
+					<u-scroll-list v-show="siteData.length">
 						<view v-for="(item,index) in siteData" :key="index" class="listItem">
 							<view class="item">
-								<span class="drivingNum">正在驾驶中：{{item.drivingNum}}</span>
-								<image src="../../static/banner.jpg" mode=""></image>
+								<view class="drivingNum">
+									<view class="name">{{item.siteName}}</view>驾驶中：{{item.drivingNum}}
+								</view>
 								<view class="right">
-									<view class="name">{{item.siteName}}</view>
 									<view class="tag">
 										<span v-for="tage in item.tage">{{tage}}</span>
 									</view>
@@ -71,25 +71,32 @@
 
 									</view>
 								</view>
+								<image :src="item.sitePictureUrl" mode=""></image>
 							</view>
 						</view>
 					</u-scroll-list>
+					<view class="_nodata" v-show="!siteData.length">
+						<image src="../../assets/images/nodata.png" mode="" style="width: 100px;height: 100px;"></image>
+						<span>暂无数据</span>
+					</view>
 				</view>
 
-				<view class="typeItem" v-show="dronesData">
+				<view class="typeItem">
 					<view class="title">
 						<image src="../../assets/images/index-drones.png" mode="" class="projectImg"></image>
 						<view class="text">
 							<view class="site">无人机</view>
 							<span class="desc">玩转无人机，生活填乐趣</span>
 						</view>
-						<span style="color: #FFF;">刷新</span>
+						<span style="color: #FFF;" @click="loadDronesData(siteType)">刷新</span>
 					</view>
-					<u-scroll-list>
+					<u-scroll-list v-show="dronesData.length">
 						<view v-for="(item,index) in dronesData" :key="index" class="listItem">
 							<view class="item">
-								<span class="drivingNum">正在飞行中：{{item.drivingNum}}</span>
-								<image src="../../static/banner.jpg" mode=""></image>
+								<view class="drivingNum">
+									<view class="name">{{item.siteName}}</view>飞行中：{{item.drivingNum}}
+								</view>
+								<image :src="item.sitePictureUrl" mode=""></image>
 								<view class="right">
 									<view class="name">{{item.siteName}}</view>
 									<view class="tag">
@@ -122,22 +129,28 @@
 							</view>
 						</view>
 					</u-scroll-list>
+					<view class="_nodata" v-show="!dronesData.length">
+						<image src="../../assets/images/nodata.png" mode="" style="width: 100px;height: 100px;"></image>
+						<span>暂无数据</span>
+					</view>
 				</view>
 
-				<view class="typeItem" v-show="yachtData">
+				<view class="typeItem">
 					<view class="title">
 						<image src="../../assets/images/index-yacht.png" mode="" class="projectImg"></image>
 						<view class="text">
 							<view class="site">游艇专场</view>
 							<span class="desc">快速遥控游艇：探索水上遥控模型的乐趣</span>
 						</view>
-						<span style="color: #FFF;">刷新</span>
+						<span style="color: #FFF;" @click="loadYachtData(siteType)">刷新</span>
 					</view>
-					<u-scroll-list>
+					<u-scroll-list v-show="yachtData.length">
 						<view v-for="(item,index) in yachtData" :key="index" class="listItem">
 							<view class="item">
-								<span class="drivingNum">正在驾驶中：{{item.drivingNum}}</span>
-								<image src="../../static/banner.jpg" mode=""></image>
+								<view class="drivingNum">
+									<view class="name">{{item.siteName}}</view>驾驶中：{{item.drivingNum}}
+								</view>
+								<image :src="item.sitePictureUrl" mode=""></image>
 								<view class="right">
 									<view class="name">{{item.siteName}}</view>
 									<view class="tag">
@@ -170,22 +183,28 @@
 							</view>
 						</view>
 					</u-scroll-list>
+					<view class="_nodata" v-show="!yachtData.length">
+						<image src="../../assets/images/nodata.png" mode="" style="width: 100px;height: 100px;"></image>
+						<span>暂无数据</span>
+					</view>
 				</view>
 
-				<view class="typeItem" v-show="racingData">
+				<view class="typeItem">
 					<view class="title">
 						<image src="../../assets/images/index-racing.png" mode="" class="projectImg"></image>
 						<view class="text">
 							<view class="site">RC赛车</view>
 							<span class="desc">玩转漂移乐趣的全新体验，圆你赛车梦</span>
 						</view>
-						<span style="color: #FFF;">刷新</span>
+						<span style="color: #FFF;" @click="loadRacingData(siteType)">刷新</span>
 					</view>
-					<u-scroll-list>
+					<u-scroll-list v-show="racingData.length">
 						<view v-for="(item,index) in racingData" :key="index" class="listItem">
 							<view class="item">
-								<span class="drivingNum">正在驾驶中：{{item.drivingNum}}</span>
-								<image src="../../static/banner.jpg" mode=""></image>
+								<view class="drivingNum">
+									<view class="name">{{item.siteName}}</view>驾驶中：{{item.drivingNum}}
+								</view>
+								<image :src="item.sitePictureUrl" mode=""></image>
 								<view class="right">
 									<view class="name">{{item.siteName}}</view>
 									<view class="tag">
@@ -218,6 +237,10 @@
 							</view>
 						</view>
 					</u-scroll-list>
+					<view class="_nodata" v-show="!racingData.length">
+						<image src="../../assets/images/nodata.png" mode="" style="width: 100px;height: 100px;"></image>
+						<span>暂无数据</span>
+					</view>
 				</view>
 			</view>
 		</view>
@@ -250,7 +273,8 @@
 				siteData: [],
 				dronesData: [],
 				yachtData: [],
-				racingData: []
+				racingData: [],
+				siteType: []
 			}
 		},
 		components: {
@@ -282,43 +306,64 @@
 					url: `/pages/selectCar/selectCar?page=index&siteId=${siteId}`,
 				})
 			},
-			async loadData(siteType) {
+			getData(siteType) {
+				this.loadSiteData(siteType);
+				this.loadDronesData(siteType);
+				this.loadYachtData(siteType);
+				this.loadRacingData(siteType);
+			},
+			async loadSiteData(siteType) {
 				try {
-					const [siteData, dronesData, yachtData, racingData] = await Promise.all([
-						request('/app/site/getSiteForApp', 'POST', {
-							siteType: siteType[0].dictValue,
-							siteStatus: 1
-						}),
-						request('/app/site/getSiteForApp', 'POST', {
-							siteType: siteType[1].dictValue,
-							siteStatus: 1
-						}),
-						request('/app/site/getSiteForApp', 'POST', {
-							siteType: siteType[2].dictValue,
-							siteStatus: 1
-						}),
-						request('/app/site/getSiteForApp', 'POST', {
-							siteType: siteType[3].dictValue,
-							siteStatus: 1
-						})
-
-					]);
+					const siteData = await request(`/app/site/getSiteForApp`, 'POST', {
+						siteType: siteType[0].dictValue,
+						siteStatus: 1
+					})
 					this.siteData = siteData.data
-					this.dronesData = siteData.dronesData
-					this.yachtData = siteData.yachtData
-					this.racingData = siteData.racingData
-
-					const labelMap = this.siteLabel.reduce((map, label) => {
-						map[label.dictValue] = label.dictLabel;
-						return map;
-					}, {})
-
 					this.siteData.forEach((item) => {
 						item.sitePictureUrl = requestUrl + item.sitePictureUrl;
-						item.tag = item.siteLabel != null ? item.siteLabel.split(',').map(tagValue => labelMap[
-							tagValue]).filter(
-							Boolean) : []
 					})
+				} catch (error) {
+					uni.showToast({
+						title: '加载失败',
+						icon: 'none',
+					});
+				}
+			},
+			async loadDronesData(siteType) {
+				try {
+					const dronesData = await request(`/app/site/getSiteForApp`, 'POST', {
+						siteType: siteType[1].dictValue,
+						siteStatus: 1
+					})
+					this.dronesData = dronesData.data
+				} catch (error) {
+					uni.showToast({
+						title: '加载失败',
+						icon: 'none',
+					});
+				}
+			},
+			async loadYachtData(siteType) {
+				try {
+					const yachtData = await request(`/app/site/getSiteForApp`, 'POST', {
+						siteType: siteType[1].dictValue,
+						siteStatus: 1
+					})
+					this.yachtData = yachtData.data
+				} catch (error) {
+					uni.showToast({
+						title: '加载失败',
+						icon: 'none',
+					});
+				}
+			},
+			async loadRacingData(siteType) {
+				try {
+					const racingData = await request(`/app/site/getSiteForApp`, 'POST', {
+						siteType: siteType[1].dictValue,
+						siteStatus: 1
+					})
+					this.racingData = racingData.data
 				} catch (error) {
 					uni.showToast({
 						title: '加载失败',
@@ -331,11 +376,12 @@
 			let siteTypeInterval = setInterval(() => {
 				var siteType = []
 				siteType = uni.getStorageSync('siteType')
+				this.siteType = siteType
 				if (siteType.length != 0) {
 					clearInterval(siteTypeInterval)
-					this.loadData(siteType);
+					this.getData(siteType)
 					this.pollingTime = setInterval(() => {
-						this.loadData(siteType);
+						this.getData(siteType)
 					}, 10000)
 				}
 			}, 200)
@@ -472,6 +518,18 @@
 
 				.typeItem {
 					margin-bottom: 16px;
+
+					._nodata {
+						display: flex;
+						flex-direction: column;
+						justify-content: center;
+						align-items: center;
+
+						span {
+							font-size: 14px;
+							color: #FFF;
+						}
+					}
 				}
 
 				.title {
@@ -513,31 +571,40 @@
 						.drivingNum {
 							position: absolute;
 							z-index: 999;
-							right: 16px;
+							width: 100%;
+							box-sizing: border-box;
+							display: flex;
+							justify-content: space-between;
+							align-items: center;
 							font-size: 12px;
+							padding: 0 8px;
 							top: 8px;
 							color: #FFF;
+
+							.name {
+								font-size: 15px;
+								line-height: 15px;
+								font-weight: bold;
+								height: 15px;
+							}
 						}
 
 						image {
 							width: 45vw;
-							height: 25vw;
+							height: 28vw;
 						}
 
 						.right {
-							flex: 1;
+							position: absolute;
+							z-index: 999;
+							bottom: 0;
+							width: 100%;
+							box-sizing: border-box;
 							display: flex;
 							flex-direction: column;
 							justify-content: space-between;
 							padding: 8px;
-
-							.name {
-								font-size: 16px;
-								margin-bottom: 8px;
-								line-height: 16px;
-								font-weight: bold;
-								height: 16px;
-							}
+							color: #FFF;
 
 							.tag {
 								display: flex;
