@@ -33,31 +33,34 @@
 						<image src="@/static/over.png" mode="" style="width: 30px;height: 30px;" @click="openEnd">
 						</image>
 					</view>
-					<view class="parachute"
+					<view class="parachute" v-if="isSocket"
 						style="background-color: #FFF;padding: 6px;position: relative;margin-top: 8px;border-radius: 4px;"
 						@click="showVerify = !showVerify">
 						<image src="@/static/parachute.png" mode="" style="width: 24px;height: 24px;"></image>
 					</view>
-					<view class="parachute"
+					<view class="parachute" @longpress="handlefanhangLongPress"
 						style="background-color: #FFF;padding: 6px;position: relative;margin-top: 8px;border-radius: 4px;">
-						<image src="@/static/fanhang.png" mode="" style="width: 24px;height: 24px;"></image>
+						<image src="@/static/fanhang.png" mode="" style="width: 24px;height: 24px;" v-if="isSocket">
+						</image>
 					</view>
 					<view class="parachute"
 						style="background-color: #FFF;padding: 6px;position: relative;margin-top: 8px;border-radius: 4px;"
-						@longpress="handleLongPress" @touchend="handleLongPressEnd" @touchcancel="handleLongPressEnd">
+						@longpress="handleLongPress" @touchend="handleLongPressEnd" @touchcancel="handleLongPressEnd"
+						v-if="isSocket">
 						<image src="@/static/xuanzhuan.png" mode="" :style="xuanzhuanStyle"></image>
 					</view>
 				</view>
 				<view class="_item" style="color: #FFF;">
-					<view class="">
+					<view class="" style="width: 150px;">
 
 					</view>
 					<image src="@/static/logo.png" mode="" class="kuaifeilogo" />
-					<view class="right">
+					<view class="right" style="min-width: 100px;">
 						<view class="flex" style="margin-right: 12px;">
 							<image src="@/static/workSend.png" mode=""
 								style="width: 20px;height: 20px;margin-right: 4px;" />
-							<span style="color: #FFF;">6</span>
+							<span
+								:style="{color: socket505Data.satellites_visible >= 6 ? '#FFF' : 'red'}">{{socket505Data.satellites_visible || 0 }}</span>
 						</view>
 						<view class="hd" style="margin-right: 16px;">
 							HD
@@ -77,9 +80,9 @@
 							</image>
 							<span>{{socket501Data.myCsq}}</span>
 						</view>
-						<view class="flex items-center">
+						<view class="flex items-center" style="margin-right: 16px;">
 							<image src="/static/dianliang.png" mode="" style="width: 20px;height: 20px;" />
-							<span>{{socket503Data.battery_remaining}}</span>
+							<span>{{socket503Data.battery_remaining || '-'}}</span>
 						</view>
 						<!-- <view>电压：{{socket503Data.voltage_battery}} V</view>
 						<view>电流：{{socket503Data.current_battery}} A</view>
@@ -99,8 +102,9 @@
 					:outerRadius="outerRadius" id="motor" @moveRocker="moveRocker" @stopMoveRocker="stopMoveRocker">
 				</rocker>
 				<view class="info">
-					<span> H - {{socket502Data.alt}} m</span>
-					<span style="margin-left: 20px;"> VS - {{socket504Data.rollspeed}} rad/s</span>
+					<span> H - {{socket502Data.relative_alt}} m</span>
+					<span style="margin-left: 20px;"> VS - {{socket505Data.vel}} cm/s</span>
+					<span style="margin-left: 20px;"> z速度 - {{socket502Data.vz}} m/s</span>
 				</view>
 				<!-- <view class="actionButtonBox">
 					<view class="actionButton" :class="[fiveActive == 'up' ? 'activeFiveButton' : '']">
@@ -193,9 +197,18 @@
 			</view>
 		</view>
 
-		<u-popup :show="show" mode="top" @close="close" @open="open">
+		<u-popup :show="show" mode="right" @close="close" @open="open">
 			<view class="centerInfo">
-				<view class="_item">
+				<view class="tabs">
+					<view class="tab" style="margin-right: 8px;" @click="tabValue = 'socket'"
+						:class="{'activeTab': tabValue == 'socket'}">
+						socket数据
+					</view>
+					<view class="tab" @click="tabValue = 'deviceInfo'" :class="{'activeTab': tabValue == 'deviceInfo'}">
+						设备信息
+					</view>
+				</view>
+				<view class="_item" v-if="tabValue == 'socket'">
 					<view>纬度：{{socket502Data.lat}}</view>
 					<view>经度：{{socket502Data.lon}}</view>
 					<view>绝对高度：{{socket502Data.alt}}</view>
@@ -211,24 +224,6 @@
 					<view>俯仰角速度：{{socket504Data.pitchspeed}} rad/s</view>
 					<view>偏航角速度：{{socket504Data.yawspeed}} rad/s</view>
 				</view>
-				<view class="_item">
-					<view>电机0转速：{{socket507Data.RPM0}}</view>
-					<view>电机1转速：{{socket507Data.RPM1}}</view>
-					<view>电机2转速：{{socket507Data.RPM2}}</view>
-					<view>电机3转速：{{socket507Data.RPM3}}</view>
-				</view>
-				<view class="_item">
-					<view>电机0电压：{{socket507Data.V0}}</view>
-					<view>电机1电压：{{socket507Data.V1}}</view>
-					<view>电机2电压：{{socket507Data.V2}}</view>
-					<view>电机3电压：{{socket507Data.V3}}</view>
-				</view>
-				<view class="_item">
-					<view>电机0电流：{{socket507Data.I0}}</view>
-					<view>电机1电流：{{socket507Data.I1}}</view>
-					<view>电机2电流：{{socket507Data.I2}}</view>
-					<view>电机3电流：{{socket507Data.I3}}</view>
-				</view>
 			</view>
 		</u-popup>
 	</view>
@@ -242,6 +237,9 @@
 		socketUrl,
 		requestUrl
 	} from '@/utils/request';
+	import {
+		mapState
+	} from 'vuex';
 	export default {
 		components: {
 			rocker,
@@ -249,6 +247,7 @@
 		},
 		data() {
 			return {
+				tabValue: 'socket',
 				xuanzhuanStyle: {
 					width: '24px',
 					height: '24px',
@@ -259,6 +258,7 @@
 				sixPositionStyle: {
 					'margin-left': '-160px',
 				},
+				webView: null,
 				requestUrl: requestUrl,
 				showrStartError: false,
 				showEnd: false,
@@ -303,6 +303,7 @@
 				socket502Data: {},
 				socket503Data: {},
 				socket504Data: {},
+				socket505Data: {},
 				socket507Data: {},
 				logList: [],
 				sliderLeftList: [{
@@ -361,6 +362,14 @@
 			this.macAddress = macAddress
 			this.carId = carId
 		},
+		onReady() {
+			this.$nextTick(() => {
+
+			});
+		},
+		computed: {
+			...mapState(['userInfo'])
+		},
 		onShow() {
 			const systemInfo = uni.getSystemInfoSync();
 			if (systemInfo.windowHeight > systemInfo.windowWidth) {
@@ -408,19 +417,22 @@
 				try {
 					const response = await request(`/app/camera/getInfoByCarId/${this.carId}`, 'GET')
 					if (response.code == 200) {
-						this.initWebSocket();
-						// this.authId = response.data.authId
-						// this.authCode = response.data.authCode
-						// this.devId = response.data.devId
-						// this.series = response.data.series
-
-						// this.webViewSrc =
-						// 	`/static/webRTC/onminirtc.html?devId=${this.devId}&series=${this.series}&authId=${this.authId}&authCode=${this.authCode}`;
-						// this.$nextTick(() => {
-						// 	this.getDeviceStatus(response.data.authId, response.data.authCode, response.data
-						// 		.devId,
-						// 		response.data.series)
-						// });
+						this.initWebSocket()
+						this.authId = response.data.authId
+						this.authCode = response.data.authCode
+						this.devId = response.data.devId
+						this.series = response.data.series
+						var token = uni.getStorageSync('Token')
+						var userId = uni.getStorageSync('Token')
+						if (token) {
+							this.webViewSrc =
+								`/static/webRTC/onminirtc.html?devId=${this.devId}&series=${this.series}&authId=${this.authId}&authCode=${this.authCode}&tokens=${JSON.stringify(token)}&carId=${this.carId}&userId=${this.userInfo.userId}`;
+						}
+						this.$nextTick(() => {
+							this.getDeviceStatus(response.data.authId, response.data.authCode, response.data
+								.devId,
+								response.data.series)
+						});
 
 					}
 				} catch (error) {
@@ -496,7 +508,7 @@
 					const response = await request(`/app/carInfo/startCar/${this.macAddress}`, 'GET')
 					if (response.code == 200) {
 						this.showrEmind = false
-						// this.initWebSocket();
+						this.initWebSocket();
 					} else {
 						this.showrEmind = false
 						this.showrStartError = true
@@ -571,13 +583,14 @@
 			handleLongPress() {
 				this.xuanzhuanStyle.width = '36px'
 				this.xuanzhuanStyle.height = '36px'
+				clearInterval(this.fiveIntervarTime)
 				this.xuanzhuanTimer = setInterval(() => {
 					if (this.num >= 360) {
 						clearInterval(this.xuanzhuanTimer)
 						this.sendMessage(JSON.stringify({
 							bizCode: 602,
-							channelNum: this.getChannelNum(5),
-							duty: this.getDutyValue(5, 5),
+							channelNum: this.getChannelNum(6),
+							duty: this.getDutyValue(6, 5),
 							timestamp: this.getTimestamp(),
 							mac: this.macAddress
 						}))
@@ -589,6 +602,19 @@
 					}
 				}, 10)
 
+			},
+			handlefanhangLongPress() {
+				uni.showToast({
+					title: '开始返航',
+					icon: 'none',
+				});
+				this.sendMessage(JSON.stringify({
+					bizCode: 602,
+					channelNum: this.getChannelNum(5),
+					duty: this.getDutyValue(5, 5),
+					timestamp: this.getTimestamp(),
+					mac: this.macAddress
+				}))
 			},
 			handleLongPressEnd() {
 				console.log('长按结束')
@@ -650,14 +676,15 @@
 						this.startX
 					if (newX >= 0) {
 						if (!this.isSixSend) {
+							clearInterval(this.sixIntervarTime);
 							uni.showToast({
 								title: '操作成功',
 								icon: 'success',
 							});
 							this.sendMessage(JSON.stringify({
 								bizCode: 602,
-								channelNum: this.getChannelNum(6),
-								duty: this.getDutyValue(6, 5),
+								channelNum: this.getChannelNum(5),
+								duty: this.getDutyValue(5, -5),
 								timestamp: this.getTimestamp(),
 								mac: this.macAddress
 							}))
@@ -1341,6 +1368,8 @@
 							this.socket503Data = data.data
 						} else if (data.data && data.data.bizCode == 504) {
 							this.socket504Data = data.data
+						} else if (data.data && data.data.bizCode == 505) {
+							this.socket505Data = data.data
 						} else if (data.data && data.data.bizCode == 507) {
 							this.socket507Data = data.data
 						}
@@ -1723,13 +1752,34 @@
 		padding: 24px;
 		font-size: 13px;
 		color: #000;
+		width: 300px;
+
+		.tabs {
+			display: flex;
+			flex-direction: row;
+			justify-content: center;
+
+			.tab {
+				width: 100px;
+				height: 36px;
+				text-align: center;
+				line-height: 36px;
+				border-radius: 4px;
+				background-color: #37eb00;
+			}
+
+			.activeTab {
+				font-weight: 700;
+			}
+		}
 
 		._item {
 			display: flex;
-			flex-direction: row;
+			flex-direction: column;
 			align-items: start;
 			flex-wrap: wrap;
-			gap: 8px;
+			gap: 4px;
+			padding: 16px 0;
 		}
 	}
 </style>

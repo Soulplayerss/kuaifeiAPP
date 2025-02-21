@@ -34,13 +34,13 @@
 			</view>
 		</view>
 		<view class="settingList">
-			<view class="settingItem" @click="navigateTo('/pages/myOrder/myOrder')">
+			<!-- <view class="settingItem" @click="navigateTo('/pages/myOrder/myOrder')">
 				<view class="left">
 					<image src="../../assets/images/my-order.png" mode=""></image>
 					<span>我的订单</span>
 				</view>
 				<u-icon name="arrow-right" size="22" color="#b09aaa"></u-icon>
-			</view>
+			</view> -->
 			<view class="settingItem" @click="navigateTo('/pages/drivingRecord/drivingRecord')">
 				<view class="left">
 					<image src="../../assets/images/history.png" mode=""></image>
@@ -55,13 +55,13 @@
 				</view>
 				<u-icon name="arrow-right" size="22" color="#b09aaa"></u-icon>
 			</view>
-			<view class="settingItem" @click="navigateTo('/pages/myShare/myShare')">
+			<!-- <view class="settingItem" @click="navigateTo('/pages/myShare/myShare')">
 				<view class="left">
 					<image src="../../assets/images/my-shared.png" mode=""></image>
 					<span>我的共享</span>
 				</view>
 				<u-icon name="arrow-right" size="22" color="#b09aaa"></u-icon>
-			</view>
+			</view> -->
 			<view class="settingItem" @click="navigateTo('/pages/photoAlbum/photoAlbum')">
 				<view class="left">
 					<image src="../../assets/images/photoAlbum.png" mode=""></image>

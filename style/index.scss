@@ -30,7 +30,7 @@ uni-app, uni-page-head{
 }
 .flex{
 	display: flex;
-	flex-direction: row;
+	flex-direction: row !important;
 }
 .items-end{
 	align-items: end;
@@ -38,10 +38,6 @@ uni-app, uni-page-head{
 
 .items-start{
 	align-items: start !important;
-}
-
-.items-center{
-	align-items: center;
 }
 
 .justify-between{

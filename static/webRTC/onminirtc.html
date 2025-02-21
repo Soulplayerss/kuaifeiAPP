@@ -244,7 +244,7 @@
 			.control {
 				position: absolute;
 				width: 40px;
-				right: 0;
+				right: 10px;
 				top: 0;
 				font-size: 32px;
 				height: 100%;
@@ -254,6 +254,13 @@
 				align-items: start;
 				gap: 20px;
 			}
+			.zhunxin{
+				position: fixed;
+				top: 50%;
+				left: 50%;
+				color: #FFF !important;
+				opacity: 0.5;
+			}
 		</style>
 	</head>
 
@@ -262,7 +269,7 @@
 		<div>
 			<!--</div>-->
 			<div class="VideoContainer">
-
+				<div class="zhunxin">➕</div>
 				<video id="theirs" style="height:100%;width: 100%;" autoplay controls webkit-playsinline playsinline
 					muted></video>
 				<!-- controls background:rgba(0, 0, 0, 1) fa-star -->
@@ -291,8 +298,6 @@
 		<script>
 			var G_DevId = ""
 			var G_Series = "";
-			// var G_DevId = "ch2000037100"
-			// var G_Series = "icm0f1000a02a07";
 			var G_AuthId = 0;
 			var G_AuthCode = "";
 			const params = new URLSearchParams(window.location.search);
@@ -300,8 +305,9 @@
 			G_Series = params.get('series')
 			G_AuthId = params.get('authId')
 			G_AuthCode = params.get('authCode')
-			var requestUrl = params.get('requestUrl')
-			console.log(requestUrl)
+			var tokens = params.get('tokens')
+			var userId = params.get('userId')
+			var carId = params.get('carId')
 			var GMsgWait = 0;
 			var G_VideoQ = "1";
 			var RtcVideoInfo = null;
@@ -500,17 +506,64 @@
 			async function openphoto() {
 				try {
 					const response = await fetch(
-						'https://rtc.minirtc.com/Dev/ch2000037100/OnCapture?AuthId=523&AuthCode=abad26b05a058115d9645afa6a760b26&Sign=4214242423423&Random='
+						`https://rtc.minirtc.com/Dev/${G_DevId}/OnCapture?AuthId=${G_AuthId}&AuthCode=${G_AuthCode}`
 					);
 					// 检查响应状态码
 					if (!response.ok) {
 						console.log(`HTTP error! Status: ${response.status}`);
 					}
-					// 获取Blob对象（这里假设服务器返回的是二进制数据）
 					const blob = await response.blob();
-					// 创建一个指向该Blob对象的URL
+					console.log(response)
+
 					const url = URL.createObjectURL(blob);
-					console.log(url)
+
+					const formData = new FormData();
+					formData.append('file', blob, 'image.png');
+
+					fetch('http://1.95.71.155:8888/common/upload', {
+							method: 'POST',
+							headers: {
+								'Authorization': `Bearer ${JSON.parse(tokens)}`
+							},
+							body: formData, // 发送文件数据
+						})
+						.then(response => response.json())
+						.then(data => {
+							console.log(data)
+							if (data.code == 200) {
+								var pictureUrl = data.fileName
+
+								fetch('http://1.95.71.155:8888/app/picture', {
+										method: 'POST',
+										headers: {
+											'Authorization': `Bearer ${JSON.parse(tokens)}`,
+											'Content-Type': 'application/json',
+										},
+										body: JSON.stringify({
+											pictureUrl: pictureUrl,
+											carId: carId,
+											userId: userId
+										})
+									})
+									.then(response => response.json())
+									.then(res => {
+										if (res.code == 200) {
+											GMsgWait = layui.layer.msg('上传成功', {
+												time: 3000,
+												icon: 16,
+												shade: 0.01
+											});
+										}
+									})
+									.catch(error => {
+										console.error('请求失败:', error);
+									});
+
+							}
+						})
+						.catch(error => {
+							console.error('Error:', error);
+						});
 
 					// 将URL设置为img元素的src属性
 					// const imgElement = document.getElementById('img_src');

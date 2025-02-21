@@ -9,7 +9,7 @@
 				<span class="number mr-8">6952</span>
 				<span class="new">(+20.00)</span>
 			</view>
-			<view class="btns">
+			<!-- <view class="btns">
 				<view class="btn">
 					<u-button type="primary" text="充值" style="color: #30313D;"
 						color="linear-gradient(to bottom, rgb(255,241,204), rgb(255, 227, 157))" @click="navigateTo('/pages/rechargeCenter/rechargeCenter')"></u-button>
@@ -18,7 +18,7 @@
 					<u-button type="primary" text="提现" style="color: #FFF;"
 						color="linear-gradient(to bottom, rgb(130,209,253), rgb(27,156, 229))" @click="navigateTo('/pages/withdrawal/withdrawal')"></u-button>
 				</view>
-			</view>
+			</view> -->
 			<view class="list">
 				<view class="settingItem" @click="navigateTo('/pages/rechargeRecord/rechargeRecord')">
 					<view class="left">

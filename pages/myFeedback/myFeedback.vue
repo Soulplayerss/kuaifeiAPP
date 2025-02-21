@@ -4,7 +4,7 @@
 		<view style="padding: 16px;">
 			<view class="content">
 				<view style="text-align: right;margin-bottom: 16px;">
-					<span style="color: #eea618;">刷新</span>
+					<span style="color: #eea618;" @click="onRefresh">刷新</span>
 				</view>
 				<view class="list">
 					<scroll-view v-if="dataList.length" scroll-y @refresherrefresh="onRefresh"
@@ -20,16 +20,16 @@
 									反馈编号：{{item.code}}
 								</view>
 								<view class="flex justify-between">
-									<span>问题类型：{{item.type}}</span>
+									<span>问题类型：{{item.typeLabel}}</span>
 									<span style="min-width: 90px;">状&emsp;态：<span
-											:style="{color:item.status == '已回复' ? '#81ee6d' : '#c38513'}">{{item.status}}</span></span>
+											:style="{color:item.status == 1 ? '#81ee6d' : '#c38513'}">{{item.statusLabel}}</span></span>
 								</view>
 								<view class="flex justify-between">
 									<span>提交时间：{{item.createTime}}</span>
-									<span style="min-width: 90px;">处理人：{{item.name}}</span>
+									<span style="min-width: 90px;">处理人：{{item.updateBy || '-'}}</span>
 								</view>
 								<view>
-									处理时间：{{item.processingTime}}
+									处理时间：{{item.updateTime || '-'}}
 								</view>
 							</view>
 						</view>
@@ -38,6 +38,7 @@
 						<u-loadmore v-show="hittingBottom" loadmoreText="没有更多数据" color="#1CD29B" lineColor="#1CD29B"
 							dashed line />
 					</scroll-view>
+					<NoData v-show="showNoData" />
 				</view>
 			</view>
 		</view>
@@ -46,20 +47,29 @@
 
 <script>
 	import AppBar from '@/components/common/AppBar.vue'
+	import request from '@/utils/request';
+	import {
+		requestUrl
+	} from '@/utils/request';
+	import NoData from '@/components/common/NoData.vue'
 	export default {
 		data() {
 			return {
-				page: 1,
+				pageNum: 1,
 				pageSize: 10,
 				loading: false,
 				isRefreshing: false,
-				total: 18,
+				total: 0,
 				hittingBottom: false,
+				showNoData: false,
 				dataList: [],
+				questionTypeList: [],
+				questionStatusList: []
 			}
 		},
 		components: {
-			AppBar
+			AppBar,
+			NoData
 		},
 		methods: {
 			goBank() {
@@ -67,12 +77,34 @@
 					url: '/pages/my/my',
 				})
 			},
+			async getQuestionType() {
+				try {
+					const response = await request(`/system/dict/data/type/app_question_type`, 'GET')
+					this.questionTypeList = response.data
+				} catch (error) {
+					uni.showToast({
+						title: '加载失败',
+						icon: 'none',
+					});
+				}
+			},
+			async getQuestionsStatus() {
+				try {
+					const response = await request(`/system/dict/data/type/app_question_status`, 'GET')
+					this.questionStatusList = response.data
+				} catch (error) {
+					uni.showToast({
+						title: '加载失败',
+						icon: 'none',
+					});
+				}
+			},
 			// 下拉刷新
 			onRefresh() {
 				if (this.isRefreshing) return;
 
 				this.isRefreshing = true;
-				this.page = 1;
+				this.pageNum = 1;
 				setTimeout(() => {
 					this.dataList = []
 					this.loadData();
@@ -85,104 +117,52 @@
 				if (this.hittingBottom) return;
 				this.loading = true;
 				setTimeout(() => {
-					this.page++;
+					this.pageNum++;
 					this.loadData()
 				}, 1000)
 			},
 			// 加载数据方法
-			loadData() {
-				const data = [{
-						code: 'weqdascacacqqeq11346515',
-						type: '车辆',
-						status: '已回复',
-						createTime: '2024-12-05',
-						name: '张三风',
-						processingTime: '2024-12-05',
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						type: '车辆',
-						status: '未回复',
-						createTime: '2024-12-05',
-						name: '张三风',
-						processingTime: '2024-12-05',
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						type: '车辆',
-						status: '已回复',
-						createTime: '2024-12-05',
-						name: '张三风',
-						processingTime: '2024-12-05',
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						type: '车辆',
-						status: '未回复',
-						createTime: '2024-12-05',
-						name: '张三风',
-						processingTime: '2024-12-05',
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						type: '车辆',
-						status: '已回复',
-						createTime: '2024-12-05',
-						name: '张三风',
-						processingTime: '2024-12-05',
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						type: '车辆',
-						status: '未回复',
-						createTime: '2024-12-05',
-						name: '张三风',
-						processingTime: '2024-12-05',
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						type: '车辆',
-						status: '已回复',
-						createTime: '2024-12-05',
-						name: '张三风',
-						processingTime: '2024-12-05',
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						type: '车辆',
-						status: '未回复',
-						createTime: '2024-12-05',
-						name: '张三风',
-						processingTime: '2024-12-05',
-					},
-					{
-						code: 'weqdascacacqqeq11346515',
-						type: '车辆',
-						status: '已回复',
-						createTime: '2024-12-05',
-						name: '张三风',
-						processingTime: '2024-12-05',
-					},
-				]
+			async loadData() {
+				try {
+					const response = await request('/app/question/listByUser', 'GET', {
+						pageNum: this.pageNum,
+						pageSize: this.pageSize
+					})
+					const data = response.rows
+					this.total = response.total
+					this.dataList = this.pageNum === 1 ? data : this.dataList.concat(
+						data)
+					this.showNoData = this.dataList.length == 0 ? true : false;
+					if (this.dataList.length > 0) {
+						this.dataList.forEach(item => {
+							item.typeLabel = this.questionTypeList.find(e => e.dictValue == item.type)
+								?.dictLabel
+							item.statusLabel = this.questionStatusList.find(e => e.dictValue == item.status)
+								?.dictLabel
+						})
+					}
+					if (this.dataList.length >= this.total) {
+						this.hittingBottom = true
+						this.loading = false
+					} else {
+						this.hittingBottom = false
+						this.loading = true
+					}
 
-				this.dataList = this.page === 1 ? data : this.dataList.concat(
-					data)
-
-				if (this.dataList.length >= this.total) {
-					this.hittingBottom = true
-				} else {
-					this.hittingBottom = false
-				}
-
-				this.isRefreshing = false;
-				this.loading = false;
-				if (this.page >= 5) {
-					this.loading = false;
+					this.isRefreshing = false;
+				} catch (error) {
+					console.log(error)
+					uni.showToast({
+						title: '加载失败',
+						icon: 'none',
+					});
 				}
 			}
 		},
 		mounted() {
-			this.loadData();
+			this.getQuestionType()
+			this.getQuestionsStatus()
+			this.loadData()
 		}
 	}
 </script>

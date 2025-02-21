@@ -19,7 +19,7 @@
 				</view>
 				<view class="item items-start">
 					<span class="color-c2a9bb">问题描述</span>
-					<u--textarea v-model="desc" placeholder="请输入内容" count height="120"></u--textarea>
+					<u--textarea v-model="remark" placeholder="请输入内容" count height="120"></u--textarea>
 				</view>
 
 				<view class="item items-start">
@@ -39,7 +39,7 @@
 
 		<view class="btns">
 			<view class="btn">
-				<u-button type="primary" shape="circle" text="提交" style="color: #30313D;"
+				<u-button type="primary" @click="commitFeedback" shape="circle" text="提交" style="color: #30313D;"
 					color="linear-gradient(to bottom, rgb(255,241,204), rgb(255, 227, 157))"></u-button>
 			</view>
 		</view>
@@ -48,14 +48,21 @@
 
 <script>
 	import AppBar from '@/components/common/AppBar.vue'
+	import request from '@/utils/request';
+	import {
+		requestUrl
+	} from '@/utils/request';
 	export default {
 		data() {
 			return {
-				options: ['账号', '车辆', '钱包', '其他'],
+				options: [],
 				selectedOption: '请选择投诉类型',
-				desc: '',
+				remark: '',
+				type: '',
 				fileList: [],
-				superiorPage: 'my'
+				sitePictureUrl: '',
+				superiorPage: 'my',
+				questionTypeList: []
 			}
 		},
 		components: {
@@ -66,6 +73,9 @@
 				page
 			} = options; // 获取具体的参数值
 			this.superiorPage = page
+		},
+		mounted() {
+			this.getQuestionType()
 		},
 		methods: {
 			goBank() {
@@ -85,9 +95,24 @@
 					})
 				}
 			},
+			async getQuestionType() {
+				try {
+					const response = await request(`/system/dict/data/type/app_question_type`, 'GET')
+					this.questionTypeList = response.data
+					this.options = response.data.map((item) => item.dictLabel)
+					this.selectedOption = response.data[0].dictLabel
+					this.type = response.data[0].dictValue
+				} catch (error) {
+					uni.showToast({
+						title: '加载失败',
+						icon: 'none',
+					});
+				}
+			},
 			onPickerChange(e) {
 				const selectedIndex = e.detail.value;
 				this.selectedOption = this.options[selectedIndex];
+				this.type = this.questionTypeList.find(item => item.dictLabel == this.selectedOption)?.dictValue
 			},
 			// 删除图片
 			deletePic(event) {
@@ -117,15 +142,24 @@
 				}
 			},
 			uploadFilePromise(url) {
+				var token = ''
+				uni.getStorage({
+					key: 'Token',
+					success(res) {
+						token = res.data
+					}
+				})
 				return new Promise((resolve, reject) => {
-					let a = uni.uploadFile({
-						url: 'http://192.168.2.21:7001/upload', // 仅为示例，非真实的接口地址
+					uni.uploadFile({
+						url: `${requestUrl}/common/upload`,
 						filePath: url,
 						name: 'file',
-						formData: {
-							user: 'test'
+						header: {
+							'Authorization': `Bearer ${token}`
 						},
 						success: (res) => {
+							let data = JSON.parse(res.data)
+							this.sitePictureUrl = data.fileName
 							setTimeout(() => {
 								resolve(res.data.data)
 							}, 1000)
@@ -133,6 +167,37 @@
 					});
 				})
 			},
+			async commitFeedback() {
+				if (this.remark == '') {
+					uni.showToast({
+						title: '请输入问题描述',
+						icon: 'error',
+					});
+					return
+				}
+				try {
+					const response = await request('/app/question/addByApp', 'POST', {
+						type: this.type,
+						remark: this.remark,
+						certificate: this.sitePictureUrl
+					})
+					if (response.code === 200) {
+						uni.showToast({
+							title: '反馈成功',
+							icon: 'success',
+						});
+						setTimeout(() => {
+							this.goBank()
+						}, 1000)
+					}
+				} catch (error) {
+					uni.showToast({
+						title: '添加失败',
+						icon: 'none',
+					});
+				}
+
+			}
 		}
 	}
 </script>
