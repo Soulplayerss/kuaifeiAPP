@@ -1,18 +1,18 @@
 <template>
 	<view class="configuration">
-		<AppBar title='车辆配置' @goBank="goBank" />
+		<AppBar title='设备配置' @goBank="goBank" />
 		<view class="content">
 			<image :src="carInfo.sitePictureUrl" mode="" class="carImg"></image>
 			<view class="item">
-				<span class="left">车辆编号</span>
+				<span class="left">设备编号</span>
 				<span class="right">{{carInfo.carNo}}</span>
 			</view>
 			<view class="item">
-				<span class="left">车辆名称</span>
+				<span class="left">设备名称</span>
 				<span class="right" @click="showChangeName = true">{{carInfo.carName}}</span>
 			</view>
 			<view class="item">
-				<span class="left">车辆状态</span>
+				<span class="left">设备状态</span>
 				<span class="right"
 					:style="{color:carInfo.carStatus == 0 ? '#c38513' : ''}">{{carInfo.carStatus == 0 ? '离线' : '在线'}}</span>
 			</view>

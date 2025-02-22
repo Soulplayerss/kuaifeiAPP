@@ -4,16 +4,16 @@
 	},
 	"pages": [
 		{
+			"path": "pages/login/login",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "pages/car/car",
 			"style": {
 				"navigationStyle": "custom",
 				"keepAlive": true
-			}
-		},
-		{
-			"path": "pages/login/login",
-			"style": {
-				"navigationStyle": "custom"
 			}
 		},
 		{

@@ -82,18 +82,31 @@
 						</view>
 						<view class="flex items-center" style="margin-right: 16px;">
 							<image src="/static/dianliang.png" mode="" style="width: 20px;height: 20px;" />
-							<span>{{socket503Data.battery_remaining || '-'}}</span>
+							<span>{{(socket503Data.battery_remaining * 100) || '-'}} %</span>
 						</view>
 						<!-- <view>电压：{{socket503Data.voltage_battery}} V</view>
 						<view>电流：{{socket503Data.current_battery}} A</view>
 						<view>电量：{{socket503Data.battery_remaining}}</view>
 						<view>信号：{{socket501Data.myCsq}}</view> -->
-						<image src="@/static/list.png" mode="" style="width: 30px;height: 30px;" @click="show = true">
+						<image src="@/static/list.png" mode="" style="width: 30px;height: 30px;" @click="show = true"
+							v-if="isSocket">
 						</image>
 					</view>
 
 				</view>
 
+				<view class="deviceHuagan" v-if="isSocket">
+					<view class="huadongBtn" :style="{top: huadongTop + 'px'}"
+						@touchstart.prevent="onShijiaoTouchStart($event)"
+						@touchmove.prevent="onShijiaoTouchMove($event)" @touchend="onShijiaoTouchEnd">
+						<view class="kongbai">
+						</view>
+						<view class="kongbai">
+						</view>
+						<view class="kongbai">
+						</view>
+					</view>
+				</view>
 			</view>
 
 			<view class="rockerBtns" :style="{ width:  viewportWidth ? viewportWidth * 0.9 + 'px' : '100%'}"
@@ -102,9 +115,9 @@
 					:outerRadius="outerRadius" id="motor" @moveRocker="moveRocker" @stopMoveRocker="stopMoveRocker">
 				</rocker>
 				<view class="info">
-					<span> H - {{socket502Data.relative_alt}} m</span>
-					<span style="margin-left: 20px;"> VS - {{socket505Data.vel}} cm/s</span>
-					<span style="margin-left: 20px;"> z速度 - {{socket502Data.vz}} m/s</span>
+					<span> H-{{socket502Data.relative_alt}} m</span>
+					<span style="margin-left: 10px;">VS-{{socket505Data.vel}} cm/s</span>
+					<span style="margin-left: 10px;">z速度-{{socket502Data.vz}} m/s</span>
 				</view>
 				<!-- <view class="actionButtonBox">
 					<view class="actionButton" :class="[fiveActive == 'up' ? 'activeFiveButton' : '']">
@@ -169,7 +182,7 @@
 				</view>
 				<view class="_btns">
 					<view class="btn cancel" @click="back">
-						返回
+						退出
 					</view>
 					<view class="btn ok" @click="showrStartError = false">
 						关闭
@@ -224,6 +237,10 @@
 					<view>俯仰角速度：{{socket504Data.pitchspeed}} rad/s</view>
 					<view>偏航角速度：{{socket504Data.yawspeed}} rad/s</view>
 				</view>
+				<view class="_item" v-if="tabValue == 'deviceInfo'">
+					<view>设备名称：{{carInfo.carName}}</view>
+					<view>设备编号：{{carInfo.carNo}}</view>
+				</view>
 			</view>
 		</u-popup>
 	</view>
@@ -247,6 +264,7 @@
 		},
 		data() {
 			return {
+				huadongTop: 50,
 				tabValue: 'socket',
 				xuanzhuanStyle: {
 					width: '24px',
@@ -351,7 +369,12 @@
 				series: '',
 				showSix: false,
 				num: 0,
-				nums: 360
+				nums: 360,
+				isShijiaoDragging: false,
+				startShijiaoY: 0,
+				newShijiaoDirection: '',
+				oldShijiaoDirection: '',
+
 			}
 		},
 		onLoad(options) {
@@ -417,22 +440,28 @@
 				try {
 					const response = await request(`/app/camera/getInfoByCarId/${this.carId}`, 'GET')
 					if (response.code == 200) {
-						this.initWebSocket()
-						this.authId = response.data.authId
-						this.authCode = response.data.authCode
-						this.devId = response.data.devId
-						this.series = response.data.series
-						var token = uni.getStorageSync('Token')
-						var userId = uni.getStorageSync('Token')
-						if (token) {
-							this.webViewSrc =
-								`/static/webRTC/onminirtc.html?devId=${this.devId}&series=${this.series}&authId=${this.authId}&authCode=${this.authCode}&tokens=${JSON.stringify(token)}&carId=${this.carId}&userId=${this.userInfo.userId}`;
+						if (response.data) {
+							this.initWebSocket();
+							this.authId = response.data.authId
+							this.authCode = response.data.authCode
+							this.devId = response.data.devId
+							this.series = response.data.series
+							var token = uni.getStorageSync('Token')
+							var userId = uni.getStorageSync('Token')
+							if (token) {
+								this.webViewSrc =
+									`/static/webRTC/onminirtc.html?devId=${this.devId}&series=${this.series}&authId=${this.authId}&authCode=${this.authCode}&tokens=${JSON.stringify(token)}&carId=${this.carId}&userId=${this.userInfo.userId}`;
+							}
+							// this.$nextTick(() => {
+							// 	this.getDeviceStatus(response.data.authId, response.data.authCode, response
+							// 		.data
+							// 		.devId,
+							// 		response.data.series)
+							// });
+						} else {
+							this.cameraStatus = '当前设备没有绑定摄像头！'
+							this.showrEmind = true
 						}
-						this.$nextTick(() => {
-							this.getDeviceStatus(response.data.authId, response.data.authCode, response.data
-								.devId,
-								response.data.series)
-						});
 
 					}
 				} catch (error) {
@@ -488,6 +517,9 @@
 									}, 5000)
 								} else if (res.data.code == 201) {
 									this.cameraStatus = '摄像头超过最大连接数!是否继续驾驶？'
+									this.showrEmind = true
+								} else if (res.data.code == 202) {
+									this.cameraStatus = '该设备摄像头不在线!是否继续驾驶？'
 									this.showrEmind = true
 								} else {
 									this.cameraStatus = 'on'
@@ -583,18 +615,13 @@
 			handleLongPress() {
 				this.xuanzhuanStyle.width = '36px'
 				this.xuanzhuanStyle.height = '36px'
-				clearInterval(this.fiveIntervarTime)
 				this.xuanzhuanTimer = setInterval(() => {
 					if (this.num >= 360) {
 						clearInterval(this.xuanzhuanTimer)
-						this.sendMessage(JSON.stringify({
-							bizCode: 602,
-							channelNum: this.getChannelNum(6),
-							duty: this.getDutyValue(6, 5),
-							timestamp: this.getTimestamp(),
-							mac: this.macAddress
-						}))
-						this.showSix = true
+						this.sendSixMessage(5)
+						setTimeout(() => {
+							this.showSix = true
+						}, 5000)
 						this.nums = 360
 					} else {
 						this.num += 1
@@ -608,13 +635,7 @@
 					title: '开始返航',
 					icon: 'none',
 				});
-				this.sendMessage(JSON.stringify({
-					bizCode: 602,
-					channelNum: this.getChannelNum(5),
-					duty: this.getDutyValue(5, 5),
-					timestamp: this.getTimestamp(),
-					mac: this.macAddress
-				}))
+				this.sendFiveMessage(-5)
 			},
 			handleLongPressEnd() {
 				console.log('长按结束')
@@ -623,7 +644,91 @@
 				// 	icon: 'none',
 				// });
 			},
-			// 触摸开始时，记录起始位置
+			onShijiaoTouchStart(event) {
+				this.isShijiaoDragging = true;
+				this.startShijiaoY = event.touches[0].clientY ? event.touches[0].clientY - this.huadongTop : event.touches[
+						0].screenY -
+					this.huadongTop;
+				console.log('开始触摸', this.startShijiaoY)
+			},
+			onShijiaoTouchMove(event) {
+				if (this.isShijiaoDragging) {
+					var newY = event.touches[0].clientY ? event.touches[0].clientY - this.startShijiaoY : event.touches[
+							0]
+						.screenY -
+						this.startShijiaoY
+					if (newY <= 0) {
+						newY = 0
+					} else if (newY >= 100) {
+						newY = 100
+					}
+
+					if (newY >= 0 && newY < 10) {
+						this.newShijiaoDirection = 'Top5'
+					} else if (newY >= 10 && newY < 20) {
+						this.newShijiaoDirection = 'Top4'
+					} else if (newY >= 20 && newY < 30) {
+						this.newShijiaoDirection = 'Top3'
+					} else if (newY >= 30 && newY < 40) {
+						this.newShijiaoDirection = 'Top2'
+					} else if (newY >= 40 && newY <= 45) {
+						this.newShijiaoDirection = 'Top1'
+					} else if (newY > 45 && newY < 55) {
+						this.newShijiaoDirection = 'Stop'
+					} else if (newY >= 55 && newY < 60) {
+						this.newShijiaoDirection = 'Bottom1'
+					} else if (newY >= 60 && newY < 70) {
+						this.newShijiaoDirection = 'Bottom2'
+					} else if (newY >= 70 && newY < 80) {
+						this.newShijiaoDirection = 'Bottom3'
+					} else if (newY >= 80 && newY < 90) {
+						this.newShijiaoDirection = 'Bottom4'
+					} else if (newY >= 90 && newY <= 100) {
+						this.newShijiaoDirection = 'Bottom5'
+					}
+
+					if (this.newShijiaoDirection != this.oldShijiaoDirection) {
+						this.oldShijiaoDirection = this.newShijiaoDirection
+						if (this.newShijiaoDirection == 'Top1') {
+							this.sendShijiaoValue(1)
+						} else if (this.newShijiaoDirection == 'Top2') {
+							this.sendShijiaoValue(2)
+						} else if (this.newShijiaoDirection == 'Top3') {
+							this.sendShijiaoValue(3)
+						} else if (this.newShijiaoDirection == 'Top4') {
+							this.sendShijiaoValue(4)
+						} else if (this.newShijiaoDirection == 'Top5') {
+							this.sendShijiaoValue(5)
+						} else if (this.newShijiaoDirection == 'Stop') {
+							this.sendShijiaoValue(0)
+						} else if (this.newShijiaoDirection == 'Bottom1') {
+							this.sendShijiaoValue(-1)
+						} else if (this.newShijiaoDirection == 'Bottom2') {
+							this.sendShijiaoValue(-2)
+						} else if (this.newShijiaoDirection == 'Bottom3') {
+							this.sendShijiaoValue(-3)
+						} else if (this.newShijiaoDirection == 'Bottom4') {
+							this.sendShijiaoValue(-4)
+						} else if (this.newShijiaoDirection == 'Bottom5') {
+							this.sendShijiaoValue(-5)
+						}
+					}
+
+					this.huadongTop = newY
+				}
+			},
+			onShijiaoTouchEnd() {
+				this.isShijiaoDragging = false;
+			},
+			sendShijiaoValue(num) {
+				this.sendMessage(JSON.stringify({
+					bizCode: 602,
+					channelNum: this.getChannelNum(7),
+					duty: this.getDutyValue(7, num),
+					timestamp: this.getTimestamp(),
+					mac: this.macAddress
+				}))
+			},
 			onTouchStart(event) {
 				console.log('开始触摸')
 				if (!this.isSend) {
@@ -632,7 +737,6 @@
 				this.startX = event.touches[0].clientX ? event.touches[0].clientX - this.left : event.touches[0].screenX -
 					this.left;
 			},
-			// 触摸移动时，更新元素的位置
 			onTouchMove(event) {
 				if (this.isDragging) {
 					const newX = event.touches[0].clientX ? event.touches[0].clientX - this.startX : event.touches[0]
@@ -655,7 +759,6 @@
 					}
 				}
 			},
-			// 触摸结束时，停止拖动
 			onSixTouchEnd() {
 				this.isSixDragging = false;
 				this.left = -160
@@ -676,42 +779,39 @@
 						this.startX
 					if (newX >= 0) {
 						if (!this.isSixSend) {
-							clearInterval(this.sixIntervarTime);
+							clearInterval(this.fiveIntervarTime);
 							uni.showToast({
 								title: '操作成功',
 								icon: 'success',
 							});
-							this.sendMessage(JSON.stringify({
-								bizCode: 602,
-								channelNum: this.getChannelNum(5),
-								duty: this.getDutyValue(5, -5),
-								timestamp: this.getTimestamp(),
-								mac: this.macAddress
-							}))
+							this.sendFiveMessage(5)
+							setTimeout(() => {
+								this.isSixSend = false
+								this.showSix = false
+								var xuanzhuanTimers = null
+								this.sendFiveMessage(0)
+								this.sendSixMessage(0)
+								xuanzhuanTimers = setInterval(() => {
+									if (this.nums <= 0) {
+										clearInterval(xuanzhuanTimers)
+										this.xuanzhuanStyle.width = '24px'
+										this.xuanzhuanStyle.height = '24px'
+										this.sixPositionStyle = {
+											'margin-left': '-160px',
+										}
+										this.num = 0
+									} else {
+										this.nums -= 1
+										this.xuanzhuanStyle.transform = `rotate(${this.nums}deg)`
+									}
+								}, 100)
+							}, 20000)
 						}
+						this.isSixSend = true
 						this.sixPositionStyle = {
 							'margin-left': '0px',
 						}
-						this.isSixSend = true
-						setTimeout(() => {
-							this.showSix = false
-							var xuanzhuanTimers = null
-							xuanzhuanTimers = setInterval(() => {
-								if (this.nums <= 0) {
-									clearInterval(xuanzhuanTimers)
-									this.xuanzhuanStyle.width = '24px'
-									this.xuanzhuanStyle.height = '24px'
-									this.sixPositionStyle = {
-										'margin-left': '-160px',
-									}
-									this.num = 0
-									this.isSixSend = false
-								} else {
-									this.nums -= 1
-									this.xuanzhuanStyle.transform = `rotate(${this.nums}deg)`
-								}
-							}, 100)
-						}, 20000)
+
 					} else if (newX <= -160) {
 						this.sixPositionStyle = {
 							'margin-left': '-160px',
@@ -1344,8 +1444,8 @@
 				this.socket.onOpen(() => {
 					console.log('WebSocket已打开');
 					this.isSocket = true
-					// this.sendFiveMessage(0, 'center')
-					// this.sendSixMessage(0, 'center')
+					this.sendFiveMessage(0, 'center')
+					this.sendSixMessage(0, 'center')
 					// this.startHeartbeat(); // 开始心跳机制
 				});
 
@@ -1484,7 +1584,7 @@
 						if (number == -5) {
 							return minValue
 						}
-						if (minValue == 1400) {
+						if (minValue >= 1400) {
 							return 1400
 						} else {
 							return 1400 - (((1400 - minValue) / 4) * (Math.abs(number) - 1))
@@ -1574,8 +1674,8 @@
 		z-index: 9;
 
 		.kuaifeilogo {
-			width: 80px;
-			height: 40px;
+			width: 60px;
+			height: 34px;
 			margin-left: -40px;
 		}
 	}
@@ -1583,7 +1683,7 @@
 	.rockerBtns {
 		position: absolute;
 		bottom: 0;
-		padding: 0px 0 8px 50px;
+		padding: 0px 0 8px 30px;
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: row;
@@ -1593,6 +1693,7 @@
 		.info {
 			display: flex;
 			flex-direction: row;
+			font-size: 13px;
 		}
 
 		.actionButtonBox {
@@ -1709,8 +1810,41 @@
 		align-items: flex-start;
 		width: 100%;
 		box-sizing: border-box;
-		padding: 24px 16px;
+		padding: 24px 0 24px 16px;
 		color: #FFF;
+		position: relative;
+
+		.deviceHuagan {
+			position: absolute;
+			right: 0;
+			top: 75px;
+			width: 34px;
+			height: 120px;
+			background-color: #b9ffff;
+			border-radius: 17px;
+
+			.huadongBtn {
+				position: absolute;
+				z-index: 99999999999;
+				width: 34px;
+				height: 20px;
+				background-color: #00c100;
+				border-radius: 17px;
+				box-sizing: border-box;
+				border: solid 1px #949494;
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: center;
+
+				.kongbai {
+					width: 14px;
+					height: 2px;
+					background-color: #FFF;
+					margin-bottom: 2px;
+				}
+			}
+		}
 
 		.leftInfo {
 			width: 48px;
@@ -1752,7 +1886,7 @@
 		padding: 24px;
 		font-size: 13px;
 		color: #000;
-		width: 300px;
+		width: 340px;
 
 		.tabs {
 			display: flex;

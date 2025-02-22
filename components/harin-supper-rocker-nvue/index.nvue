@@ -2,7 +2,7 @@
 	<view class="movable">
 		<view class="movableArea"
 			:style="{ '--outerW': outerW + 'px' , width:  outerW + 'px' , height:  outerW + 'px' ,borderRadius:  outerW + 'px'}">
-			<image src="/static/remote-sensing.png" style="width: 150px;height: 150px;position: absolute;z-index: 100;top: 0px;left: 0;filter: blur(6px);" mode=""></image>
+			<!-- <image src="/static/remote-sensing.png" style="width: 150px;height: 150px;position: absolute;z-index: 100;top: 0px;left: 0;filter: blur(6px);" mode=""></image> -->
 		</view>
 		<view class="movableView" @touchstart.prevent="onTouchstart($event)" @touchmove.prevent="onTouchmove($event)"
 			@touchend="onTouchend" @touchcancel="onTouchend" :style="{ 
@@ -12,7 +12,7 @@
 				'height': innerW + 'px', 
 				'border-radius': innerW + 'px'
 				 }">
-				 <!-- <image src="/static/remote-sensing.png" style="width: 50px;height: 50px;position: absolute;z-index: 101;top: 0px;left: 0;filter: blur(1px);" mode=""></image> -->
+				 <!-- <image src="/static/remote-sensing.png" style="width: 50px;height: 50px;position: absolute;z-index: 101;top: 0px;left: 0;filter: blur(2px);" mode=""></image> -->
 		</view>
 	</view>
 </template>
@@ -186,9 +186,11 @@
 	.movableArea {
 		position: relative;
 		z-index: 100;
+		opacity: 0.4;
 		width: var(--outerW);
 		height: var(--outerW);
 		border-radius: var(--outerW);
+		background-color: #3d3d3d;
 		overflow: hidden;
 		/* border: 2px solid #cccccc; */
 		box-sizing: border-box;
@@ -213,8 +215,9 @@
 		z-index: 101;
 		top: 0;
 		left: 0;
-		background-color: #3d3d3d;
+		opacity: 0.3;
 		filter: blur(2px);
+		background-color: #939393;
 		/* box-shadow: 0 0 10px 10px #666666; */
 	}
 </style>
